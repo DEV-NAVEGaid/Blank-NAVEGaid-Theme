@@ -1,0 +1,225 @@
+{%- style -%}
+  /* Base Styles */
+  .nvgd-video-slider-wrapper-{{ section.id }} {
+    margin: 30px 0;
+  }
+
+  .nvgd-video-slider-wrapper-{{ section.id }}
+  .nvgd-section-title {
+    font-size: {{ block.settings.title_size }}px;
+    color: {{ block.settings.title_color }};
+    font-weight: 600;
+  }
+
+  .nvgd-slide-container-{{ section.id }} {
+    display: flex;
+    gap: 14px;
+    max-width: 100%;
+    padding: 20px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: #fff;
+    border-radius: 8px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nvgd-slide-container-{{ section.id }}::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .nvgd-slide-container-{{ section.id }}::-webkit-scrollbar-track {
+    background: #F5F5F5;
+    border-radius: 4px;
+  }
+
+  .nvgd-slide-container-{{ section.id }}::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  .nvgd-slide-container-{{ section.id }}::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  .nvgd-video-slider-content-{{ section.id }} {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .nvgd-video-slider-content-{{ section.id }}
+  img
+  , .nvgd-video-slider-content-{{ section.id }}
+  video {
+    height: 100px;
+    width: 100px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 10px;
+    display: block;
+  }
+
+  /* Play Button Overlay */
+  .nvgd-video-slider-content-{{ section.id }} .nvgd-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    transition: background 0.2s ease;
+    pointer-events: none;
+  }
+
+  .nvgd-video-slider-content-{{ section.id }}:hover .nvgd-play-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .nvgd-play-overlay .nvgd-play-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease
+    , background 0.2s ease;
+  }
+
+  .nvgd-video-slider-content-{{ section.id }}:hover .nvgd-play-icon {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .nvgd-play-icon svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    /* optical centering for play triangle */
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .nvgd-video-slider-content-{{ section.id }}img
+    , .nvgd-video-slider-content-{{ section.id }}
+    video {
+      height: 150px;
+      width: 150px;
+    }
+
+    .nvgd-play-overlay .nvgd-play-icon {
+      width: 44px;
+      height: 44px;
+    }
+
+    .nvgd-play-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nvgd-video-slider-wrapper-{{ section.id }}
+    .nvgd-section-title {
+      font-size: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nvgd-video-slider-content-{{ section.id }}img
+    , .nvgd-video-slider-content-{{ section.id }}
+    video {
+      height: 120px;
+      width: 120px;
+    }
+
+    .nvgd-play-overlay .nvgd-play-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .nvgd-play-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .nvgd-slide-container-{{ section.id }} {
+      gap: 10px;
+      padding: 15px 8px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  class="nvgd-video-slider-wrapper nvgd-video-slider-wrapper-{{ section.id }}"
+  data-shop-button-text="{{ block.settings.shop_button_text | default: 'Shop' | escape }}"
+  data-shop-button-url="{{ block.settings.shop_button_url | default: '' | escape }}"
+>
+  {% if block.settings.section_title != blank %}
+    <h2 class="nvgd-section-title">{{ block.settings.section_title }}</h2>
+  {% endif %}
+
+  <div class="nvgd-slide-container-{{ section.id }}">
+    {% for i in (1..5) %}
+      {% assign video_url_key = 'video_url_' | append: i %}
+      {% assign thumbnail_key = 'thumbnail_' | append: i %}
+      {% assign title_key = 'video_title_' | append: i %}
+      {% assign description_key = 'video_description_' | append: i %}
+
+      {% if block.settings[video_url_key] != blank %}
+        <div
+          class="nvgd-video-slider-content nvgd-video-slider-content-{{ section.id }}"
+          data-video-index="{{ forloop.index0 }}"
+          data-video-url="{{ block.settings[video_url_key] | escape }}"
+          data-video-title="{{ block.settings[title_key] | default: 'Video' | escape }}"
+          data-video-description="{{ block.settings[description_key] | default: '' | escape }}">
+
+          {% if block.settings[thumbnail_key] != blank %}
+            {%- comment -%} Manual thumbnail provided {%- endcomment -%}
+            <img
+              src="{{ block.settings[thumbnail_key] | image_url: width: 400 }}"
+              alt="{{ block.settings[title_key] | default: 'Video thumbnail' | escape }}"
+              loading="lazy"
+              width="400"
+              height="{{ 400 | divided_by: block.settings[thumbnail_key].aspect_ratio | ceil }}" />
+          {% else %}
+            {%- comment -%} 
+                            No thumbnail set — we render a placeholder initially.
+                            JS will replace it with a YouTube/Vimeo thumbnail or a video-generated frame.
+                        {%- endcomment -%}
+            {%- comment -%}
+              RemoteAsset is disabled for one line: the src is an inline 1x1 GIF,
+              not a remote request. It keeps the browser from painting the broken
+              image icon in the frame before JS assigns the real thumbnail.
+            {%- endcomment -%}
+            {% # theme-check-disable RemoteAsset %}
+            <img
+              class="nvgd-auto-thumb"
+              src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+              alt="{{ block.settings[title_key] | default: 'Video thumbnail' | escape }}"
+              loading="lazy"
+              width="400"
+              height="225" />
+            {% # theme-check-enable RemoteAsset %}
+          {% endif %}
+
+          {%- comment -%} Play button overlay {%- endcomment -%}
+          <div class="nvgd-play-overlay">
+            <div class="nvgd-play-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.14-6.86a1 1 0 0 0 0-1.72L9.5 4.28a1 1 0 0 0-1.5.86z" fill="#000" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+<script src="{{ 'video-carousel.js' | asset_url }}" defer="defer"></script>

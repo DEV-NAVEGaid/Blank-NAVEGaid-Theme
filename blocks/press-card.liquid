@@ -1,0 +1,94 @@
+{%- assign section_id = section.id -%}
+
+<div
+  class="press-card-{{ section_id }}"
+  style="{% if block.settings.card_bg_override != blank and block.settings.card_bg_override != 'rgba(0,0,0,0)' %}background-color: {{ block.settings.card_bg_override }};{% endif %}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.link != blank %}
+    <a href="{{ block.settings.link }}" class="press-card__link-{{ section_id }}" aria-label="{{ block.settings.heading }}"></a>
+  {% endif %}
+
+  <div class="press-card__content-{{ section_id }}">
+    {% if block.settings.logo != blank %}
+      <img
+        src="{{ block.settings.logo | image_url: width: 400 }}"
+        alt="{{ block.settings.heading | escape }}"
+        class="press-card__logo-{{ section_id }}"
+        loading="lazy"
+        width="{{ block.settings.logo.width }}"
+        height="{{ block.settings.logo.height }}"
+      >
+    {% elsif block.settings.heading != blank %}
+      <h3 class="press-card__heading-{{ section_id }}">{{ block.settings.heading }}</h3>
+    {% endif %}
+
+    {% if block.settings.quote != blank %}
+      <p class="press-card__quote-{{ section_id }}">{{ block.settings.quote }}</p>
+    {% endif %}
+  </div>
+
+  <div class="press-card__image-wrap-{{ section_id }}">
+    {% if block.settings.image != blank %}
+      <img
+        src="{{ block.settings.image | image_url: width: 600 }}"
+        alt="{{ block.settings.heading | escape }}"
+        class="press-card__image-{{ section_id }}"
+        loading="lazy"
+        width="{{ block.settings.image.width }}"
+        height="{{ block.settings.image.height }}"
+      >
+    {% else %}
+      <div class="press-card__placeholder-{{ section_id }}">
+        {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Press card",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading (fallback if no logo)",
+      "default": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "quote",
+      "label": "Quote text",
+      "default": "Quote"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Product image"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Card link"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_override",
+      "label": "Card background (override)",
+      "default": "rgba(0,0,0,0)",
+      "info": "Leave transparent to use default section card background"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Press card"
+    }
+  ]
+}
+{% endschema %}

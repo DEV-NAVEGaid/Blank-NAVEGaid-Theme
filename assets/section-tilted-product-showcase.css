@@ -1,0 +1,315 @@
+/* ==========================================================================
+   Tilted Product Showcase Section
+   ========================================================================== */
+
+.tilted-showcase {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tilted-showcase__container {
+  width: 100%;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.tilted-showcase__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--tps-gap, 32px);
+  position: relative;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Product Backdrop Cards (Left & Right)
+   ========================================================================== */
+
+.tilted-showcase__card--product {
+  position: relative;
+  width: 100%;
+  height: var(--tps-side-card-height, 320px);
+  min-height: 280px;
+  background-color: var(--tps-card-bg, #F5F5F5);
+  border-radius: var(--tps-card-radius, 28px);
+  border: 1px solid var(--tps-card-border, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Allow the tilted product image to spill out above/below/sides */
+  overflow: visible;
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tilted-showcase__card--left {
+  background-color: var(--tps-left-card-bg, #F5F5F5);
+}
+
+.tilted-showcase__card--right {
+  background-color: var(--tps-right-card-bg, #F5F5F5);
+}
+
+.tilted-showcase__card--product:hover {
+  transform: translateY(-2px);
+}
+
+.tilted-showcase__backdrop {
+  display: none;
+}
+
+.tilted-showcase__image-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tilted-showcase__product-glow {
+  position: absolute;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  background: var(--tps-product-glow-color, rgba(245, 245, 245, 0.5));
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tilted-showcase__product-img {
+  display: block;
+  max-height: var(--tps-img-max-height, 390px);
+  max-width: 105%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: auto;
+  filter: var(--tps-product-shadow, drop-shadow(0 16px 28px rgba(0, 0, 0, 0.13)));
+  transform-origin: center center;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s ease;
+}
+
+/* Left product tilt & offset */
+.tilted-showcase__card--left .tilted-showcase__product-img {
+  transform: translate(var(--tps-left-offset-x, 0px), var(--tps-left-offset-y, 0px))
+             rotate(var(--tps-left-rotation, -14deg))
+             scale(var(--tps-left-scale, 1.1));
+}
+
+.tilted-showcase__card--left:hover .tilted-showcase__product-img {
+  transform: translate(var(--tps-left-offset-x, 0px), calc(var(--tps-left-offset-y, 0px) - 6px))
+             rotate(calc(var(--tps-left-rotation, -14deg) - 1.5deg))
+             scale(calc(var(--tps-left-scale, 1.1) * 1.02));
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.17));
+}
+
+/* Right product tilt & offset */
+.tilted-showcase__card--right .tilted-showcase__product-img {
+  transform: translate(var(--tps-right-offset-x, 0px), var(--tps-right-offset-y, 0px))
+             rotate(var(--tps-right-rotation, -8deg))
+             scale(var(--tps-right-scale, 1.1));
+}
+
+.tilted-showcase__card--right:hover .tilted-showcase__product-img {
+  transform: translate(var(--tps-right-offset-x, 0px), calc(var(--tps-right-offset-y, 0px) - 6px))
+             rotate(calc(var(--tps-right-rotation, -8deg) + 1.5deg))
+             scale(calc(var(--tps-right-scale, 1.1) * 1.02));
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.17));
+}
+
+/* ==========================================================================
+   Center Content Card
+   ========================================================================== */
+
+.tilted-showcase__card--content {
+  position: relative;
+  background-color: var(--tps-center-card-bg, var(--tps-card-bg, #F5F5F5));
+  border-radius: var(--tps-card-radius, 28px);
+  border: 1px solid var(--tps-card-border, transparent);
+  padding: 56px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--tps-center-card-min-height, 430px);
+  box-sizing: border-box;
+  z-index: 3;
+}
+
+.tilted-showcase__eyebrow {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tps-text-color, #111111);
+  opacity: 0.85;
+}
+
+.tilted-showcase__heading {
+  margin: 0 0 24px;
+  font-family: var(--font-heading-family);
+  font-size: var(--tps-heading-size, 38px);
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--tps-heading-color, #111111);
+  overflow-wrap: anywhere;
+}
+
+.tilted-showcase__description {
+  margin: 0;
+  color: var(--tps-text-color, #111111);
+  font-size: var(--tps-text-size, 15px);
+  line-height: 1.7;
+}
+
+.tilted-showcase__description p {
+  margin: 0;
+}
+
+.tilted-showcase__description p + p {
+  margin-top: 12px;
+}
+
+.tilted-showcase__action {
+  margin-top: 28px;
+}
+
+.tilted-showcase__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13px;
+  transition: all 0.25s ease;
+}
+
+.tilted-showcase__btn--solid {
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background-color: var(--tps-heading-color, #111111);
+  color: #FFFFFF;
+  border: 1px solid var(--tps-heading-color, #E5E5E5);
+}
+
+.tilted-showcase__btn--solid:hover {
+  background-color: transparent;
+  color: var(--tps-heading-color, #111111);
+}
+
+.tilted-showcase__btn--link {
+  color: var(--tps-heading-color, #111111);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+}
+
+.tilted-showcase__btn--link:hover {
+  opacity: 0.65;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+
+@media screen and (max-width: 989px) {
+  .tilted-showcase__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .tilted-showcase__card--content {
+    padding: 40px 28px;
+    min-height: 380px;
+  }
+
+  .tilted-showcase__heading {
+    font-size: calc(var(--tps-heading-size, 38px) * 0.85);
+  }
+
+  .tilted-showcase__card--product {
+    height: 260px;
+  }
+
+  .tilted-showcase__product-img {
+    max-height: 320px;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .tilted-showcase__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .tilted-showcase__grid--content-first .tilted-showcase__card--content {
+    order: 1;
+  }
+  .tilted-showcase__grid--content-first .tilted-showcase__card--left {
+    order: 2;
+  }
+  .tilted-showcase__grid--content-first .tilted-showcase__card--right {
+    order: 3;
+  }
+
+  .tilted-showcase__grid--stacked .tilted-showcase__card--left {
+    order: 1;
+  }
+  .tilted-showcase__grid--stacked .tilted-showcase__card--content {
+    order: 2;
+  }
+  .tilted-showcase__grid--stacked .tilted-showcase__card--right {
+    order: 3;
+  }
+
+  .tilted-showcase__grid--products-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tilted-showcase__grid--products-row .tilted-showcase__card--content {
+    grid-column: 1 / -1;
+    order: 1;
+  }
+
+  .tilted-showcase__grid--products-row .tilted-showcase__card--left {
+    grid-column: 1 / 2;
+    order: 2;
+    height: 220px;
+  }
+
+  .tilted-showcase__grid--products-row .tilted-showcase__card--right {
+    grid-column: 2 / 3;
+    order: 3;
+    height: 220px;
+  }
+
+  .tilted-showcase__card--content {
+    padding: 36px 24px;
+    min-height: auto;
+  }
+
+  .tilted-showcase__heading {
+    font-size: var(--tps-heading-size-mobile, 28px);
+    margin-bottom: 16px;
+  }
+
+  .tilted-showcase__card--product {
+    height: 260px;
+  }
+
+  .tilted-showcase__product-img {
+    max-height: 300px;
+  }
+}

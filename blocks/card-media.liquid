@@ -1,0 +1,237 @@
+{%- assign current_product = closest.product | default: product -%}
+{%- assign featured_media = current_product.featured_media -%}
+
+{%- style -%}
+  .card-media-{{ block.id }} {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: {{ block.settings.border_radius }}px;
+    background-color: {{ block.settings.placeholder_bg }};
+    margin-bottom: {{ block.settings.margin_bottom }}px;
+  }
+
+  .card-media-{{ block.id }} a {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .card-media-{{ block.id }} img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: {{ block.settings.image_fit }};
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  {%- if block.settings.enable_zoom_on_hover -%}
+    .card-media-{{ block.id }}:hover .card-media__primary {
+      transform: scale(1.05);
+    }
+  {%- endif -%}
+
+  {%- if block.settings.show_secondary_image and current_product.media[1] != nil -%}
+    .card-media-{{ block.id }} .card-media__secondary {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .card-media-{{ block.id }}:hover .card-media__secondary {
+      opacity: 1;
+    }
+    .card-media-{{ block.id }}:hover .card-media__primary {
+      opacity: 0;
+    }
+  {%- endif -%}
+
+  /* Aspect ratios */
+  .card-media-ratio--square {
+    aspect-ratio: 1 / 1;
+  }
+  .card-media-ratio--portrait {
+    aspect-ratio: 3 / 4;
+  }
+  .card-media-ratio--landscape {
+    aspect-ratio: 4 / 3;
+  }
+  .card-media-ratio--adapt {
+    {% if featured_media %}
+      aspect-ratio: {{ featured_media.aspect_ratio | default: '1/1' }};
+    {% else %}
+      aspect-ratio: 1 / 1;
+    {% endif %}
+  }
+
+  /* Badges */
+  .card-media__badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 3px;
+    line-height: 1;
+  }
+  .card-media__badge--sale {
+    background-color: #111111;
+    color: #FFFFFF;
+  }
+  .card-media__badge--soldout {
+    background-color: #111111;
+    color: #FFFFFF;
+  }
+{%- endstyle -%}
+
+<div class="card-media card-media-{{ block.id }} card-media-ratio--{{ block.settings.image_ratio }}" {{ block.shopify_attributes }}>
+  {%- if current_product != blank and featured_media != blank -%}
+    <a href="{{ current_product.url }}" aria-label="{{ current_product.title | escape }}">
+      <img
+        class="card-media__primary"
+        src="{{ featured_media | image_url: width: 600 }}"
+        srcset="
+          {%- if featured_media.width >= 165 -%}{{ featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+          {%- if featured_media.width >= 360 -%}{{ featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+          {%- if featured_media.width >= 533 -%}{{ featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+          {%- if featured_media.width >= 720 -%}{{ featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+          {{ featured_media | image_url }} {{ featured_media.width }}w
+        "
+        sizes="(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw"
+        alt="{{ featured_media.alt | escape | default: current_product.title | escape }}"
+        loading="lazy"
+        width="{{ featured_media.width }}"
+        height="{{ featured_media.height }}"
+      >
+      {%- if block.settings.show_secondary_image and current_product.media[1] != nil -%}
+        <img
+          class="card-media__secondary"
+          src="{{ current_product.media[1] | image_url: width: 600 }}"
+          alt="{{ current_product.media[1].alt | escape | default: current_product.title | escape }}"
+          loading="lazy"
+          width="{{ current_product.media[1].width }}"
+          height="{{ current_product.media[1].height }}"
+        >
+      {%- endif -%}
+    </a>
+  {%- else -%}
+    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+      {%- assign placeholder_idx = current_product.id | default: 1 | slice: -1 | plus: 0 | modulo: 6 | plus: 1 -%}
+      {% if request.design_mode %}{{ 'product-apparel-' | append: placeholder_idx | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+    </div>
+  {%- endif -%}
+
+  {%- if block.settings.show_badges and current_product != blank -%}
+    {%- if current_product.available == false -%}
+      <span class="card-media__badge card-media__badge--soldout">Sold out</span>
+    {%- elsif current_product.compare_at_price > current_product.price -%}
+      <span class="card-media__badge card-media__badge--sale">Sale</span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Media",
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "square",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape (4:3)"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom_on_hover",
+      "label": "Enable subtle zoom on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badges",
+      "label": "Show sale and sold out badges",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "placeholder_bg",
+      "label": "Placeholder background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Margin bottom",
+      "default": 12
+    }
+  ],
+  "presets": [
+    {
+      "name": "Media",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

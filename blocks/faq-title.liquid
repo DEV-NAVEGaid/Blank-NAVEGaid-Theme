@@ -1,0 +1,43 @@
+<div class="faq-header-{{ section.id }} nvgd-faq__header" {{ block.shopify_attributes }}>
+  {% if block.settings.heading != blank %}
+    <h2 class="faq-heading-{{ section.id }} nvgd-faq__heading">{{ block.settings.heading }}</h2>
+  {% endif %}
+  {%- comment -%}
+    Merchant richtext may contain any heading level. Normalize h1/h2/h4/h5/h6 to h3
+    so the page outline stays valid under this block's h2 heading. Visual output is
+    unchanged: .nvgd-faq__description :is(h1..h6) already renders all levels identically.
+  {%- endcomment -%}
+  {%- assign faq_description_content = block.settings.description
+    | replace: '<h1>', '<h3>' | replace: '<h1 ', '<h3 ' | replace: '</h1>', '</h3>'
+    | replace: '<h2>', '<h3>' | replace: '<h2 ', '<h3 ' | replace: '</h2>', '</h3>'
+    | replace: '<h4>', '<h3>' | replace: '<h4 ', '<h3 ' | replace: '</h4>', '</h3>'
+    | replace: '<h5>', '<h3>' | replace: '<h5 ', '<h3 ' | replace: '</h5>', '</h3>'
+    | replace: '<h6>', '<h3>' | replace: '<h6 ', '<h3 ' | replace: '</h6>', '</h3>' -%}
+  {% if faq_description_content != blank %}
+    <div class="faq-description-{{ section.id }} nvgd-faq__description">{{ faq_description_content }}</div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "FAQ title",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ title"
+    }
+  ]
+}
+{% endschema %}

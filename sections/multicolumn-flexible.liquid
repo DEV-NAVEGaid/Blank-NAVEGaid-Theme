@@ -1,0 +1,1334 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Flexible Multicolumn Section
+  Supports up to 3 columns with text, image, or list content
+{% endcomment %}
+
+{%- comment -%}
+  font_picker settings return a font object, and its family only renders once the
+  @font-face declaration is emitted, so declare every font this section renders.
+  The filter returns nothing for system fonts, so no guard is needed.
+  https://shopify.dev/docs/storefronts/themes/architecture/settings/fonts
+{%- endcomment -%}
+{%- style -%}
+  {{ section.settings.text_heading_font | font_face: font_display: 'swap' }}
+  {{ section.settings.text_subheading_font | font_face: font_display: 'swap' }}
+  {{ section.settings.text_body_font | font_face: font_display: 'swap' }}
+  {{ section.settings.list_heading_font_global | font_face: font_display: 'swap' }}
+  {{ section.settings.list_text_font_global | font_face: font_display: 'swap' }}
+{%- endstyle -%}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --mcx-padding: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px {{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_top }}px {{ section.settings.padding_right }}px {{ section.settings.padding_bottom }}px {{ section.settings.padding_left }}px{% endif %};
+    --mcx-padding-mobile: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px {{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_top_mobile }}px {{ section.settings.padding_right_mobile }}px {{ section.settings.padding_bottom_mobile }}px {{ section.settings.padding_left_mobile }}px{% endif %};
+    --mcx-gap: {{ section.settings.column_gap }}px;
+    --mcx-heading-size: {{ section.settings.heading_size }}px;
+    --mcx-heading-color: {{ section.settings.heading_color }};
+    --mcx-subheading-size: {{ section.settings.subheading_size }}px;
+    --mcx-subheading-color: {{ section.settings.subheading_color }};
+    --mcx-text-size: {{ section.settings.text_size }}px;
+    --mcx-text-color: {{ section.settings.text_color }};
+    --mcx-heading-size-mobile: {{ section.settings.heading_size_mobile }}px;
+    --mcx-subheading-size-mobile: {{ section.settings.subheading_size_mobile }}px;
+    --mcx-text-size-mobile: {{ section.settings.text_size_mobile }}px;
+  }
+{% endstyle %}
+
+<div class="multicolumn-flexible-{{ section.id }} multicolumn-flexible multicolumn-section nvgd-section-surface{% case section.settings.mobile_column_order %}{% when 'reverse' %} multicolumn-flexible--order-reverse{% when 'col2_first' %} multicolumn-flexible--order-col2{% when 'col3_first' %} multicolumn-flexible--order-col3{% endcase %}">
+  <div class="multicolumn-stage">
+    <div class="multicolumn-inner">
+      <div class="multicolumn-flexible-{{ section.id }}__grid multicolumn-flexible__grid">
+        {% assign total_width = 0 %}
+        {% assign columns = section.blocks | where: 'type', 'column' %}
+        
+        {% comment %} Calculate total width and cap at 100% {% endcomment %}
+        {% for block in columns %}
+          {% assign total_width = total_width | plus: block.settings.column_width %}
+        {% endfor %}
+        
+        {% for block in columns %}
+          {% if forloop.index <= 3 %}
+            {% comment %} Cap total width at 100% {% endcomment %}
+            {% assign adjusted_width = block.settings.column_width %}
+            {% if total_width > 100 %}
+              {% assign adjusted_width = block.settings.column_width | times: 100 | divided_by: total_width %}
+            {% endif %}
+            
+            {% capture mcx_block_vars %}{% if block.settings.use_transform %}--mcx-tx-d: {{ block.settings.transform_x_desktop }}; --mcx-ty-d: {{ block.settings.transform_y_desktop }}; --mcx-tx-m: {{ block.settings.transform_x_mobile }}; --mcx-ty-m: {{ block.settings.transform_y_mobile }};{% endif %}{% if block.settings.content_type == 'list' %}--icon-size-mobile: {{ block.settings.list_icon_size_mobile }}px; --heading-size-mobile: {{ block.settings.list_heading_size_mobile }}px; --text-size-mobile: {{ block.settings.list_text_size_mobile }}px;{% endif %}{% endcapture %}
+            <div class="multicolumn-flexible-{{ section.id }}__column multicolumn-flexible__column {% if block.settings.content_type == 'image' %}is-image-column{% endif %}"
+                 style="flex: 0 1 {{ adjusted_width }}%; max-width: {{ adjusted_width }}%;"
+                 {{ block.shopify_attributes }}>
+              
+              <div class="multicolumn-flexible-{{ section.id }}__content multicolumn-flexible__content multicolumn-flexible-{{ section.id }}__content--{{ block.id }} {% if block.settings.use_transform %}is-transform{% endif %}" style="{{ mcx_block_vars }}">
+                
+                
+                {% comment %} TEXT CONTENT {% endcomment %}
+                {% if block.settings.content_type == 'text' %}
+                  <div class="column-text">
+                    {% if block.settings.heading_1 != blank or block.settings.subheading_1 != blank or block.settings.text_1 != blank %}
+                      <div class="column-text__item">
+                        {% if block.settings.heading_1 != blank %}
+                          <h3 class="column-text__heading" style="font-family: {{ section.settings.text_heading_font.family | escape }}, {{ section.settings.text_heading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_heading_font.weight }};">
+                            {{ block.settings.heading_1 }}
+                          </h3>
+                        {% endif %}
+                        {% if block.settings.subheading_1 != blank %}
+                          <h4 class="column-text__subheading" style="font-family: {{ section.settings.text_subheading_font.family | escape }}, {{ section.settings.text_subheading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_subheading_font.weight }};">
+                            {{ block.settings.subheading_1 }}
+                          </h4>
+                        {% endif %}
+                        {% if block.settings.text_1 != blank %}
+                          <div class="column-text__text" style="font-family: {{ section.settings.text_body_font.family | escape }}, {{ section.settings.text_body_font.fallback_families | escape }}; font-weight: {{ section.settings.text_body_font.weight }};">
+                            {{ block.settings.text_1 }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if block.settings.heading_2 != blank or block.settings.subheading_2 != blank or block.settings.text_2 != blank %}
+                      <div class="column-text__item">
+                        {% if block.settings.heading_2 != blank %}
+                          <h3 class="column-text__heading" style="font-family: {{ section.settings.text_heading_font.family | escape }}, {{ section.settings.text_heading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_heading_font.weight }};">
+                            {{ block.settings.heading_2 }}
+                          </h3>
+                        {% endif %}
+                        {% if block.settings.subheading_2 != blank %}
+                          <h4 class="column-text__subheading" style="font-family: {{ section.settings.text_subheading_font.family | escape }}, {{ section.settings.text_subheading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_subheading_font.weight }};">
+                            {{ block.settings.subheading_2 }}
+                          </h4>
+                        {% endif %}
+                        {% if block.settings.text_2 != blank %}
+                          <div class="column-text__text" style="font-family: {{ section.settings.text_body_font.family | escape }}, {{ section.settings.text_body_font.fallback_families | escape }}; font-weight: {{ section.settings.text_body_font.weight }};">
+                            {{ block.settings.text_2 }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if block.settings.heading_3 != blank or block.settings.subheading_3 != blank or block.settings.text_3 != blank %}
+                      <div class="column-text__item">
+                        {% if block.settings.heading_3 != blank %}
+                          <h3 class="column-text__heading" style="font-family: {{ section.settings.text_heading_font.family | escape }}, {{ section.settings.text_heading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_heading_font.weight }};">
+                            {{ block.settings.heading_3 }}
+                          </h3>
+                        {% endif %}
+                        {% if block.settings.subheading_3 != blank %}
+                          <h4 class="column-text__subheading" style="font-family: {{ section.settings.text_subheading_font.family | escape }}, {{ section.settings.text_subheading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_subheading_font.weight }};">
+                            {{ block.settings.subheading_3 }}
+                          </h4>
+                        {% endif %}
+                        {% if block.settings.text_3 != blank %}
+                          <div class="column-text__text" style="font-family: {{ section.settings.text_body_font.family | escape }}, {{ section.settings.text_body_font.fallback_families | escape }}; font-weight: {{ section.settings.text_body_font.weight }};">
+                            {{ block.settings.text_3 }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if block.settings.heading_4 != blank or block.settings.subheading_4 != blank or block.settings.text_4 != blank %}
+                      <div class="column-text__item">
+                        {% if block.settings.heading_4 != blank %}
+                          <h3 class="column-text__heading" style="font-family: {{ section.settings.text_heading_font.family | escape }}, {{ section.settings.text_heading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_heading_font.weight }};">
+                            {{ block.settings.heading_4 }}
+                          </h3>
+                        {% endif %}
+                        {% if block.settings.subheading_4 != blank %}
+                          <h4 class="column-text__subheading" style="font-family: {{ section.settings.text_subheading_font.family | escape }}, {{ section.settings.text_subheading_font.fallback_families | escape }}; font-weight: {{ section.settings.text_subheading_font.weight }};">
+                            {{ block.settings.subheading_4 }}
+                          </h4>
+                        {% endif %}
+                        {% if block.settings.text_4 != blank %}
+                          <div class="column-text__text" style="font-family: {{ section.settings.text_body_font.family | escape }}, {{ section.settings.text_body_font.fallback_families | escape }}; font-weight: {{ section.settings.text_body_font.weight }};">
+                            {{ block.settings.text_4 }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+
+                {% comment %} IMAGE CONTENT {% endcomment %}
+                {% if block.settings.content_type == 'image' %}
+                  {% if block.settings.image != blank %}
+                    <img 
+                      class="column-image" 
+                      src="{{ block.settings.image | image_url: width: 800 }}"
+                      alt="{{ block.settings.image.alt | escape }}"
+                      loading="lazy"
+                      width="{{ block.settings.image.width }}"
+                      height="{{ block.settings.image.height }}">
+                  {% else %}
+                    {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: 'column-image' }}{% endif %}
+                  {% endif %}
+                {% endif %}
+
+                {% comment %} LIST CONTENT {% endcomment %}
+                {% if block.settings.content_type == 'list' %}
+                  
+                  <div class="column-list-wrapper">
+                    <ul class="column-list {% if block.settings.show_bullets %}column-list--bullets{% endif %}">
+                      
+                      {% comment %} List Item 1 {% endcomment %}
+                      {% if block.settings.list_heading_1 != blank or block.settings.list_item_1 != blank %}
+                        <li class="column-list__item">
+                          {% if block.settings.list_icon_1 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              <img src="{{ block.settings.list_icon_1 | image_url: width: 200 }}"
+                                   alt="{{ block.settings.list_heading_1 | default: block.settings.list_item_1 | escape }}"
+                                   width="200" height="{{ 200 | divided_by: block.settings.list_icon_1.aspect_ratio | ceil }}"
+                                   style="width: 100%; height: 100%;">
+                            </div>
+                          {% elsif block.settings.list_svg_1 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              {{ block.settings.list_svg_1 }}
+                            </div>
+                          {% endif %}
+                          <div class="column-list__content">
+                            {% if block.settings.list_heading_1 != blank %}
+                              <h4 class="column-list__heading" 
+                                  style="font-family: {{ section.settings.list_heading_font_global.family | escape }}, {{ section.settings.list_heading_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_heading_size_desktop }}px; color: {{ block.settings.list_heading_color }}; font-weight: {{ block.settings.list_heading_weight }}; font-style: {{ block.settings.list_heading_style }};">
+                                {{ block.settings.list_heading_1 }}
+                              </h4>
+                            {% endif %}
+                            {% if block.settings.list_item_1 != blank %}
+                              <div class="column-list__text" 
+                                   style="font-family: {{ section.settings.list_text_font_global.family | escape }}, {{ section.settings.list_text_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_text_size_desktop }}px; color: {{ block.settings.list_text_custom_color }}; font-weight: {{ block.settings.list_text_weight }}; font-style: {{ block.settings.list_text_style }};">
+                                {{ block.settings.list_item_1 }}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </li>
+                      {% endif %}
+
+                      {% comment %} List Item 2 {% endcomment %}
+                      {% if block.settings.list_heading_2 != blank or block.settings.list_item_2 != blank %}
+                        <li class="column-list__item">
+                          {% if block.settings.list_icon_2 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              <img src="{{ block.settings.list_icon_2 | image_url: width: 200 }}"
+                                   alt="{{ block.settings.list_heading_2 | default: block.settings.list_item_2 | escape }}"
+                                   width="200" height="{{ 200 | divided_by: block.settings.list_icon_2.aspect_ratio | ceil }}"
+                                   style="width: 100%; height: 100%;">
+                            </div>
+                          {% elsif block.settings.list_svg_2 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              {{ block.settings.list_svg_2 }}
+                            </div>
+                          {% endif %}
+                          <div class="column-list__content">
+                            {% if block.settings.list_heading_2 != blank %}
+                              <h4 class="column-list__heading" 
+                                  style="font-family: {{ section.settings.list_heading_font_global.family | escape }}, {{ section.settings.list_heading_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_heading_size_desktop }}px; color: {{ block.settings.list_heading_color }}; font-weight: {{ block.settings.list_heading_weight }}; font-style: {{ block.settings.list_heading_style }};">
+                                {{ block.settings.list_heading_2 }}
+                              </h4>
+                            {% endif %}
+                            {% if block.settings.list_item_2 != blank %}
+                              <div class="column-list__text" 
+                                   style="font-family: {{ section.settings.list_text_font_global.family | escape }}, {{ section.settings.list_text_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_text_size_desktop }}px; color: {{ block.settings.list_text_custom_color }}; font-weight: {{ block.settings.list_text_weight }}; font-style: {{ block.settings.list_text_style }};">
+                                {{ block.settings.list_item_2 }}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </li>
+                      {% endif %}
+
+                      {% comment %} List Item 3 {% endcomment %}
+                      {% if block.settings.list_heading_3 != blank or block.settings.list_item_3 != blank %}
+                        <li class="column-list__item">
+                          {% if block.settings.list_icon_3 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              <img src="{{ block.settings.list_icon_3 | image_url: width: 200 }}"
+                                   alt="{{ block.settings.list_heading_3 | default: block.settings.list_item_3 | escape }}"
+                                   width="200" height="{{ 200 | divided_by: block.settings.list_icon_3.aspect_ratio | ceil }}"
+                                   style="width: 100%; height: 100%;">
+                            </div>
+                          {% elsif block.settings.list_svg_3 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              {{ block.settings.list_svg_3 }}
+                            </div>
+                          {% endif %}
+                          <div class="column-list__content">
+                            {% if block.settings.list_heading_3 != blank %}
+                              <h4 class="column-list__heading" 
+                                  style="font-family: {{ section.settings.list_heading_font_global.family | escape }}, {{ section.settings.list_heading_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_heading_size_desktop }}px; color: {{ block.settings.list_heading_color }}; font-weight: {{ block.settings.list_heading_weight }}; font-style: {{ block.settings.list_heading_style }};">
+                                {{ block.settings.list_heading_3 }}
+                              </h4>
+                            {% endif %}
+                            {% if block.settings.list_item_3 != blank %}
+                              <div class="column-list__text" 
+                                   style="font-family: {{ section.settings.list_text_font_global.family | escape }}, {{ section.settings.list_text_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_text_size_desktop }}px; color: {{ block.settings.list_text_custom_color }}; font-weight: {{ block.settings.list_text_weight }}; font-style: {{ block.settings.list_text_style }};">
+                                {{ block.settings.list_item_3 }}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </li>
+                      {% endif %}
+
+                      {% comment %} List Item 4 {% endcomment %}
+                      {% if block.settings.list_heading_4 != blank or block.settings.list_item_4 != blank %}
+                        <li class="column-list__item">
+                          {% if block.settings.list_icon_4 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              <img src="{{ block.settings.list_icon_4 | image_url: width: 200 }}"
+                                   alt="{{ block.settings.list_heading_4 | default: block.settings.list_item_4 | escape }}"
+                                   width="200" height="{{ 200 | divided_by: block.settings.list_icon_4.aspect_ratio | ceil }}"
+                                   style="width: 100%; height: 100%;">
+                            </div>
+                          {% elsif block.settings.list_svg_4 != blank %}
+                            <div class="column-list__icon" 
+                                 style="width: {{ block.settings.list_icon_size_desktop }}px; height: {{ block.settings.list_icon_size_desktop }}px;">
+                              {{ block.settings.list_svg_4 }}
+                            </div>
+                          {% endif %}
+                          <div class="column-list__content">
+                            {% if block.settings.list_heading_4 != blank %}
+                              <h4 class="column-list__heading" 
+                                  style="font-family: {{ section.settings.list_heading_font_global.family | escape }}, {{ section.settings.list_heading_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_heading_size_desktop }}px; color: {{ block.settings.list_heading_color }}; font-weight: {{ block.settings.list_heading_weight }}; font-style: {{ block.settings.list_heading_style }};">
+                                {{ block.settings.list_heading_4 }}
+                              </h4>
+                            {% endif %}
+                            {% if block.settings.list_item_4 != blank %}
+                              <div class="column-list__text" 
+                                   style="font-family: {{ section.settings.list_text_font_global.family | escape }}, {{ section.settings.list_text_font_global.fallback_families | escape }}; font-size: {{ block.settings.list_text_size_desktop }}px; color: {{ block.settings.list_text_custom_color }}; font-weight: {{ block.settings.list_text_weight }}; font-style: {{ block.settings.list_text_style }};">
+                                {{ block.settings.list_item_4 }}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </li>
+                      {% endif %}
+                      
+                    </ul>
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+/* moved from inline style block for bundling */
+.multicolumn-flexible {
+  padding: var(--mcx-padding);
+}
+
+.multicolumn-flexible .is-transform {
+  will-change: transform;
+}
+
+.multicolumn-flexible.multicolumn-section {
+  width: 100%;
+}
+
+.multicolumn-flexible .multicolumn-stage {
+  position: relative;
+  width: 100%;
+  padding: 0;
+}
+
+.multicolumn-flexible .multicolumn-inner {
+  max-width: var(--page-width);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  position: relative;
+  padding: 0;
+}
+
+.multicolumn-flexible__grid {
+  display: flex;
+  gap: var(--mcx-gap);
+  justify-content: flex-start;
+}
+
+/* Text Content Styles */
+.multicolumn-flexible .column-text__item {
+  margin-bottom: 20px;
+}
+
+.multicolumn-flexible .column-text__item:last-child {
+  margin-bottom: 0;
+}
+
+.multicolumn-flexible .column-text__heading {
+  font-size: var(--mcx-heading-size);
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--mcx-heading-color);
+}
+
+.multicolumn-flexible .column-text__subheading {
+  font-size: var(--mcx-subheading-size);
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--mcx-subheading-color);
+}
+
+.multicolumn-flexible .column-text__text {
+  font-size: var(--mcx-text-size);
+  line-height: 1.6;
+  color: var(--mcx-text-color);
+}
+
+/* Image Content Styles */
+.multicolumn-flexible .column-image {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+}
+
+/* List Content Styles */
+.multicolumn-flexible .column-list-wrapper {
+  width: 100%;
+}
+
+.multicolumn-flexible .column-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.multicolumn-flexible .column-list__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 60px;
+}
+
+.multicolumn-flexible .column-list__item:last-child {
+  margin-bottom: 0;
+}
+
+.multicolumn-flexible .column-list__icon {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.multicolumn-flexible .column-list__icon img,
+.multicolumn-flexible .column-list__icon svg {
+  display: block;
+  object-fit: contain;
+}
+
+.multicolumn-flexible .column-list__content {
+  width: 100%;
+}
+
+.multicolumn-flexible .column-list__heading {
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.multicolumn-flexible .column-list__text {
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Desktop Styles (769px and up) */
+@media (min-width: 769px) {
+  .multicolumn-flexible__grid {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+
+  .multicolumn-flexible__column {
+    position: relative;
+  }
+
+  .multicolumn-flexible__column:not(.is-image-column) {
+    flex: 1 1 0;
+    max-width: none;
+  }
+
+  .multicolumn-flexible__content {
+    position: relative;
+  }
+
+  .multicolumn-flexible__content.is-transform {
+    transform: translate(var(--mcx-tx-d), var(--mcx-ty-d));
+  }
+}
+
+/* Mobile Styles (768px and below) */
+@media (max-width: 768px) {
+  .multicolumn-flexible {
+    padding: var(--mcx-padding-mobile, var(--mcx-padding));
+  }
+
+  .multicolumn-flexible__grid {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    height: auto;
+  }
+
+  .multicolumn-flexible .multicolumn-inner {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .multicolumn-flexible__column {
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+    margin-bottom: 30px;
+  }
+
+  .multicolumn-flexible__column:last-child {
+    margin-bottom: 0;
+  }
+
+  .multicolumn-flexible__content {
+    transform: none !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+  }
+
+  /* Text Content - Mobile */
+  .multicolumn-flexible .column-text__heading,
+  .multicolumn-flexible .column-text__subheading,
+  .multicolumn-flexible .column-text__text {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .multicolumn-flexible .column-text__heading {
+    font-size: var(--mcx-heading-size-mobile, var(--mcx-heading-size));
+  }
+
+  .multicolumn-flexible .column-text__subheading {
+    font-size: var(--mcx-subheading-size-mobile, var(--mcx-subheading-size));
+  }
+
+  .multicolumn-flexible .column-text__text {
+    font-size: var(--mcx-text-size-mobile, var(--mcx-text-size));
+  }
+
+  /* Image Content - Mobile */
+  .multicolumn-flexible .column-image {
+    margin: 0 auto 24px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* List Content - Mobile */
+  .multicolumn-flexible .column-list__icon {
+    width: var(--icon-size-mobile);
+    height: var(--icon-size-mobile);
+  }
+
+  .multicolumn-flexible .column-list__heading {
+    font-size: var(--heading-size-mobile);
+  }
+
+  .multicolumn-flexible .column-list__text {
+    font-size: var(--text-size-mobile);
+  }
+
+  /* Block transform - Mobile: kept after the general content rule for cascade parity */
+  .multicolumn-flexible__content.is-transform {
+    transform: translate(var(--mcx-tx-m), var(--mcx-ty-m)) !important;
+  }
+
+  /* Mobile Column Ordering */
+  .multicolumn-flexible--order-reverse .multicolumn-flexible__column:nth-child(1) { order: 3; }
+  .multicolumn-flexible--order-reverse .multicolumn-flexible__column:nth-child(2) { order: 2; }
+  .multicolumn-flexible--order-reverse .multicolumn-flexible__column:nth-child(3) { order: 1; }
+  .multicolumn-flexible--order-col2 .multicolumn-flexible__column:nth-child(1) { order: 2; }
+  .multicolumn-flexible--order-col2 .multicolumn-flexible__column:nth-child(2) { order: 1; }
+  .multicolumn-flexible--order-col2 .multicolumn-flexible__column:nth-child(3) { order: 3; }
+  .multicolumn-flexible--order-col3 .multicolumn-flexible__column:nth-child(1) { order: 2; }
+  .multicolumn-flexible--order-col3 .multicolumn-flexible__column:nth-child(2) { order: 3; }
+  .multicolumn-flexible--order-col3 .multicolumn-flexible__column:nth-child(3) { order: 1; }
+}
+{% endstylesheet %}
+
+<script src="{{ 'multicolumn-flexible.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Flexible multicolumn",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Text style"
+    },
+    {
+      "type": "paragraph",
+      "content": "Desktop Sizes"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 14,
+      "max": 48,
+      "step": 2,
+      "default": 24,
+      "unit": "px",
+      "label": "Heading size (desktop)"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "default": 18,
+      "unit": "px",
+      "label": "Subheading size (desktop)"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "Text size (desktop)"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "paragraph",
+      "content": "Mobile Sizes"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 12,
+      "max": 36,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "Heading size (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size_mobile",
+      "min": 10,
+      "max": 24,
+      "step": 2,
+      "default": 16,
+      "unit": "px",
+      "label": "Subheading size (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "unit": "px",
+      "label": "Text size (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Font families"
+    },
+    {
+      "type": "font_picker",
+      "id": "text_heading_font",
+      "label": "Text content - heading font",
+      "default": "assistant_n7"
+    },
+    {
+      "type": "font_picker",
+      "id": "text_subheading_font",
+      "label": "Text content - subheading font",
+      "default": "assistant_n6"
+    },
+    {
+      "type": "font_picker",
+      "id": "text_body_font",
+      "label": "Text content - body font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "font_picker",
+      "id": "list_heading_font_global",
+      "label": "List content - heading font",
+      "default": "assistant_n7"
+    },
+    {
+      "type": "font_picker",
+      "id": "list_text_font_global",
+      "label": "List content - text font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Column gap"
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_column_order",
+      "label": "Mobile column order",
+      "options": [
+        {
+          "value": "default",
+          "label": "Default (1, 2, 3)"
+        },
+        {
+          "value": "reverse",
+          "label": "Reverse (3, 2, 1)"
+        },
+        {
+          "value": "col2_first",
+          "label": "Column 2 First (2, 1, 3)"
+        },
+        {
+          "value": "col3_first",
+          "label": "Column 3 First (3, 1, 2)"
+        }
+      ],
+      "default": "default",
+      "info": "Control the order columns appear on mobile"
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding top (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding bottom (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding left (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding right (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding top (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding bottom (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding left (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding right (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "range",
+          "id": "column_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "default": 35,
+          "unit": "%",
+          "label": "Column width",
+          "info": "Width will be adjusted if total exceeds 100%"
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Content type",
+          "options": [
+            {
+              "value": "text",
+              "label": "Text"
+            },
+            {
+              "value": "image",
+              "label": "Image"
+            },
+            {
+              "value": "list",
+              "label": "List"
+            }
+          ],
+          "default": "text"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_transform",
+          "label": "Use transform position",
+          "default": false,
+          "info": "Adjusts content position using CSS transform"
+        },
+        {
+          "type": "header",
+          "content": "Transform desktop"
+        },
+        {
+          "type": "text",
+          "id": "transform_x_desktop",
+          "label": "Transform X (horizontal) - desktop",
+          "default": "0",
+          "info": "Enter value with unit (e.g., 20%, 50px, -10%). Negative moves left, positive moves right"
+        },
+        {
+          "type": "text",
+          "id": "transform_y_desktop",
+          "label": "Transform Y (vertical) - desktop",
+          "default": "0",
+          "info": "Enter value with unit (e.g., 20%, 50px, -10%). Negative moves up, positive moves down"
+        },
+        {
+          "type": "header",
+          "content": "Transform mobile"
+        },
+        {
+          "type": "text",
+          "id": "transform_x_mobile",
+          "label": "Transform X (horizontal) - mobile",
+          "default": "0",
+          "info": "Enter value with unit (e.g., 20%, 50px, -10%). Negative moves left, positive moves right"
+        },
+        {
+          "type": "text",
+          "id": "transform_y_mobile",
+          "label": "Transform Y (vertical) - mobile",
+          "default": "0",
+          "info": "Enter value with unit (e.g., 20%, 50px, -10%). Negative moves up, positive moves down"
+        },
+        {
+          "type": "header",
+          "content": "Text content (max 4)",
+          "info": "Only visible when Content Type is set to Text"
+        },
+        {
+          "type": "text",
+          "id": "heading_1",
+          "label": "Heading 1",
+          "info": "Optional"
+        },
+        {
+          "type": "text",
+          "id": "subheading_1",
+          "label": "Subheading 1"
+        },
+        {
+          "type": "textarea",
+          "id": "text_1",
+          "label": "Text 1"
+        },
+        {
+          "type": "text",
+          "id": "heading_2",
+          "label": "Heading 2"
+        },
+        {
+          "type": "text",
+          "id": "subheading_2",
+          "label": "Subheading 2"
+        },
+        {
+          "type": "textarea",
+          "id": "text_2",
+          "label": "Text 2"
+        },
+        {
+          "type": "text",
+          "id": "heading_3",
+          "label": "Heading 3"
+        },
+        {
+          "type": "text",
+          "id": "subheading_3",
+          "label": "Subheading 3"
+        },
+        {
+          "type": "textarea",
+          "id": "text_3",
+          "label": "Text 3"
+        },
+        {
+          "type": "text",
+          "id": "heading_4",
+          "label": "Heading 4"
+        },
+        {
+          "type": "text",
+          "id": "subheading_4",
+          "label": "Subheading 4"
+        },
+        {
+          "type": "textarea",
+          "id": "text_4",
+          "label": "Text 4"
+        },
+        {
+          "type": "header",
+          "content": "Image content",
+          "info": "Only visible when Content Type is set to Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "header",
+          "content": "List content (max 4)",
+          "info": "Only visible when Content Type is set to List"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_bullets",
+          "label": "Show bullet points",
+          "default": false,
+          "info": "Display bullet points before list text"
+        },
+        {
+          "type": "header",
+          "content": "List style"
+        },
+        {
+          "type": "paragraph",
+          "content": "Icon Sizes"
+        },
+        {
+          "type": "range",
+          "id": "list_icon_size_desktop",
+          "min": 20,
+          "max": 120,
+          "step": 5,
+          "default": 60,
+          "unit": "px",
+          "label": "Icon size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "list_icon_size_mobile",
+          "min": 20,
+          "max": 80,
+          "step": 5,
+          "default": 40,
+          "unit": "px",
+          "label": "Icon size (mobile)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Heading Styling (Desktop & Mobile)"
+        },
+        {
+          "type": "range",
+          "id": "list_heading_size_desktop",
+          "min": 12,
+          "max": 48,
+          "step": 2,
+          "default": 20,
+          "unit": "px",
+          "label": "Heading size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "list_heading_size_mobile",
+          "min": 12,
+          "max": 36,
+          "step": 2,
+          "default": 18,
+          "unit": "px",
+          "label": "Heading size (mobile)"
+        },
+        {
+          "type": "color",
+          "id": "list_heading_color",
+          "label": "Heading color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "list_heading_weight",
+          "label": "Heading font weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "select",
+          "id": "list_heading_style",
+          "label": "Heading font style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "paragraph",
+          "content": "List Text Styling"
+        },
+        {
+          "type": "range",
+          "id": "list_text_size_desktop",
+          "min": 12,
+          "max": 32,
+          "step": 1,
+          "default": 16,
+          "unit": "px",
+          "label": "Text size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "list_text_size_mobile",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "default": 14,
+          "unit": "px",
+          "label": "Text size (mobile)"
+        },
+        {
+          "type": "color",
+          "id": "list_text_custom_color",
+          "label": "List text color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "list_text_weight",
+          "label": "List text font weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "list_text_style",
+          "label": "List text font style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "header",
+          "content": "Item 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "list_icon_1",
+          "label": "Icon 1"
+        },
+        {
+          "type": "html",
+          "id": "list_svg_1",
+          "label": "Icon 1 (optional)",
+          "info": "Paste SVG code here. Will be used if no image is uploaded."
+        },
+        {
+          "type": "text",
+          "id": "list_heading_1",
+          "label": "Heading 1"
+        },
+        {
+          "type": "textarea",
+          "id": "list_item_1",
+          "label": "List text 1"
+        },
+        {
+          "type": "header",
+          "content": "Item 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "list_icon_2",
+          "label": "Icon 2"
+        },
+        {
+          "type": "html",
+          "id": "list_svg_2",
+          "label": "Icon 2 (optional)"
+        },
+        {
+          "type": "text",
+          "id": "list_heading_2",
+          "label": "Heading 2"
+        },
+        {
+          "type": "textarea",
+          "id": "list_item_2",
+          "label": "List text 2"
+        },
+        {
+          "type": "header",
+          "content": "Item 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "list_icon_3",
+          "label": "Icon 3"
+        },
+        {
+          "type": "html",
+          "id": "list_svg_3",
+          "label": "Icon 3 (optional)"
+        },
+        {
+          "type": "text",
+          "id": "list_heading_3",
+          "label": "Heading 3"
+        },
+        {
+          "type": "textarea",
+          "id": "list_item_3",
+          "label": "List text 3"
+        },
+        {
+          "type": "header",
+          "content": "Item 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "list_icon_4",
+          "label": "Icon 4"
+        },
+        {
+          "type": "html",
+          "id": "list_svg_4",
+          "label": "Icon 4 (optional)"
+        },
+        {
+          "type": "text",
+          "id": "list_heading_4",
+          "label": "Heading 4"
+        },
+        {
+          "type": "textarea",
+          "id": "list_item_4",
+          "label": "List text 4"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Flexible multicolumn",
+      "blocks": [
+        {
+          "type": "column",
+          "settings": {
+            "column_width": 35,
+            "content_type": "text"
+          }
+        },
+        {
+          "type": "column",
+          "settings": {
+            "column_width": 35,
+            "content_type": "text"
+          }
+        },
+        {
+          "type": "column",
+          "settings": {
+            "column_width": 30,
+            "content_type": "text"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

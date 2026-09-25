@@ -1,0 +1,1355 @@
+{% render 'section-corners', section: section %}
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --rsc-pad: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px {{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_vertical }}px {{ section.settings.padding_horizontal }}px{% endif %};
+    --rsc-pad-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px {{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_vertical_mobile }}px {{ section.settings.padding_horizontal_mobile }}px{% endif %};
+    --rsc-max: {% if section.settings.enable_global_spacing %}var(--page-width){% else %}{{ section.settings.container_width }}px{% endif %};
+    --rsc-accent: {{ section.settings.accent_color }};
+    --rsc-accent-10: {{ section.settings.accent_color | color_modify: 'alpha', 0.1 }};
+  }
+{% endstyle %}
+
+
+<div class="nvgd-container-outer nvgd-container-outer-{{ section_id }}">
+  <div class="nvgd-container nvgd-container-{{ section_id }}">
+    <!-- Title -->
+    {% if section.settings.section_title != blank %}
+      <h1 class="nvgd-title">{{ section.settings.section_title }}</h1>
+    {% endif %}
+
+    <!-- Header Content -->
+    <div class="nvgd-header-content">
+      <!-- Tabs -->
+      <div class="nvgd-tabs">
+        <button class="nvgd-tab nvgd-tab--active" data-tab="reviews">
+          {{ section.settings.tab_reviews_label }}<br><span style="font-size: 11px;">({{ section.settings.reviews_count }})</span>
+        </button>
+        <button class="nvgd-tab" data-tab="questions">
+          {{ section.settings.tab_questions_label }}<br><span style="font-size: 11px;">({{ section.settings.questions_count }})</span>
+        </button>
+      </div>
+
+      <!-- Rating Summary -->
+      {% if section.settings.total_reviews != '0' and section.settings.total_reviews != blank %}<div class="nvgd-rating-summary">
+        <!-- Score -->
+        <div class="nvgd-rating-score">
+          <div class="nvgd-rating-number">{{ section.settings.average_rating }}/5.0</div>
+          <div class="nvgd-rating-stars">
+            {% assign full_stars = section.settings.average_rating | floor %}
+            {% assign decimal = section.settings.average_rating | modulo: 1 %}
+            {% assign has_half = false %}
+            {% if decimal >= 0.25 and decimal < 0.75 %}
+              {% assign has_half = true %}
+            {% elsif decimal >= 0.75 %}
+              {% assign full_stars = full_stars | plus: 1 %}
+            {% endif %}
+
+            {% for i in (1..5) %}
+              {% if i <= full_stars %}
+                <svg class="nvgd-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              {% elsif has_half and i == full_stars %}
+                <svg class="nvgd-star" viewBox="0 0 24 24">
+                  <defs>
+                    <linearGradient id="halfStar-{{ section_id }}"><stop offset="50%" stop-color="{{ section.settings.accent_color }}" /><stop offset="50%" stop-color="#F5F5F5" /></linearGradient>
+                  </defs>
+                  <path fill="url(#halfStar-{{ section_id }})" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              {% else %}
+                <svg class="nvgd-star nvgd-star--empty" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="nvgd-rating-count">{{ section.settings.total_reviews }} {{ section.settings.reviews_label }}</div>
+        </div>
+
+        <!-- Rating Bars -->
+        <div class="nvgd-rating-bars">
+          <div class="nvgd-bar-row">
+            <span class="nvgd-bar-label">5 {{ section.settings.stars_label }}</span>
+            <div class="nvgd-bar-track">
+              <div class="nvgd-bar-fill" style="width: {{ section.settings.stars_5_percent }}%"></div>
+            </div>
+            <span class="nvgd-bar-count">({{ section.settings.stars_5_count }})</span>
+          </div>
+          <div class="nvgd-bar-row">
+            <span class="nvgd-bar-label">4 {{ section.settings.stars_label }}</span>
+            <div class="nvgd-bar-track">
+              <div class="nvgd-bar-fill" style="width: {{ section.settings.stars_4_percent }}%"></div>
+            </div>
+            <span class="nvgd-bar-count">({{ section.settings.stars_4_count }})</span>
+          </div>
+          <div class="nvgd-bar-row">
+            <span class="nvgd-bar-label">3 {{ section.settings.stars_label }}</span>
+            <div class="nvgd-bar-track">
+              <div class="nvgd-bar-fill" style="width: {{ section.settings.stars_3_percent }}%"></div>
+            </div>
+            <span class="nvgd-bar-count">({{ section.settings.stars_3_count }})</span>
+          </div>
+          <div class="nvgd-bar-row">
+            <span class="nvgd-bar-label">2 {{ section.settings.stars_label }}</span>
+            <div class="nvgd-bar-track">
+              <div class="nvgd-bar-fill" style="width: {{ section.settings.stars_2_percent }}%"></div>
+            </div>
+            <span class="nvgd-bar-count">({{ section.settings.stars_2_count }})</span>
+          </div>
+          <div class="nvgd-bar-row">
+            <span class="nvgd-bar-label">1 {{ section.settings.star_label }}</span>
+            <div class="nvgd-bar-track">
+              <div class="nvgd-bar-fill" style="width: {{ section.settings.stars_1_percent }}%"></div>
+            </div>
+            <span class="nvgd-bar-count">({{ section.settings.stars_1_count }})</span>
+          </div>
+        </div>
+      </div>{% endif %}
+
+      <!-- Sort Button -->
+      <button class="nvgd-sort-btn" id="nvgd-sortBtn-{{ section_id }}">
+        {{ section.settings.sort_label }}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+    </div>
+
+    <!-- Customer Photos -->
+    {% if section.settings.show_customer_photos %}
+      <div class="nvgd-photos-section">
+        <div class="nvgd-photos-header">
+          <h2 class="nvgd-photos-title">{{ section.settings.photos_title }}</h2>
+          <a href="{{ section.settings.photos_link }}" class="nvgd-photos-link">{{ section.settings.photos_link_text }}</a>
+        </div>
+        <div class="nvgd-photos-grid">
+          {% for block in section.blocks %}
+            {% if block.type == 'review_row' and block.settings.review_image != blank %}
+              <div class="nvgd-photo-item">
+                <img
+                  src="{{ block.settings.review_image | image_url: width: 160 }}"
+                  alt="Customer photo"
+                  loading="lazy"
+                  width="160"
+                  height="{{ 160 | divided_by: block.settings.review_image.aspect_ratio | ceil }}">
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Reviews List -->
+    <div class="nvgd-reviews-list">
+      {% for block in section.blocks %}
+        {% if block.type == 'review_row' %}
+          <div class="nvgd-review-card" {{ block.shopify_attributes }}>
+            <div class="nvgd-review-layout">
+              <!-- User Info Sidebar -->
+              <div class="nvgd-review-user">
+                <div class="nvgd-user-header">
+                  {% if block.settings.user_avatar != blank %}
+                    <img
+                      src="{{ block.settings.user_avatar | image_url: width: 80 }}"
+                      alt="{{ block.settings.user_name | escape }}"
+                      class="nvgd-user-avatar"
+                      width="80"
+                      height="{{ 80 | divided_by: block.settings.user_avatar.aspect_ratio | ceil }}">
+                  {% else %}
+                    <div class="nvgd-user-avatar" style="background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666;">
+                      {{ block.settings.user_name | slice: 0 | escape }}
+                    </div>
+                  {% endif %}
+                  <div>
+                    <div class="nvgd-user-name">{{ block.settings.user_name | escape }}</div>
+                    {% if block.settings.verified_buyer %}
+                      <div class="nvgd-user-badge">{{ section.settings.verified_label }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="nvgd-user-details">
+                  {% if block.settings.detail_1_label != blank %}
+                    <div class="nvgd-user-detail">
+                      <strong>{{ block.settings.detail_1_label | escape }}</strong>
+                      {{ block.settings.detail_1_value | escape }}</div>
+                  {% endif %}
+                  {% if block.settings.detail_2_label != blank %}
+                    <div class="nvgd-user-detail">
+                      <strong>{{ block.settings.detail_2_label | escape }}</strong>
+                      {{ block.settings.detail_2_value | escape }}</div>
+                  {% endif %}
+                  {% if block.settings.detail_3_label != blank %}
+                    <div class="nvgd-user-detail">
+                      <strong>{{ block.settings.detail_3_label | escape }}</strong>
+                      {{ block.settings.detail_3_value | escape }}</div>
+                  {% endif %}
+                  {% if block.settings.detail_4_label != blank %}
+                    <div class="nvgd-user-detail">
+                      <strong>{{ block.settings.detail_4_label | escape }}</strong>
+                      {{ block.settings.detail_4_value | escape }}</div>
+                  {% endif %}
+                </div>
+                {% if block.settings.product_name != blank %}
+                  <div class="nvgd-user-product">{{ block.settings.product_name | escape }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Review Content -->
+              <div class="nvgd-review-content">
+                <div class="nvgd-review-header">
+                  <div class="nvgd-review-stars">
+                    {% for i in (1..5) %}
+                      {% if i <= block.settings.rating %}
+                        <svg class="nvgd-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                      {% else %}
+                        <svg class="nvgd-star nvgd-star--empty" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  <div class="nvgd-review-date">{{ block.settings.review_date | escape }}</div>
+                </div>
+
+                {% if block.settings.review_title != blank %}
+                  <h3 class="nvgd-review-title">{{ block.settings.review_title | escape }}</h3>
+                {% endif %}
+
+                <div class="nvgd-review-text-wrapper">
+                  <p class="nvgd-review-text nvgd-review-text--truncated" data-full-text="{{ block.settings.review_text | escape }}">
+                    {{ block.settings.review_text | escape }}
+                  </p>
+                  {% if block.settings.review_text.size > 150 %}
+                    <span class="nvgd-show-more" data-show-more="{{ section.settings.show_more_label | escape }}" data-show-less="{{ section.settings.show_less_label | escape }}">{{ section.settings.show_more_label | escape }}</span>
+                  {% endif %}
+                </div>
+
+                {% if block.settings.review_image != blank %}
+                  <div class="nvgd-review-images">
+                    <img
+                      src="{{ block.settings.review_image | image_url: width: 140 }}"
+                      alt="Review image"
+                      class="nvgd-review-image"
+                      width="140"
+                      height="{{ 140 | divided_by: block.settings.review_image.aspect_ratio | ceil }}">
+                  </div>
+                {% endif %}
+
+                {% if block.settings.show_response and block.settings.response_text != blank %}
+                  <div class="nvgd-response">
+                    <div class="nvgd-response-header">
+                      {% if block.settings.response_logo != blank %}
+                        <img
+                          src="{{ block.settings.response_logo | image_url: width: 64 }}"
+                          alt="{{ block.settings.response_name | escape }}"
+                          class="nvgd-response-logo"
+                          width="64"
+                          height="{{ 64 | divided_by: block.settings.response_logo.aspect_ratio | ceil }}">
+                      {% else %}
+                        <div class="nvgd-response-logo-placeholder">{{ block.settings.response_name | slice: 0 | escape }}</div>
+                      {% endif %}
+                      <div class="nvgd-response-name">{{ block.settings.response_name | escape }}</div>
+                    </div>
+                    <p class="nvgd-response-text">{{ block.settings.response_text | escape }}</p>
+                  </div>
+                {% endif %}
+
+                <div class="nvgd-review-footer">
+                  <div class="nvgd-helpful">
+                    <span class="nvgd-helpful-text">{{ section.settings.helpful_label }}</span>
+                    <button class="nvgd-helpful-btn">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                      </svg>
+                      {{ block.settings.helpful_count }}
+                    </button>
+                    <button class="nvgd-helpful-btn">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+                      </svg>
+                      {{ block.settings.not_helpful_count }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'review-section-custom.js' | asset_url }}" defer="defer"></script>
+
+{% stylesheet %}
+/* moved from inline style block for bundling */
+
+/* Section - Full width, has ALL padding */
+.nvgd-container-outer {
+  width: 100%;
+  padding: var(--rsc-pad);
+}
+
+@media (max-width: 749px) {
+  .nvgd-container-outer {
+    padding: var(--rsc-pad-m);
+  }
+}
+
+/* Container - max-width centered */
+.nvgd-container {
+  width: 100%;
+  margin: 0 auto;
+  max-width: var(--rsc-max);
+}
+  .nvgd-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #111111;
+  }
+
+  .nvgd-header-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nvgd-tabs {
+    display: inline-flex;
+    border: 2px solidvar(--rsc-accent);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .nvgd-tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    background: transparent;
+    color: var(--rsc-accent);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .nvgd-tab--active {
+    background-color: var(--rsc-accent);
+    color: #fff;
+  }
+
+  .nvgd-tab:not(.nvgd-tab--active):hover {
+    background-color: var(--rsc-accent-10);
+  }
+
+  .nvgd-rating-summary {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .nvgd-rating-score {
+    text-align: center;
+  }
+
+  .nvgd-rating-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .nvgd-rating-stars {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin: 4px 0;
+  }
+
+  .nvgd-star {
+    width: 18px;
+    height: 18px;
+    fill: var(--rsc-accent);
+  }
+
+  .nvgd-star--empty {
+    fill: #F5F5F5;
+  }
+
+  .nvgd-rating-count {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .nvgd-rating-bars {
+    min-width: 250px;
+  }
+
+  .nvgd-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .nvgd-bar-label {
+    font-size: 12px;
+    color: #333;
+    min-width: 55px;
+    white-space: nowrap;
+  }
+
+  .nvgd-bar-track {
+    flex: 1;
+    height: 10px;
+    background-color: #F5F5F5;
+    border-radius: 5px;
+    overflow: hidden;
+    min-width: 120px;
+  }
+
+  .nvgd-bar-fill {
+    height: 100%;
+    background-color: var(--rsc-accent);
+    border-radius: 5px;
+    transition: width 0.5s ease;
+  }
+
+  .nvgd-bar-count {
+    font-size: 12px;
+    color: #666;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .nvgd-sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .nvgd-sort-btn:hover {
+    border-color: #999;
+  }
+
+  .nvgd-sort-btn svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  .nvgd-sort-btn--open svg {
+    transform: rotate(180deg);
+  }
+
+  /* ============ PHOTOS SECTION ============ */
+  .nvgd-photos-section {
+    margin-bottom: 40px;
+  }
+
+  .nvgd-photos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .nvgd-photos-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111111;
+  }
+
+  .nvgd-photos-link {
+    font-size: 13px;
+    color: var(--rsc-accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .nvgd-photos-link:hover {
+    text-decoration: underline;
+  }
+
+  .nvgd-photos-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd #FFFFFF;
+  }
+
+  .nvgd-photos-grid::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .nvgd-photos-grid::-webkit-scrollbar-track {
+    background: #F5F5F5;
+    border-radius: 3px;
+  }
+
+  .nvgd-photos-grid::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 3px;
+  }
+
+  .nvgd-photo-item {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease
+    , box-shadow 0.2s ease;
+  }
+
+  .nvgd-photo-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .nvgd-photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ============ REVIEWS LIST ============ */
+  .nvgd-reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .nvgd-review-card {
+    background: #fff;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .nvgd-review-layout {
+    display: flex;
+    gap: 24px;
+  }
+
+  /* User Info Sidebar */
+  .nvgd-review-user {
+    min-width: 160px;
+    max-width: 160px;
+  }
+
+  .nvgd-user-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .nvgd-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .nvgd-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111111;
+  }
+
+  .nvgd-user-badge {
+    font-size: 11px;
+    color: #111111;
+    font-style: italic;
+  }
+
+  .nvgd-user-details {
+    margin-top: 12px;
+  }
+
+  .nvgd-user-detail {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
+  }
+
+  .nvgd-user-detail strong {
+    color: #333;
+  }
+
+  .nvgd-user-product {
+    font-size: 12px;
+    color: var(--rsc-accent);
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* Review Content */
+  .nvgd-review-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nvgd-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .nvgd-review-stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .nvgd-review-stars .nvgd-star {
+    width: 16px;
+    height: 16px;
+  }
+
+  .nvgd-review-date {
+    font-size: 12px;
+    color: #111111;
+  }
+
+  .nvgd-review-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111111;
+    margin-bottom: 10px;
+  }
+
+  .nvgd-review-text {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .nvgd-review-text .nvgd-show-more {
+    color: var(--rsc-accent);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .nvgd-review-text .nvgd-show-more:hover {
+    text-decoration: underline;
+  }
+
+  .nvgd-review-text--truncated {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .nvgd-review-text--expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+  }
+
+  .nvgd-review-images {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .nvgd-review-image {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .nvgd-review-image:hover {
+    transform: scale(1.05);
+  }
+
+  /* Company Response */
+  .nvgd-response {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .nvgd-response-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .nvgd-response-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .nvgd-response-logo-placeholder {
+    width: 32px;
+    height: 32px;
+    background: var(--rsc-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .nvgd-response-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--rsc-accent);
+  }
+
+  .nvgd-response-text {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  /* Review Footer */
+  .nvgd-review-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+
+  .nvgd-helpful {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .nvgd-helpful-text {
+    color: #111111;
+  }
+
+  .nvgd-helpful-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .nvgd-helpful-btn:hover {
+    background: #F5F5F5;
+  }
+
+  .nvgd-helpful-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 749px) {
+    .nvgd-header-content {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .nvgd-rating-summary {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .nvgd-rating-bars {
+      width: 100%;
+    }
+
+    .nvgd-review-layout {
+      flex-direction: column;
+    }
+
+    .nvgd-review-user {
+      max-width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 16px;
+    }
+
+    .nvgd-user-header {
+      margin-bottom: 0;
+    }
+
+    .nvgd-user-details {
+      margin-top: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .nvgd-user-detail {
+      margin-bottom: 0;
+    }
+
+    .nvgd-photo-item {
+      width: 70px;
+      height: 70px;
+    }
+  }
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Reviews",
+  "tag": "section",
+  "class": "review-section-custom",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section title",
+      "default": "Heading"
+    },
+    {
+      "type": "header",
+      "content": "Tabs"
+    },
+    {
+      "type": "text",
+      "id": "tab_reviews_label",
+      "label": "Reviews tab label",
+      "default": "Reviews"
+    },
+    {
+      "type": "text",
+      "id": "reviews_count",
+      "label": "Reviews count",
+      "default": "0"
+    },
+    {
+      "type": "text",
+      "id": "tab_questions_label",
+      "label": "Questions tab label",
+      "default": "Questions and\nAnswers"
+    },
+    {
+      "type": "text",
+      "id": "questions_count",
+      "label": "Questions count",
+      "default": "0"
+    },
+    {
+      "type": "header",
+      "content": "Rating summary"
+    },
+    {
+      "type": "range",
+      "id": "average_rating",
+      "label": "Average rating",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "total_reviews",
+      "label": "Total reviews",
+      "default": "0"
+    },
+    {
+      "type": "text",
+      "id": "reviews_label",
+      "label": "Reviews label",
+      "default": "Reviews"
+    },
+    {
+      "type": "header",
+      "content": "Rating bars"
+    },
+    {
+      "type": "text",
+      "id": "stars_label",
+      "label": "Stars label (plural)",
+      "default": "Stars"
+    },
+    {
+      "type": "text",
+      "id": "star_label",
+      "label": "Star label (singular)",
+      "default": "Star"
+    },
+    {
+      "type": "text",
+      "id": "stars_5_count",
+      "label": "5 stars count",
+      "default": "0"
+    },
+    {
+      "type": "range",
+      "id": "stars_5_percent",
+      "label": "5 stars percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "stars_4_count",
+      "label": "4 stars count",
+      "default": "0"
+    },
+    {
+      "type": "range",
+      "id": "stars_4_percent",
+      "label": "4 stars percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "stars_3_count",
+      "label": "3 stars count",
+      "default": "0"
+    },
+    {
+      "type": "range",
+      "id": "stars_3_percent",
+      "label": "3 stars percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "stars_2_count",
+      "label": "2 stars count",
+      "default": "0"
+    },
+    {
+      "type": "range",
+      "id": "stars_2_percent",
+      "label": "2 stars percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "text",
+      "id": "stars_1_count",
+      "label": "1 star count",
+      "default": "0"
+    },
+    {
+      "type": "range",
+      "id": "stars_1_percent",
+      "label": "1 star percentage",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Sort button"
+    },
+    {
+      "type": "text",
+      "id": "sort_label",
+      "label": "Sort button label",
+      "default": "Sort"
+    },
+    {
+      "type": "header",
+      "content": "Customer photos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_customer_photos",
+      "label": "Show customer photos",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "photos_title",
+      "label": "Photos title",
+      "default": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "photos_link_text",
+      "label": "View all link text",
+      "default": "Button"
+    },
+    {
+      "type": "url",
+      "id": "photos_link",
+      "label": "View all link URL"
+    },
+    {
+      "type": "header",
+      "content": "Labels"
+    },
+    {
+      "type": "text",
+      "id": "show_more_label",
+      "label": "Show more label",
+      "default": "Show More"
+    },
+    {
+      "type": "text",
+      "id": "show_less_label",
+      "label": "Show less label",
+      "default": "Show Less"
+    },
+    {
+      "type": "text",
+      "id": "verified_label",
+      "label": "Verified buyer label",
+      "default": "Verified Buyer"
+    },
+    {
+      "type": "text",
+      "id": "helpful_label",
+      "label": "Helpful label",
+      "default": "Was this review helpful?"
+    },
+    {
+      "type": "header",
+      "content": "Container"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container width",
+      "min": 500,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 900,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing",
+      "info": "Uses theme padding and page width settings"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical",
+      "label": "Vertical padding (desktop)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "label": "Horizontal padding (desktop)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical_mobile",
+      "label": "Vertical padding (mobile)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal_mobile",
+      "label": "Horizontal padding (mobile)",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 15,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review_row",
+      "name": "Review row",
+      "settings": [
+        {
+          "type": "header",
+          "content": "User info"
+        },
+        {
+          "type": "image_picker",
+          "id": "user_avatar",
+          "label": "User avatar"
+        },
+        {
+          "type": "text",
+          "id": "user_name",
+          "label": "User name",
+          "default": "Customer Name"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified_buyer",
+          "label": "Verified buyer",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "User details"
+        },
+        {
+          "type": "text",
+          "id": "detail_1_label",
+          "label": "Detail 1 label",
+          "default": "Label"
+        },
+        {
+          "type": "text",
+          "id": "detail_1_value",
+          "label": "Detail 1 value",
+          "default": "3"
+        },
+        {
+          "type": "text",
+          "id": "detail_2_label",
+          "label": "Detail 2 label",
+          "default": "Units"
+        },
+        {
+          "type": "text",
+          "id": "detail_2_value",
+          "label": "Detail 2 value",
+          "default": "1"
+        },
+        {
+          "type": "text",
+          "id": "detail_3_label",
+          "label": "Detail 3 label",
+          "default": "Home type"
+        },
+        {
+          "type": "text",
+          "id": "detail_3_value",
+          "label": "Detail 3 value",
+          "default": "Condo"
+        },
+        {
+          "type": "text",
+          "id": "detail_4_label",
+          "label": "Detail 4 label",
+          "default": "Label"
+        },
+        {
+          "type": "text",
+          "id": "detail_4_value",
+          "label": "Detail 4 value",
+          "default": "Yes"
+        },
+        {
+          "type": "text",
+          "id": "product_name",
+          "label": "Product name",
+          "default": "Heading"
+        },
+        {
+          "type": "header",
+          "content": "Review content"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "review_date",
+          "label": "Review date",
+          "default": "26.01.26"
+        },
+        {
+          "type": "text",
+          "id": "review_title",
+          "label": "Review title",
+          "default": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "review_text",
+          "label": "Review text",
+          "default": "Text"
+        },
+        {
+          "type": "image_picker",
+          "id": "review_image",
+          "label": "Review image"
+        },
+        {
+          "type": "header",
+          "content": "Company response"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_response",
+          "label": "Show company response",
+          "default": true
+        },
+        {
+          "type": "image_picker",
+          "id": "response_logo",
+          "label": "Response logo"
+        },
+        {
+          "type": "text",
+          "id": "response_name",
+          "label": "Response name",
+          "default": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "response_text",
+          "label": "Response text",
+          "default": "Text"
+        },
+        {
+          "type": "header",
+          "content": "Helpful votes"
+        },
+        {
+          "type": "number",
+          "id": "helpful_count",
+          "label": "Helpful count",
+          "default": 2
+        },
+        {
+          "type": "number",
+          "id": "not_helpful_count",
+          "label": "Not helpful count",
+          "default": 0
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

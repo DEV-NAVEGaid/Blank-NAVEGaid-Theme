@@ -1,0 +1,485 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Why Choose Section - Theme Blocks architecture.
+  Modular blocks: why-heading, why-group (nested: why-icon, why-title, why-text).
+{% endcomment %}
+
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+<div class="why-choose-section-{{ section_id }} why-choose__section{% if section.settings.section_width == 'fixed' %} why-choose--fixed{% endif %}{% if section.settings.enable_global_spacing %} why-choose--global-spacing{% endif %}"
+  style="--wc-bg: {{ section.settings.background_color }}; --wc-fixed-width: {{ section.settings.fixed_width }}px; --wc-pad-top: {{ section.settings.padding_top }}px; --wc-pad-bottom: {{ section.settings.padding_bottom }}px; --wc-pad-x: {{ section.settings.padding_x }}px; --wc-pad-top-m: {{ section.settings.padding_top_mobile }}px; --wc-pad-bottom-m: {{ section.settings.padding_bottom_mobile }}px; --wc-pad-x-m: {{ section.settings.padding_x_mobile }}px; --wc-pad-v: {{ settings.padding_vertical }}px; --wc-pad-h: {{ settings.padding_horizontal }}px; --wc-pad-v-m: {{ settings.padding_vertical_mobile }}px; --wc-pad-h-m: {{ settings.padding_horizontal_mobile }}px; --wc-align: {{ section.settings.align_items | default: 'center' }}; --wc-gap-desktop: {{ section.settings.features_gap_desktop | default: 24 }}px; --wc-heading-width: {{ section.settings.heading_width | default: 24 }}%; --wc-grid-gap: {{ section.settings.grid_gap | default: 36 }}px; --wc-grid-gap-mobile: {{ section.settings.grid_gap_mobile | default: 24 }}px;">
+  <div class="why-choose-container-{{ section_id }} why-choose__container">
+    <div class="why-choose-grid-{{ section_id }} why-choose__grid">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* moved from inline style block for bundling */
+  /* --- Section Wrapper - spacing & width --- */
+  .why-choose__section {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--wc-bg);
+    padding: var(--wc-pad-top) var(--wc-pad-x) var(--wc-pad-bottom) var(--wc-pad-x);
+  }
+
+  .why-choose--fixed {
+    max-width: var(--wc-fixed-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .why-choose--global-spacing {
+    padding: var(--wc-pad-v) var(--wc-pad-h);
+  }
+
+  /* --- Container - constrains the grid --- */
+  .why-choose__container {
+    width: 100%;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  .why-choose--global-spacing .why-choose__container {
+    max-width: var(--page-width);
+  }
+
+  /* --- Desktop Layout (>= 990px) --- */
+  /* Heading on the left, ALL feature groups in 1 horizontal row on the right (Image 2) */
+  @media screen and (min-width: 990px) {
+    .why-choose__grid {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important; /* NEVER wrap on desktop */
+      align-items: var(--wc-align) !important;
+      justify-content: space-between !important;
+      gap: var(--wc-gap-desktop) !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Left Box (Heading): First child */
+    .why-choose__grid > :first-child {
+      flex: 0 0 var(--wc-heading-width) !important;
+      max-width: var(--wc-heading-width) !important;
+      width: var(--wc-heading-width) !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      margin-right: var(--wc-grid-gap) !important;
+    }
+
+    /* Right Box items: All remaining children share the row equally */
+    .why-choose__grid > :not(:first-child) {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      width: auto !important;
+      max-width: none !important;
+      box-sizing: border-box !important;
+    }
+
+    .why-choose__grid .why-choose__group {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  /* --- Tablet Layout (750px - 989px) --- */
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .why-choose__grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 24px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .why-choose__grid > :first-child {
+      grid-column: 1 / -1 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-bottom: 8px !important;
+    }
+
+    .why-choose__grid > :not(:first-child) {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    .why-choose__grid .why-choose__group {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  /* --- Mobile Layout (< 750px) --- */
+  @media screen and (max-width: 749px) {
+    .why-choose__section {
+      padding: var(--wc-pad-top-m) var(--wc-pad-x-m) var(--wc-pad-bottom-m) var(--wc-pad-x-m);
+    }
+
+    .why-choose--global-spacing {
+      padding: var(--wc-pad-v-m) var(--wc-pad-h-m);
+    }
+
+    .why-choose__grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: var(--wc-grid-gap-mobile) !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .why-choose__grid > :first-child {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .why-choose__grid > :not(:first-child) {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    .why-choose__grid .why-choose__group {
+      width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Why choose",
+  "tag": "section",
+  "class": "why-choose-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed Width"
+        }
+      ],
+      "default": "fixed"
+    },
+    {
+      "type": "range",
+      "id": "fixed_width",
+      "min": 800,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "label": "Max width",
+      "default": 1200
+    },
+    {
+      "type": "header",
+      "content": "Grid and features layout"
+    },
+    {
+      "type": "range",
+      "id": "heading_width",
+      "min": 15,
+      "max": 35,
+      "step": 1,
+      "unit": "%",
+      "label": "Heading column width (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 10,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between heading & features",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "features_gap_desktop",
+      "min": 8,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between feature items (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between items (mobile)",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "align_items",
+      "label": "Vertical alignment",
+      "options": [
+        {
+          "value": "start",
+          "label": "Top / Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "end",
+          "label": "Bottom / End"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing",
+      "info": "Uses theme padding and page width settings"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding (mobile)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding (mobile)",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding (mobile)",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why choose",
+      "blocks": [
+        {
+          "type": "why-heading",
+          "settings": {
+            "heading": "Heading"
+          }
+        },
+        {
+          "type": "why-group",
+          "blocks": [
+            {
+              "type": "why-icon",
+              "settings": {
+                "icon": "shield"
+              }
+            },
+            {
+              "type": "why-title",
+              "settings": {
+                "title": "Heading"
+              }
+            },
+            {
+              "type": "why-text",
+              "settings": {
+                "text": "<p>Text</p>"
+              }
+            }
+          ]
+        },
+        {
+          "type": "why-group",
+          "blocks": [
+            {
+              "type": "why-icon",
+              "settings": {
+                "icon": "plant"
+              }
+            },
+            {
+              "type": "why-title",
+              "settings": {
+                "title": "Heading"
+              }
+            },
+            {
+              "type": "why-text",
+              "settings": {
+                "text": "<p>Text</p>"
+              }
+            }
+          ]
+        },
+        {
+          "type": "why-group",
+          "blocks": [
+            {
+              "type": "why-icon",
+              "settings": {
+                "icon": "cruelty-free"
+              }
+            },
+            {
+              "type": "why-title",
+              "settings": {
+                "title": "Heading"
+              }
+            },
+            {
+              "type": "why-text",
+              "settings": {
+                "text": "<p>Text</p>"
+              }
+            }
+          ]
+        },
+        {
+          "type": "why-group",
+          "blocks": [
+            {
+              "type": "why-icon",
+              "settings": {
+                "icon": "ethical"
+              }
+            },
+            {
+              "type": "why-title",
+              "settings": {
+                "title": "Heading"
+              }
+            },
+            {
+              "type": "why-text",
+              "settings": {
+                "text": "<p>Text</p>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

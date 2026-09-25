@@ -1,0 +1,19 @@
+{% comment %}
+  Renders a single navigation pill for the Household Gallery section.
+
+  Accepts:
+  - block: {Object} Section block containing location settings
+  - section_id: {String} Scoped section id used in class names
+  - is_first: {Boolean} Whether this is the first pill (receives active-pill class)
+
+  Usage:
+  {% render 'household-gallery-block-pill', block: block, section_id: section_id, is_first: forloop.first %}
+{% endcomment %}
+
+<a href="#"
+  role="button"
+  class="pill-{{ section_id }} {% if is_first %}active-pill{% endif %}"
+  data-location="{{ block.id }}"
+  {{ block.shopify_attributes }}>
+  {{ block.settings.location_name }}
+</a>

@@ -1,0 +1,343 @@
+{% comment %}
+  Renders warranty upsell options
+
+  Accepts:
+  - section_id: {String} Section ID for unique identifiers
+  - warranty_heading: {String} Heading text
+  - warranty_inclusive_label: {String} Label for the free option
+  - warranty_cost_label: {String} Label for cost display
+  - modal_title: {String} Modal heading
+  - modal_image: {Image} Modal image object
+  - modal_description: {String} Modal richtext content
+  - upsell_handle_1: {String} Product handle for free warranty
+  - upsell_handle_2: {String} Product handle for paid warranty
+  - fallback_title_1: {String} Fallback name for option 1
+  - fallback_title_2: {String} Fallback name for option 2
+  - fallback_price_2: {String} Fallback price label for option 2
+  
+  Usage:
+  {% render 'product-warranty-upsell',
+    section_id: section.id,
+    warranty_heading: block.settings.heading,
+    ...
+  %}
+{% endcomment %}
+
+{%- comment -%}
+  Warranty modal. Rendered before the trigger so the markup exists by the time the
+  wiring at the bottom of this file runs.
+{%- endcomment -%}
+<div class="nvgd-warranty-modal" id="warranty-modal" data-warranty-modal>
+  <div class="nvgd-warranty-modal__content">
+    <button type="button" class="nvgd-warranty-modal__close" data-warranty-close>✕</button>
+    <div class="nvgd-warranty-modal__body">
+      <div class="nvgd-warranty-modal__icon">
+        {%- if modal_image -%}
+          <img 
+            src="{{ modal_image | image_url: width: 500 }}"
+            alt="{{ modal_title | default: 'Warranty protection' }}"
+            width="240"
+            height="240"
+            class="nvgd-warranty-modal__image"
+          >
+        {%- else -%}
+          <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 8 L80 18 L80 45 C80 65 50 88 50 88 C50 88 20 65 20 45 L20 18 Z" fill="#111111"/>
+          </svg>
+        {%- endif -%}
+      </div>
+      <div class="nvgd-warranty-modal__info">
+        <h2 class="nvgd-warranty-modal__title">{{ modal_title | default: 'Warranty protection' }}</h2>
+        <div class="nvgd-warranty-modal__description">
+          {%- if modal_description != blank -%}
+            {{ modal_description }}
+          {%- else -%}
+            <p><strong>2-Year Warranty (Included):</strong><br>
+            Your product is automatically covered by our 2-year manufacturer's warranty.</p>
+            <p><strong>4-Year Warranty:</strong><br>
+            Extend your protection to a total of 4 years.</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- liquid
+  assign upsell_1 = all_products[upsell_handle_1]
+  assign upsell_2 = all_products[upsell_handle_2]
+  
+  assign heading_text = warranty_heading | default: 'Choose warranty protection:'
+  assign inclusive_label = warranty_inclusive_label | default: 'Included'
+  assign cost_label = warranty_cost_label | default: 'Additional warranty cost:'
+  assign name_1 = fallback_title_1 | default: '2 Years'
+  assign name_2 = fallback_title_2 | default: '4 Years'
+  assign price_2 = fallback_price_2 | default: '120 €'
+-%}
+
+<div class="nvgd-warranty-wrapper" id="warranty-upsell-{{ section_id }}" data-warranty-wrapper>
+  <div class="nvgd-warranty-header">
+    <h3 class="nvgd-warranty-title">{{ heading_text }}</h3>
+    <button 
+      type="button" 
+      class="nvgd-warranty-help-btn"
+      aria-label="Hilfe"
+      data-warranty-open
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" fill="#F5F5F5"/>
+        <text x="12" y="17" font-size="16" font-weight="bold" fill="white" text-anchor="middle">?</text>
+      </svg>
+    </button>
+  </div>
+
+  <div class="nvgd-warranty-cards">
+    {%- # Upsell 1 - Inclusive Option -%}
+    <label class="nvgd-warranty-card nvgd-warranty-card--selected">
+      <input 
+        type="radio" 
+        name="warranty_option" 
+        value="none"
+        class="nvgd-warranty-input"
+        data-warranty-price="0"
+        data-warranty-title="{{ upsell_1.title | default: name_1 }}"        
+        checked
+      >
+      
+      <div class="nvgd-warranty-content">
+        <div class="nvgd-warranty-badge">
+          {%- if upsell_1 and upsell_1.featured_image -%}
+            <img 
+              src="{{ upsell_1.featured_image | image_url: width: 260 }}"
+              alt="{{ upsell_1.featured_image.alt | default: name_1 }}"
+              width="130"
+              height="130"
+              loading="lazy"
+              class="nvgd-warranty-image"
+            >
+          {%- else -%}
+            <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 8 L80 18 L80 45 C80 65 50 88 50 88 C50 88 20 65 20 45 L20 18 Z" fill="#111111"/>
+            </svg>
+          {%- endif -%}
+        </div>
+        
+        <div class="nvgd-warranty-text">
+          <span class="nvgd-warranty-name">{{ upsell_1.title | default: name_1 }}</span>
+          <span class="nvgd-warranty-price">{{ inclusive_label }}</span>
+        </div>
+      </div>
+    </label>
+
+    {%- # Upsell 2 - Paid Option -%}
+    {%- if upsell_2 -%}
+      <label class="nvgd-warranty-card">
+        <input 
+          type="radio" 
+          name="warranty_option" 
+          value="{{ upsell_2.variants.first.id }}"
+          class="nvgd-warranty-input"
+          data-warranty-title="{{ upsell_2.title }}"
+          data-warranty-price="{{ upsell_2.variants.first.price }}"
+          data-warranty-product="{{ upsell_2.handle }}"
+        >
+        
+        <div class="nvgd-warranty-content">
+          <div class="nvgd-warranty-badge">
+            {%- if upsell_2.featured_image -%}
+              <img 
+                src="{{ upsell_2.featured_image | image_url: width: 260 }}"
+                alt="{{ upsell_2.featured_image.alt | default: name_2 }}"
+                width="130"
+                height="130"
+                loading="lazy"
+                class="nvgd-warranty-image"
+              >
+            {%- else -%}
+              <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 8 L80 18 L80 45 C80 65 50 88 50 88 C50 88 20 65 20 45 L20 18 Z" fill="#111111"/>
+              </svg>
+            {%- endif -%}
+          </div>
+          
+          <div class="nvgd-warranty-text">
+            <span class="nvgd-warranty-name">{{ upsell_2.title }}</span>
+            <span class="nvgd-warranty-price">{{ upsell_2.price | money }}</span>
+          </div>
+        </div>
+      </label>
+    {%- else -%}
+      <label class="nvgd-warranty-card">
+        <input 
+          type="radio" 
+          name="warranty_option" 
+          value="custom-4-year"
+          class="nvgd-warranty-input"
+          data-warranty-title="{{ name_2 }}"
+          data-warranty-price="12000"
+        >
+        
+        <div class="nvgd-warranty-content">
+          <div class="nvgd-warranty-badge">
+            <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 8 L80 18 L80 45 C80 65 50 88 50 88 C50 88 20 65 20 45 L20 18 Z" fill="#111111"/>
+            </svg>
+          </div>
+          
+          <div class="nvgd-warranty-text">
+            <span class="nvgd-warranty-name">{{ name_2 }}</span>
+            <span class="nvgd-warranty-price">{{ price_2 }}</span>
+          </div>
+        </div>
+      </label>
+    {%- endif -%}
+  </div>
+
+  <input type="hidden" name="properties[_warranty]" id="warranty-selection-{{ section_id }}" value="{{ upsell_1.title | default: name_1 }}">
+  
+  <div class="nvgd-warranty-total" id="warranty-total-{{ section_id }}">
+    <span class="nvgd-warranty-total-label">{{ cost_label }}</span>
+    <span class="nvgd-warranty-total-price" data-warranty-extra="0">0 €</span>
+  </div>
+</div>
+
+{% stylesheet %}
+  .nvgd-warranty-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .nvgd-warranty-modal.active {
+    display: flex;
+  }
+  
+  .nvgd-warranty-modal__content {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    max-width: 860px;
+    width: 92%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  .nvgd-warranty-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+    z-index: 10;
+  }
+  
+  .nvgd-warranty-modal__close:hover {
+    color: #000;
+  }
+  
+  .nvgd-warranty-modal__body {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .nvgd-warranty-modal__icon {
+    flex-shrink: 0;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    min-width: 280px;
+  }
+
+  .nvgd-warranty-modal__image {
+    display: block;
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+  }
+  
+  .nvgd-warranty-modal__info {
+    flex: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+    max-height: 85vh;
+  }
+  
+  .nvgd-warranty-modal__title {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    padding-right: 2rem;
+  }
+  
+  .nvgd-warranty-modal__description {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #444;
+  }
+  
+  .nvgd-warranty-modal__description p {
+    margin: 0 0 1rem 0;
+  }
+  
+  .nvgd-warranty-modal__description ul {
+    margin: 0.5rem 0 1rem 1.5rem;
+    padding: 0;
+  }
+  
+  .nvgd-warranty-modal__description li {
+    margin-bottom: 0.5rem;
+  }
+
+  .nvgd-warranty-image {
+    display: block;
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+  }
+  
+  @media (max-width: 750px) {
+    .nvgd-warranty-modal__body {
+      flex-direction: column;
+    }
+    
+    .nvgd-warranty-modal__icon {
+      padding: 2rem;
+      min-width: unset;
+    }
+    
+    .nvgd-warranty-modal__icon svg {
+      width: 80px;
+      height: 80px;
+    }
+
+    .nvgd-warranty-modal__image {
+      width: 140px;
+      height: 140px;
+    }
+    
+    .nvgd-warranty-modal__info {
+      padding: 1.5rem;
+    }
+    
+    .nvgd-warranty-modal__title {
+      font-size: 22px;
+    }
+  }
+{% endstylesheet %}
+
+<script src="{{ 'product-warranty-upsell.js' | asset_url }}" defer="defer"></script>

@@ -1,0 +1,459 @@
+{% comment %}
+  Snippet: product-media-gallery.liquid
+  Usage: {% render 'product-media-gallery', product: product %}
+{% endcomment %}
+
+{% assign product_images = product.images %}
+
+<div class="nvgd-custom-media-gallery-wrapper">
+  <!-- Thumbnail sidebar -->
+  <div class="nvgd-media-thumbnail">
+    <div class="nvgd-thumbnail-sticky-wrapper">
+      <ul>
+        {% for image in product_images %}
+          <li class="nvgd-thumbnail-item {% if forloop.first %}active{% endif %}" data-index="{{ forloop.index0 }}">
+            <img
+              src="{{ image | image_url: width: 100 }}"
+              alt="{{ image.alt | escape }}"
+              loading="lazy"
+              width="100"
+              height="{{ 100 | divided_by: image.aspect_ratio | ceil }}"
+            >
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Main gallery container -->
+  <div class="nvgd-main-gallery-container">
+    {% for image in product_images %}
+        <div class="nvgd-media-image" data-media-index="{{ forloop.index0 }}" data-image-id="{{ image.id }}">
+        <img 
+          src="{{ image | image_url: width: 1200 }}" 
+          srcset="
+            {{ image | image_url: width: 600 }} 600w,
+            {{ image | image_url: width: 900 }} 900w,
+            {{ image | image_url: width: 1200 }} 1200w,
+            {{ image | image_url: width: 1800 }} 1800w
+          "
+          sizes="(max-width: 768px) 100vw, 50vw"
+          alt="{{ image.alt | escape }}"
+          loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+          width="1200"
+          height="{{ 1200 | divided_by: image.aspect_ratio | ceil }}"
+          data-zoom-src="{{ image | image_url: width: 2400 }}"
+        >
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Zoom Modal with Swipeable Slider -->
+<div class="nvgd-zoom-modal" id="nvgdZoomModal">
+  <div class="nvgd-zoom-overlay"></div>
+  <button class="nvgd-zoom-close" aria-label="Close zoom">&times;</button>
+  <button class="nvgd-zoom-prev" aria-label="Previous image">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+  <button class="nvgd-zoom-next" aria-label="Next image">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+  
+  <!-- Swipeable Slider Container -->
+  <div class="nvgd-zoom-slider-wrapper">
+    <div class="nvgd-zoom-slider" id="nvgdZoomSlider">
+      {% for image in product_images %}
+        <div class="nvgd-zoom-slide">
+          <img
+            src="{{ image | image_url: width: 2400 }}"
+            alt="{{ image.alt | escape }}"
+            data-index="{{ forloop.index0 }}"
+            width="2400"
+            height="{{ 2400 | divided_by: image.aspect_ratio | ceil }}"
+          >
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <div class="nvgd-zoom-counter">
+    <span id="nvgdZoomCurrent">1</span> / <span id="nvgdZoomTotal">{{ product_images.size }}</span>
+  </div>
+</div>
+
+<script src="{{ 'product-media-gallery-custom.js' | asset_url }}" defer="defer"></script>
+{% stylesheet %}
+.nvgd-custom-media-gallery-wrapper {
+  max-width: 1200px;
+  display: flex;
+  gap: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Sticky Thumbnail Sidebar */
+.nvgd-media-thumbnail {
+  flex-shrink: 0;
+  width: 80px;
+  position: relative;
+}
+
+.nvgd-thumbnail-sticky-wrapper {
+  position: relative;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.nvgd-thumbnail-sticky-wrapper.is-sticky {
+  position: fixed;
+  top: 20px;
+  width: 80px;
+  max-height: calc(100vh - 40px);
+}
+
+.nvgd-thumbnail-sticky-wrapper.is-bottom {
+  position: absolute;
+  bottom: 0;
+  top: auto;
+}
+
+.nvgd-thumbnail-sticky-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nvgd-thumbnail-sticky-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nvgd-thumbnail-sticky-wrapper::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.nvgd-media-thumbnail ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nvgd-media-thumbnail li {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nvgd-media-thumbnail li:hover {
+  opacity: 0.7;
+}
+
+.nvgd-media-thumbnail li img {
+  border: 2px solid #E5E5E5;
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 1;
+  transition: border-color 0.2s ease;
+}
+
+.nvgd-media-thumbnail li.active img {
+  border-color: #333;
+}
+
+.nvgd-main-gallery-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Pattern: full, full, half-half, repeat */
+.nvgd-media-image:nth-child(6n+1),
+.nvgd-media-image:nth-child(6n+2) {
+  grid-column: 1 / -1;
+}
+
+.nvgd-media-image:nth-child(6n+3),
+.nvgd-media-image:nth-child(6n+4) {
+  grid-column: span 1;
+}
+
+.nvgd-media-image:nth-child(6n+5),
+.nvgd-media-image:nth-child(6n) {
+  grid-column: 1 / -1;
+}
+
+.nvgd-media-image {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: zoom-in;
+  position: relative;
+}
+
+.nvgd-media-image img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.nvgd-media-image:hover img {
+  transform: scale(1.02);
+}
+
+/* Zoom Modal Styles */
+.nvgd-zoom-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.nvgd-zoom-modal.active {
+  display: flex;
+  background: rgba(198, 198, 198, 0.81);
+}
+
+.nvgd-zoom-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+}
+
+/* Swipeable Slider Wrapper */
+.nvgd-zoom-slider-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.nvgd-zoom-slider {
+  display: flex;
+  height: 100%;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.nvgd-zoom-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.nvgd-zoom-slide img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.3s ease;
+  cursor: zoom-in;
+  pointer-events: auto;
+}
+
+/* Zoomed-in state */
+.nvgd-zoom-slide img.is-zoomed {
+  transform: scale(1.5);
+  cursor: zoom-out;
+}
+
+.nvgd-zoom-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #000;
+}
+
+.nvgd-zoom-close:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+.nvgd-zoom-prev,
+.nvgd-zoom-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #000;
+}
+
+.nvgd-zoom-prev:hover,
+.nvgd-zoom-next:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nvgd-zoom-prev {
+  left: 20px;
+}
+
+.nvgd-zoom-next {
+  right: 20px;
+}
+
+.nvgd-zoom-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .nvgd-custom-media-gallery-wrapper {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .nvgd-media-thumbnail {
+    display: none;
+  }
+
+  .nvgd-media-image img {
+    width: 100%;
+    max-width: 100%;
+    height: 300px;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .nvgd-main-gallery-container {
+    order: 1;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 10px;
+    position: relative;
+  }
+  
+  .nvgd-main-gallery-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .nvgd-media-image {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    border-radius: 10px;
+  }
+  
+  .nvgd-media-image:nth-child(6n+1),
+  .nvgd-media-image:nth-child(6n+2),
+  .nvgd-media-image:nth-child(6n+3),
+  .nvgd-media-image:nth-child(6n+4),
+  .nvgd-media-image:nth-child(6n+5),
+  .nvgd-media-image:nth-child(6n) {
+    grid-column: 1;
+  }
+  
+  .nvgd-zoom-prev,
+  .nvgd-zoom-next {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nvgd-zoom-close {
+    width: 36px;
+    height: 36px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .nvgd-zoom-slide img {
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+}
+
+/* Slider dots for mobile */
+.nvgd-slider-dots {
+  display: none;
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 8px;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .nvgd-slider-dots {
+    display: flex;
+  }
+}
+
+.nvgd-slider-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.nvgd-slider-dot.active {
+  background: #fff;
+  width: 24px;
+  border-radius: 4px;
+}
+{% endstylesheet %}

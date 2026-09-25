@@ -1,0 +1,991 @@
+{% render 'section-corners', section: section %}
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+{% assign img_class = 'ts-video-img-' | append: section_id | append: ' nvgd-ts-video-img' %}
+
+<section
+  class="ts-section-{{ section_id }} nvgd-testimonial nvgd-section-surface"
+  data-section-id="{{ section.id }}"
+  data-slide-gap="{{ section.settings.slide_gap | default: 20 }}"
+  data-popup-shop-text="{{ section.settings.popup_shop_text | default: 'Shop' | escape }}"
+  data-popup-shop-url="{{ section.settings.popup_shop_url | default: '' }}"
+  style="--ts-bg: {{ section.settings.bg_color }};{% if section.settings.enable_global_spacing %} --ts-pad-top: {{ settings.padding_vertical }}px; --ts-pad-bottom: {{ settings.padding_vertical }}px; --ts-pad-left: {{ settings.padding_horizontal }}px; --ts-pad-right: {{ settings.padding_horizontal }}px;{% else %} --ts-pad-top: {{ section.settings.padding_top }}px; --ts-pad-bottom: {{ section.settings.padding_bottom }}px; --ts-pad-left: {{ section.settings.padding_horizontal }}px; --ts-pad-right: {{ section.settings.padding_horizontal }}px;{% endif %} --ts-pad-m-top: {{ settings.padding_vertical_mobile | default: 36 }}px; --ts-pad-m-bottom: {{ settings.padding_vertical_mobile | default: 36 }}px; --ts-pad-m-left: {{ settings.padding_horizontal_mobile | default: 20 }}px; --ts-pad-m-right: {{ settings.padding_horizontal_mobile | default: 20 }}px; --ts-container-width: {{ section.settings.container_width | default: 1600 }}px; --ts-star-color: {{ section.settings.star_color }}; --ts-reviews-size: {{ section.settings.reviews_text_size }}px; --ts-reviews-weight: {{ section.settings.reviews_text_weight }}; --ts-heading-size: {{ section.settings.heading_size }}px; --ts-heading-size-m: {{ section.settings.heading_size_mobile | default: 28 }}px; --ts-heading-weight: {{ section.settings.heading_weight }}; --ts-heading-style: {{ section.settings.heading_style | default: 'normal' }};{% if section.settings.type_preset == 'custom' %} --ts-heading-font: {{ section.settings.font }};{% endif %} --ts-heading-color: {{ section.settings.heading_color }}; --ts-btn-bg: {{ section.settings.btn_bg_color }}; --ts-btn-text: {{ section.settings.btn_text_color }};"
+>
+  <div class="ts-container-{{ section_id }} nvgd-ts-container{% if section.settings.layout_reverse %} nvgd-ts--reverse{% endif %}">
+
+    <!-- Text Content -->
+    <div class="ts-content-{{ section_id }} nvgd-ts-content">
+      {% if section.settings.show_stars %}
+        <div class="ts-stars-{{ section_id }} nvgd-ts-stars">
+          {% for i in (1..5) %}
+            <svg class="ts-star-icon-{{ section_id }} nvgd-ts-star-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+          {% endfor %}
+          {% if section.settings.reviews_text != blank %}
+            <span class="ts-reviews-text-{{ section_id }} nvgd-ts-reviews-text">{{ section.settings.reviews_text }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <h2 class="ts-heading-{{ section_id }} nvgd-ts-heading text-block {{ section.settings.type_preset }}{% if section.settings.type_preset == 'custom' %} nvgd-ts-heading--custom{% endif %}">{{ section.settings.heading | newline_to_br }}</h2>
+
+      {% if section.settings.btn_text != blank %}
+        <a href="{{ section.settings.btn_link }}" class="ts-button-{{ section_id }} nvgd-ts-button">
+          {{ section.settings.btn_text }}
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Carousel -->
+    <div class="ts-slider-wrapper-{{ section_id }} nvgd-ts-slider-wrapper" style="--ts-visible-d: {{ section.settings.slides_visible | default: 3 }}; --ts-gap-d: {{ section.settings.slide_gap | default: 20 }}px;">
+      <button type="button" class="ts-arrow-{{ section_id }} nvgd-ts-arrow ts-prev-{{ section_id }} nvgd-ts-prev" aria-label="Previous">
+        <svg class="ts-arrow-icon-{{ section_id }} nvgd-ts-arrow-icon" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg>
+      </button>
+
+      <div class="ts-track-window-{{ section_id }} nvgd-ts-track-window">
+        <div class="ts-track-{{ section_id }} nvgd-ts-track" id="track-{{ section_id }}">
+          {% for block in section.blocks %}
+            {% render 'testimonial-slider-block-video-card'
+              , block: block
+              , section_id: section_id
+              , img_class: img_class
+              , card_index: forloop.index0 %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="button" class="ts-arrow-{{ section_id }} nvgd-ts-arrow ts-next-{{ section_id }} nvgd-ts-next" aria-label="Next">
+        <svg class="ts-arrow-icon-{{ section_id }} nvgd-ts-arrow-icon" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script src="{{ 'testimonial-slider.js' | asset_url }}" defer="defer"></script>
+
+{% stylesheet %}
+/* moved from inline style block for bundling */
+
+/* --- Base Variables & Layout --- */
+.nvgd-testimonial {
+  background-color: var(--ts-bg);
+  padding: var(--ts-pad-top) var(--ts-pad-right) var(--ts-pad-bottom) var(--ts-pad-left);
+  overflow: hidden;
+  overflow-x: clip;
+}
+
+.nvgd-ts-container {
+  max-width: var(--ts-container-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.nvgd-ts--reverse {
+  flex-direction: row-reverse;
+}
+
+/* --- Text Content Side --- */
+.nvgd-testimonial .nvgd-ts-content {
+  flex: 0 0 32%;
+  max-width: 32%;
+  min-width: 260px;
+}
+
+.nvgd-ts-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.nvgd-ts-star-icon {
+  width: 18px;
+  height: 18px;
+  fill: var(--ts-star-color);
+}
+
+.nvgd-testimonial .nvgd-ts-reviews-text {
+  font-size: var(--ts-reviews-size);
+  font-weight: var(--ts-reviews-weight);
+  color: #555;
+  margin-left: 4px;
+}
+
+.nvgd-testimonial .nvgd-ts-heading {
+  font-size: clamp(var(--ts-heading-size-m), 5vw, var(--ts-heading-size));
+  font-weight: var(--ts-heading-weight);
+  font-style: var(--ts-heading-style);
+  line-height: 1.1;
+  color: var(--ts-heading-color);
+  margin: 0 0 24px;
+}
+
+.nvgd-ts-heading--custom {
+  font-family: var(--ts-heading-font);
+}
+
+.nvgd-ts-button {
+  display: inline-block;
+  background-color: var(--ts-btn-bg);
+  color: var(--ts-btn-text);
+  padding: 14px 32px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.nvgd-ts-button:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+/* --- Carousel Wrapper --- */
+.nvgd-ts-slider-wrapper {
+  --ts-visible: var(--ts-visible-d);
+  --ts-gap: var(--ts-gap-d);
+  --ts-slide-width: calc((100cqw - (var(--ts-gap) * (var(--ts-visible) - 1))) / var(--ts-visible));
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  position: relative;
+}
+
+/* Navigation Arrows */
+.nvgd-ts-arrow {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5E5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 2;
+  padding: 0;
+  margin-bottom: 28px;
+}
+.nvgd-ts-arrow:hover {
+  background-color: #FFFFFF;
+  transform: scale(1.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.nvgd-ts-arrow-icon {
+  width: 14px;
+  height: 14px;
+  fill: #111111;
+  pointer-events: none;
+}
+
+/* Track Window */
+.nvgd-ts-track-window {
+  flex: 1;
+  overflow: hidden;
+  padding: 12px 0 24px;
+  margin: -12px 0 -24px;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+/* Moving Strip */
+.nvgd-ts-track {
+  display: flex;
+  gap: var(--ts-gap);
+  will-change: transform;
+  width: max-content;
+}
+
+/* Individual Slide (3 equal-sized items visible on desktop) */
+.nvgd-ts-slide {
+  flex: 0 0 var(--ts-slide-width);
+  width: var(--ts-slide-width);
+  max-width: var(--ts-slide-width);
+  min-width: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Video Thumbnail Box */
+.nvgd-ts-video-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #F5F5F5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: inherit;
+  cursor: default;
+  font: inherit;
+  text-align: inherit;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+.nvgd-ts-video-box[data-video-url] {
+  cursor: pointer;
+}
+.nvgd-ts-video-box[data-video-url]:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+.nvgd-ts-video-box[data-video-url]:focus-visible {
+  outline: 3px solid var(--ts-star-color);
+  outline-offset: 3px;
+}
+
+.nvgd-ts-video-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.nvgd-ts-video-box[data-video-url]:hover .nvgd-ts-video-img {
+  transform: scale(1.05);
+}
+
+.nvgd-ts-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #F5F5F5;
+}
+
+/* Play Button */
+.nvgd-ts-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 54px;
+  height: 54px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  pointer-events: none;
+}
+.nvgd-ts-video-box[data-video-url]:hover .nvgd-ts-play-btn {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: rgba(0, 0, 0, 0.55);
+}
+.nvgd-ts-play-icon {
+  width: 20px;
+  height: 20px;
+  fill: #FFFFFF;
+  margin-left: 2px;
+}
+
+/* Overlay Text */
+.nvgd-ts-overlay-text {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  text-align: center;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* Title Below Card */
+.nvgd-testimonial .nvgd-ts-slide-title {
+  text-align: center;
+  margin-top: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ts-heading-color);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Responsive --- */
+@media screen and (max-width: 1024px) {
+  .nvgd-ts-slider-wrapper {
+    --ts-visible: 2;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .nvgd-testimonial {
+    padding: var(--ts-pad-m-top) var(--ts-pad-m-right) var(--ts-pad-m-bottom) var(--ts-pad-m-left);
+  }
+  .nvgd-ts-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .nvgd-testimonial .nvgd-ts-content {
+    flex: 0 0 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+  .nvgd-ts-stars {
+    justify-content: center;
+  }
+  .nvgd-ts-slider-wrapper {
+    width: 100%;
+    --ts-visible: 1.2;
+    padding: 0;
+  }
+  .nvgd-ts-arrow {
+    display: none;
+  }
+}
+{% endstylesheet %}
+
+
+
+{% schema %}
+{
+  "name": "Testimonial video slider",
+  "tag": "section",
+  "class": "testimonial-slider-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "Preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "Default"
+        },
+        {
+          "value": "paragraph",
+          "label": "Paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "rte",
+      "info": "Edit presets in [theme settings](/editor?context=theme&category=typography)"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "Font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "Body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "Size",
+      "options": [
+        {
+          "value": "",
+          "label": "Default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "Line height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "Case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Default"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "Wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "Pretty"
+        },
+        {
+          "value": "balance",
+          "label": "Balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "None"
+        }
+      ],
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 24,
+      "max": 56,
+      "step": 2,
+      "default": 42,
+      "label": "Heading size",
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 20,
+      "max": 48,
+      "step": 2,
+      "default": 28,
+      "label": "Heading size (mobile)",
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "300"
+        },
+        {
+          "value": "400",
+          "label": "400"
+        },
+        {
+          "value": "500",
+          "label": "500"
+        },
+        {
+          "value": "600",
+          "label": "600"
+        },
+        {
+          "value": "700",
+          "label": "700"
+        },
+        {
+          "value": "800",
+          "label": "800"
+        },
+        {
+          "value": "900",
+          "label": "900"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading style",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "italic",
+          "label": "Italic"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Reviews badge"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_stars",
+      "label": "Show star rating",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "reviews_text",
+      "label": "Reviews text",
+      "default": "Text"
+    },
+    {
+      "type": "range",
+      "id": "reviews_text_size",
+      "min": 10,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Rating count font size",
+      "default": 13
+    },
+    {
+      "type": "select",
+      "id": "reviews_text_weight",
+      "label": "Rating count font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "300"
+        },
+        {
+          "value": "400",
+          "label": "400"
+        },
+        {
+          "value": "500",
+          "label": "500"
+        },
+        {
+          "value": "600",
+          "label": "600"
+        },
+        {
+          "value": "700",
+          "label": "700"
+        },
+        {
+          "value": "800",
+          "label": "800"
+        },
+        {
+          "value": "900",
+          "label": "900"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "Button text",
+      "default": "Text"
+    },
+    {
+      "type": "url",
+      "id": "btn_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "btn_bg_color",
+      "label": "Button color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "btn_text_color",
+      "label": "Button text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Carousel"
+    },
+    {
+      "type": "range",
+      "id": "slides_visible",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "label": "Visible slides (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "min": 10,
+      "max": 30,
+      "default": 20,
+      "label": "Gap between slides",
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Video popup"
+    },
+    {
+      "type": "paragraph",
+      "content": "Configure the shop button inside the TikTok-style video popup."
+    },
+    {
+      "type": "text",
+      "id": "popup_shop_text",
+      "label": "Shop button text",
+      "default": "Text"
+    },
+    {
+      "type": "url",
+      "id": "popup_shop_url",
+      "label": "Shop button URL",
+      "info": "Leave empty to scroll to add-to-cart form instead"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 900,
+      "max": 1600,
+      "step": 50,
+      "default": 1200,
+      "label": "Container width",
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "layout_reverse",
+      "label": "Flip layout (carousel on left)",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 10,
+      "max": 100,
+      "default": 20,
+      "step": 1,
+      "label": "Padding top",
+      "unit": "px",
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 10,
+      "max": 100,
+      "default": 20,
+      "step": 1,
+      "label": "Padding bottom",
+      "unit": "px",
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "min": 10,
+      "max": 100,
+      "default": 20,
+      "step": 1,
+      "label": "Padding horizontal (left and right)",
+      "unit": "px",
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video_card",
+      "name": "Video card",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Media source"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Shopify-hosted video",
+          "info": "Preferred when both video sources are set"
+        },
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Direct video URL",
+          "info": "Used when no Shopify-hosted video is selected. Paste a direct MP4 or WebM URL."
+        },
+        {
+          "type": "image_picker",
+          "id": "thumbnail_image",
+          "label": "Thumbnail image",
+          "info": "Optional. Shopify-hosted videos use their preview image by default."
+        },
+        {
+          "type": "header",
+          "content": "Card content"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "overlay_text",
+          "label": "Overlay text (optional)",
+          "info": "Shows inside the thumbnail"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonial video slider",
+      "blocks": [
+        {
+          "type": "video_card",
+          "settings": {
+            "title": "Heading"
+          }
+        },
+        {
+          "type": "video_card",
+          "settings": {
+            "title": "Heading",
+            "overlay_text": "Text"
+          }
+        },
+        {
+          "type": "video_card",
+          "settings": {
+            "title": "Heading"
+          }
+        },
+        {
+          "type": "video_card",
+          "settings": {
+            "title": "Heading"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

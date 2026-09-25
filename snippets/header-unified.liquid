@@ -1,0 +1,1749 @@
+{%- comment -%}
+  UNIFIED HEADER (snippet)
+  Rendered via: {% render 'header-unified', section: section, menu_handle: section.settings.menu %}
+  Desktop: hover-based mega menu dropdowns with image grid + sidebar (original header-custom-second)
+  Mobile: card-based drawer pulling from the SAME menu linklist
+  
+  Now respects section.settings.logo_position:
+    - top-left: logo top-left, nav below left-aligned
+    - top-center: logo top-center, nav below centered
+    - middle-left: logo left, nav center, icons right (original)
+    - middle-center: nav left, logo center, icons right
+{%- endcomment -%}
+
+{%- assign main_menu = linklists[menu_handle] -%}
+{%- assign logo_pos = section.settings.logo_position -%}
+{%- assign mobile_logo_pos = section.settings.mobile_logo_position | default: 'center' -%}
+
+{% stylesheet %}
+/* header-unified: static header CSS (moved from inline <style> blocks for bundling/caching) */
+@media (max-width: 1024px) {
+  /* Logo LEFT: natural size, no centering flex */
+  .nvgd-mobile-logo--left .nvgd-header-container .nvgd-logo-link.nvgd-inline-element {
+    flex: 0 1 auto !important;
+    justify-content: flex-start !important;
+    padding-left: 8px;
+  }
+  .nvgd-mobile-logo--left .nvgd-header-container .header__icons.nvgd-inline-element {
+    margin-left: auto !important;
+  }
+  /* Logo CENTER: expand to fill space, center content */
+  .nvgd-mobile-logo--center .nvgd-header-container .nvgd-logo-link.nvgd-inline-element {
+    flex: 1 1 0% !important;
+    justify-content: center !important;
+  }
+  /* Override Dawn base.css text-align: left on heading link */
+  .nvgd-mobile-logo--left .header__heading-link,
+  .nvgd-mobile-logo--left .header__heading {
+    text-align: left !important;
+  }
+  .nvgd-mobile-logo--center .header__heading-link,
+  .nvgd-mobile-logo--center .header__heading {
+    text-align: center !important;
+  }
+  /* Vertical centering for logo */
+  .nvgd-header .nvgd-logo-link.nvgd-inline-element {
+    display: flex !important;
+    align-items: center !important;
+  }
+  .nvgd-header .header__heading-logo-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+  }
+  .nvgd-mobile-logo--left .nvgd-header .header__heading-logo-wrapper {
+    justify-content: flex-start !important;
+  }
+}
+/* Fix logo wrapper on all screen sizes */
+  .nvgd-header .nvgd-logo-link {
+    display: flex;
+    align-items: center;
+  }
+  .nvgd-header .header__heading-logo-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    width: auto !important;
+  }
+
+  /* Top-row layouts: logo centering in top row */
+  .nvgd-header--top-center .nvgd-header-top-row .nvgd-logo-link {
+    justify-content: center;
+  }
+  .nvgd-header--top-left .nvgd-header-top-row .nvgd-logo-link {
+    justify-content: flex-start;
+  }
+
+  /* Middle-center: logo absolutely centered */
+  .nvgd-header--middle-center .nvgd-logo-link.nvgd-inline-element {
+    justify-content: center;
+  }
+  .nvgd-header--middle-center .header__heading-logo-wrapper {
+    justify-content: center !important;
+  }
+
+  /* Middle-left: logo left-aligned */
+  .nvgd-header--middle-left .nvgd-logo-link.nvgd-inline-element {
+    justify-content: flex-start;
+  }
+/* DESKTOP HEADER */
+/* =============================================
+   DESKTOP HEADER
+============================================= */
+.nvgd-header {
+    background: white;
+    border-bottom: 1px solid #E5E5E5;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* --- MIDDLE-LEFT (default) & MIDDLE-CENTER: single row --- */
+.nvgd-header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+}
+
+/* --- TOP-LEFT & TOP-CENTER: two-row stacked layout --- */
+.nvgd-header--top-left .nvgd-header-container,
+.nvgd-header--top-center .nvgd-header-container {
+    flex-wrap: wrap;
+    height: auto;
+    padding-top: 12px;
+    padding-bottom: 0;
+}
+
+.nvgd-header--top-left .nvgd-header-top-row,
+.nvgd-header--top-center .nvgd-header-top-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 8px;
+}
+
+.nvgd-header--top-left .nvgd-header-top-row {
+    justify-content: space-between;
+}
+
+.nvgd-header--top-center .nvgd-header-top-row {
+    justify-content: center;
+    position: relative;
+}
+
+/* Compatibility for header markup already present during an editor re-render. */
+.nvgd-header--top-center .nvgd-header-top-row .header__icons {
+    display: flex;
+}
+
+.nvgd-header--top-left .nvgd-header-nav-row,
+.nvgd-header--top-center .nvgd-header-nav-row {
+    display: flex;
+    width: 100%;
+    padding-bottom: 8px;
+}
+
+.nvgd-header--top-left .nvgd-header-nav-row {
+    justify-content: flex-start;
+}
+
+.nvgd-header--top-center .nvgd-header-nav-row {
+    justify-content: center;
+}
+
+/* --- MIDDLE-CENTER: reorder via flexbox order --- */
+.nvgd-header--middle-center .nvgd-header-container {
+    justify-content: space-between;
+}
+
+.nvgd-header--middle-center .nvgd-nav {
+    order: 1;
+    flex: 1;
+    justify-content: flex-start;
+}
+
+.nvgd-header--middle-center .nvgd-logo-link {
+    order: 2;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nvgd-header--middle-center .nvgd-header-container {
+    position: relative;
+}
+
+.nvgd-header--middle-center .header__icons {
+    order: 3;
+}
+
+/* Hide nav-row and top-row in middle layouts (they use inline elements) */
+.nvgd-header--middle-left .nvgd-header-top-row,
+.nvgd-header--middle-left .nvgd-header-nav-row,
+.nvgd-header--middle-center .nvgd-header-top-row,
+.nvgd-header--middle-center .nvgd-header-nav-row {
+    display: none;
+}
+
+/* Hide inline logo/nav in top layouts; the single icon group is positioned above. */
+.nvgd-header--top-left .nvgd-logo-link.nvgd-inline-element,
+.nvgd-header--top-left .nvgd-nav.nvgd-inline-element,
+.nvgd-header--top-center .nvgd-logo-link.nvgd-inline-element,
+.nvgd-header--top-center .nvgd-nav.nvgd-inline-element {
+    display: none;
+}
+
+.nvgd-header--top-left .nvgd-header-container,
+.nvgd-header--top-center .nvgd-header-container {
+    position: relative;
+}
+
+.nvgd-header--top-left .header__icons.nvgd-inline-element,
+.nvgd-header--top-center .header__icons.nvgd-inline-element {
+    display: flex;
+    position: absolute;
+    top: 12px;
+    right: 0;
+}
+
+.nvgd-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #000;
+}
+
+.nvgd-logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.nvgd-logo-main {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.nvgd-logo-sub {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.nvgd-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+    justify-content: center;
+    position: relative;
+}
+
+.nvgd-nav-item.level0.level-top {
+    position: relative;
+    text-decoration: none;
+}
+
+.nvgd-nav-item.level0.level-top > a {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.3s ease;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.nvgd-nav-item.level0.level-top:hover > a {
+    color: #000;
+}
+
+.nvgd-nav-item.level0.level-top span {
+    color: #111111;
+}
+
+.ui-menu-icon {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.nvgd-nav-item.nvgd-active .ui-menu-icon {
+    transform: rotate(225deg);
+}
+
+.nvgd-dropdown-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 998;
+    pointer-events: none;
+}
+
+.nvgd-dropdown-backdrop.nvgd-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.nvgd-dropdown.level0.submenu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    margin: 0;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.nvgd-nav-item.nvgd-active .nvgd-dropdown.level0.submenu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    background: transparent;
+}
+
+.nvgd-dropdown-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 3rem;
+    background: white;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+}
+
+.menu-item-group {
+    display: block;
+}
+
+.menu-item-group .inner {
+    display: block;
+}
+
+.menu-item-group.shopping-menu {
+    flex: 2;
+    max-width: calc(100% - 20px);
+    padding: 20px;
+}
+
+.menu-item-group.menu-item-group-aside {
+    border-left: 1px solid #E5E5E5;
+    padding: 20px;
+    width: 200px;
+    background: #F5F5F5;
+}
+
+.menu-item-group.level1.shopping-menu.first span {
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+}
+
+.level2.node-type-image a:hover .anchor-text {
+    color: #111111;
+}
+
+.menu-item-group-aside .level2 a:hover {
+    color: #111111;
+}
+
+.menu-item-group-aside .level2 a:hover .anchor-text {
+    color: #111111;
+}
+
+.menu-item-group-title {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.menu-item-group-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.shopping-menu .menu-item-group-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.5fr 0.5fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1 / 3;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(4) {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(5) {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.shopping-menu .menu-item-group-items .level2:nth-child(6) {
+    grid-column: 4;
+    grid-row: 2;
+}
+
+.menu-item-group-aside .menu-item-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.level2.node-type-image {
+    list-style: none;
+    aspect-ratio: 1 / 1;
+}
+
+.level2.node-type-image a {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    height: 100%;
+    width: 100%;
+}
+
+.level2.node-type-image .inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    background: #F5F5F5;
+    border-radius: 10px;
+}
+
+.menu-item-image-wrapper {
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.menu-item-image-wrapper .inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.menu-item-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.level2 .anchor-text {
+    display: block;
+    text-align: center;
+    font-size: 12.5px;
+    color: #333;
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 0 0.5rem 0.75rem;
+    flex-shrink: 0;
+}
+
+.menu-item-group-aside .level2 {
+    list-style: none;
+}
+
+.menu-item-group-aside .level2 a {
+    padding: 0.5rem 0;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+    display: block;
+}
+
+.menu-item-group-aside .level2 a:hover {
+    color: #000;
+}
+
+.menu-item-group-aside .level2 a .anchor-text {
+    text-align: left;
+}
+
+.nvgd-header-icons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.nvgd-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.nvgd-icon-btn:hover {
+    opacity: 0.7;
+}
+
+.nvgd-icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Desktop Responsive */
+@media (max-width: 1024px) {
+    .nvgd-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        gap: 0;
+        padding: 20px;
+        border-bottom: 1px solid #E5E5E5;
+        z-index: 1000;
+    }
+
+    .nvgd-nav.nvgd-active {
+        display: flex;
+    }
+
+    .nvgd-dropdown.level0.submenu {
+        position: static;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .nvgd-dropdown-container {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 0;
+    }
+
+    .menu-item-group.menu-item-group-aside {
+        border-left: none;
+        border-top: 1px solid #E5E5E5;
+        padding-left: 0;
+        padding-top: 1.5rem;
+    }
+
+    .shopping-menu .menu-item-group-items {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
+        gap: 1rem;
+    }
+
+    .shopping-menu .menu-item-group-items .level2:nth-child(1),
+    .shopping-menu .menu-item-group-items .level2:nth-child(2) {
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .shopping-menu .menu-item-group-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Hide mobile toggle on desktop */
+.nvgd-mobile-menu-toggle {
+    display: none;
+}
+
+.nvgd-hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: opacity 0.2s;
+}
+
+.nvgd-hamburger-btn:hover {
+    opacity: 0.7;
+}
+
+@media (max-width: 1024px) {
+    /* Hide the separate Dawn mobile header — unified handles mobile */
+    .nvgd-header ~ .header.large-up-hide {
+        display: none !important;
+    }
+    .nvgd-mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+    }
+    .nvgd-nav,
+    .nvgd-nav.nvgd-inline-element {
+        display: none !important;
+    }
+    .nvgd-dropdown-backdrop {
+        display: none !important;
+    }
+    .nvgd-header {
+        padding: 0 16px;
+    }
+    /* Reset top layouts to single row on mobile */
+    .nvgd-header--top-left .nvgd-header-container,
+    .nvgd-header--top-center .nvgd-header-container {
+        flex-wrap: nowrap;
+        height: 64px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .nvgd-header-container {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    /* Hide top/nav rows on mobile — use inline elements only */
+    .nvgd-header-top-row,
+    .nvgd-header-nav-row {
+        display: none !important;
+    }
+    /* Show inline elements on mobile regardless of desktop layout */
+    .nvgd-logo-link.nvgd-inline-element,
+    .header__icons.nvgd-inline-element {
+        display: flex !important;
+    }
+    .nvgd-mobile-menu-toggle {
+        order: 1;
+        flex-shrink: 0;
+    }
+    .nvgd-logo-link.nvgd-inline-element {
+        order: 2;
+        flex: 1;
+        display: flex !important;
+        justify-content: center;
+    }
+    .header__icons.nvgd-inline-element {
+        order: 3;
+        flex-shrink: 0;
+        position: static;
+    }
+    /* Removed hidden search icon on mobile header bar */
+    /* Middle-center: reset absolute positioning on mobile */
+    .nvgd-header--middle-center .nvgd-logo-link {
+        position: static;
+        transform: none;
+    }
+}
+
+/* =============================================
+   MOBILE DRAWER — Card-based design
+============================================= */
+.mobile-drawer-overlay {
+    position: fixed;
+    top: var(--mobile-drawer-top, 0px); left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.mobile-drawer-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.mobile-drawer {
+    position: fixed;
+    top: var(--mobile-drawer-top, 0px); left: 0; bottom: 0;
+    width: 85%;
+    max-width: 400px;
+    background: #fff;
+    z-index: 9999;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mobile-drawer.is-open {
+    transform: translateX(0);
+}
+
+/* Drawer Header — X left, logo center, search+cart right */
+.mobile-drawer__header {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    padding: 16px 16px;
+    border-bottom: 1px solid #E5E5E5;
+    flex-shrink: 0;
+    min-height: 56px;
+}
+
+.mobile-drawer__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    grid-column: 1;
+}
+
+.mobile-drawer__close svg {
+    width: 22px;
+    height: 22px;
+}
+
+.mobile-drawer__logo {
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile-drawer__logo img {
+    max-height: 30px;
+    width: auto;
+}
+
+.mobile-drawer__header-icons {
+    grid-column: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobile-drawer__header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    text-decoration: none;
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mobile-drawer__header-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.mobile-drawer__header-icon .cart-count-bubble {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #333;
+    color: #fff;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Drawer Body */
+.mobile-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+}
+
+/* Inline Search Bar */
+.mobile-drawer__search {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    border-bottom: 1px solid #E5E5E5;
+    flex-shrink: 0;
+}
+
+.mobile-drawer__search.is-open {
+    max-height: 70px;
+    opacity: 1;
+}
+
+.mobile-drawer__search-form {
+    padding: 8px 16px 12px;
+}
+
+.mobile-drawer__search-field {
+    display: flex;
+    align-items: center;
+    background: #F5F5F5;
+    border: 1px solid #E5E5E5;
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 42px;
+    transition: border-color 0.2s;
+    overflow: hidden;
+}
+
+.mobile-drawer__search-field:focus-within {
+    border-color: #333;
+    background: #fff;
+}
+
+.mobile-drawer__search-icon {
+    flex-shrink: 0;
+    color: #999;
+    margin-right: 8px;
+}
+
+.mobile-drawer__search-input,
+.mobile-drawer__search-input[type="search"] {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    font-size: 15px;
+    color: #333;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    box-shadow: none !important;
+    border-radius: 0;
+    line-height: normal;
+}
+
+.mobile-drawer__search-input:focus,
+.mobile-drawer__search-input:active,
+.mobile-drawer__search-input[type="search"]:focus,
+.mobile-drawer__search-input[type="search"]:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.mobile-drawer__search-input::placeholder {
+    color: #aaa;
+}
+
+.mobile-drawer__search-input::-webkit-search-decoration,
+.mobile-drawer__search-input::-webkit-search-cancel-button,
+.mobile-drawer__search-input::-webkit-search-results-button,
+.mobile-drawer__search-input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none;
+}
+
+.mobile-drawer__search-clear {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.mobile-drawer__search-clear.is-visible {
+    display: flex;
+}
+
+.mobile-drawer__search-clear:hover {
+    color: #333;
+}
+
+/* ---- Card-style menu items ---- */
+.mobile-menu-card {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+    overflow: hidden;
+}
+
+.mobile-menu-card:hover {
+    background: #F5F5F5;
+}
+
+.mobile-menu-card__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.mobile-menu-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+}
+
+.mobile-menu-card__image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F5F5F5;
+}
+
+.mobile-menu-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mobile-menu-card__chevron {
+    flex-shrink: 0;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    color: #999;
+    transition: transform 0.3s ease;
+}
+
+.mobile-menu-card.is-open .mobile-menu-card__chevron {
+    transform: rotate(180deg);
+}
+
+/* Card Accordion Content */
+.mobile-menu-card-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    margin-bottom: 0;
+}
+
+.mobile-menu-card.is-open + .mobile-menu-card-content {
+    max-height: 2000px;
+    margin-bottom: 10px;
+}
+
+.mobile-menu-card-content__inner {
+    padding: 8px 0 4px;
+}
+
+/* Sub-items inside expanded card — 2-column image grid */
+.mobile-sub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.mobile-sub-grid__item {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    background: #FFFFFF;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #E5E5E5;
+    transition: background 0.2s;
+}
+
+.mobile-sub-grid__item:hover {
+    background: #F5F5F5;
+}
+
+.mobile-sub-grid__img {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.mobile-sub-grid__img img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.mobile-sub-grid__title {
+    padding: 4px 10px 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Sub-items — text links */
+.mobile-sub-text-link {
+    display: block;
+    padding: 10px 4px;
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    border-bottom: 1px solid #E5E5E5;
+    transition: color 0.2s;
+}
+
+.mobile-sub-text-link:last-child {
+    border-bottom: none;
+}
+
+.mobile-sub-text-link:hover {
+    color: #000;
+}
+
+/* Sub-items — sidebar/section header */
+.mobile-sub-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #E5E5E5;
+}
+
+.mobile-sub-section__title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.mobile-sub-section__link {
+    display: block;
+    padding: 8px 4px;
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.mobile-sub-section__link:hover {
+    color: #000;
+}
+
+/* ---- Icon links (Sign in, Support) ---- */
+.mobile-icon-links {
+    margin-top: 6px;
+    padding-top: 6px;
+}
+
+.mobile-icon-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    text-decoration: none;
+    color: #333;
+    font-size: 15px;
+    font-weight: 500;
+    border-bottom: 1px solid #E5E5E5;
+    transition: color 0.2s;
+}
+
+.mobile-icon-link:last-child {
+    border-bottom: none;
+}
+
+.mobile-icon-link:hover {
+    color: #000;
+}
+
+.mobile-icon-link__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.mobile-icon-link__icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ---- Direktlinks / text section ---- */
+.mobile-text-section {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.mobile-text-section__title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    padding: 8px 4px;
+}
+
+.mobile-text-section__link {
+    display: block;
+    padding: 10px 4px 10px 16px;
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.mobile-text-section__link:hover {
+    color: #000;
+}
+
+/* Drawer Footer */
+.mobile-drawer__footer {
+    padding: 12px 16px;
+    border-top: 1px solid #E5E5E5;
+    flex-shrink: 0;
+}
+
+.mobile-drawer__footer .list-social {
+    display: flex;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+}
+
+.mobile-drawer__footer .list-social__link {
+    color: #666;
+    transition: color 0.2s;
+}
+
+.mobile-drawer__footer .list-social__link:hover {
+    color: #000;
+}
+
+.mobile-drawer__footer .list-social__link .svg-wrapper svg {
+    width: 20px;
+    height: 20px;
+}
+{% endstylesheet %}
+
+
+{%- comment -%} Liquid-driven mobile position — outputs CSS directly based on setting value {%- endcomment -%}
+
+
+{%- comment -%} Desktop logo position overrides — fix Dawn base.css width:100% and inline-block {%- endcomment -%}
+
+
+
+
+{%- comment -%} ============================================
+  DESKTOP HEADER
+============================================ {%- endcomment -%}
+
+{%- comment -%} Capture reusable logo markup {%- endcomment -%}
+{%- capture logo_markup -%}
+  {%- if settings.logo != blank -%}
+    <div class="header__heading-logo-wrapper">
+      {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+      {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+      {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px) 50vw, {{ settings.logo_width }}px{% endcapture %}
+      {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+      {{
+        settings.logo
+        | image_url: width: 600
+        | image_tag:
+          class: 'header__heading-logo motion-reduce',
+          widths: widths,
+          height: logo_height,
+          width: settings.logo_width,
+          alt: logo_alt,
+          sizes: sizes,
+          preload: true
+      }}
+    </div>
+  {%- else -%}
+    <span class="h2">{{ shop.name }}</span>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} Capture reusable nav markup {%- endcomment -%}
+{%- capture nav_markup -%}
+  {% if main_menu and main_menu.links.size > 0 %}
+    {% for link in main_menu.links %}
+      {% assign has_dropdown = false %}
+      {% if link.links.size > 0 %}
+        {% assign has_dropdown = true %}
+      {% endif %}
+
+      {% if has_dropdown %}
+        <div class="nvgd-nav-item level0 level-top parent" data-dropdown="{{ link.title | handle }}">
+          <a href="{{ link.url }}" class="level0 level-top parent">
+            <span class="anchor-text">{{ link.title | escape }}</span>
+            <span class="ui-menu-icon ui-icon ui-icon-carat-1-e"></span>
+          </a>
+
+          <div class="nvgd-dropdown level0 submenu">
+            <div class="nvgd-dropdown-container">
+              {%- comment -%} Image grid — skip ANY 2nd-level item that has a 3rd-level submenu {%- endcomment -%}
+              <div class="menu-item-group level1 shopping-menu first">
+                <div class="inner">
+                  <ul class="menu-item-group-items">
+                    {% for child_link in link.links %}
+                      {%- if child_link.links.size > 0 -%}{% continue %}{%- endif -%}
+                      <li class="level2 with-image node-type-image">
+                        <a href="{{ child_link.url }}" class="level2">
+                          <div class="inner">
+                            {% assign image = nil %}
+                            {% if child_link.object %}
+                              {% if child_link.object.featured_image %}
+                                {% assign image = child_link.object.featured_image %}
+                              {% elsif child_link.object.image %}
+                                {% assign image = child_link.object.image %}
+                              {% endif %}
+                            {% endif %}
+
+                            {% if image %}
+                              <div class="menu-item-image-wrapper">
+                                <div class="inner">
+                                  <img alt="{{ child_link.title | escape }}" class="menu-item-image" src="{{ image | image_url: width: 400 }}" loading="lazy" width="400" height="{{ 400 | divided_by: image.aspect_ratio | ceil }}">
+                                </div>
+                              </div>
+                            {% endif %}
+
+                            <span class="anchor-text" data-title="{{ child_link.title | escape }}" style="font-size: 14px;">
+                              {{ child_link.title | escape }}
+                            </span>
+                          </div>
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+
+              {%- comment -%} Sidebar(s) — only items with ≥6 sub-links shown on desktop {%- endcomment -%}
+              {%- for child_link in link.links -%}
+                {%- if child_link.links.size >= 6 -%}
+                  <div class="menu-item-group level1 menu-item-group-aside last">
+                    <div class="inner">
+                      <div class="menu-item-group-title">
+                        <span>{{ child_link.title }}</span>
+                      </div>
+                      <ul class="menu-item-group-items">
+                        {% for sub_link in child_link.links %}
+                          <li class="level2 {% if forloop.first %}first{% endif %} {% if forloop.last %}last{% endif %}">
+                            <a href="{{ sub_link.url }}" class="level2">
+                              <span class="anchor-text">{{ sub_link.title | escape }}</span>
+                            </a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ link.url }}" class="nvgd-nav-item level0 level-top">
+          <span class="anchor-text">{{ link.title | escape }}</span>
+        </a>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{%- endcapture -%}
+
+{%- comment -%} Capture reusable icons markup {%- endcomment -%}
+{%- capture icons_markup -%}
+  <div class="desktop-localization-wrapper">
+    {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
+      <localization-form class="small-hide medium-hide" data-prevent-hide>
+        {%- form 'localization', id: 'HeaderCountryFormUnified', class: 'localization-form' -%}
+          <div>
+            <h2 class="visually-hidden" id="HeaderCountryLabelUnified">{{ 'localization.country_label' | t }}</h2>
+            {%- render 'country-localization', localPosition: 'HeaderCountryUnified' -%}
+          </div>
+        {%- endform -%}
+      </localization-form>
+    {% endif %}
+    {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
+      <localization-form class="small-hide medium-hide" data-prevent-hide>
+        {%- form 'localization', id: 'HeaderLanguageFormUnified', class: 'localization-form' -%}
+          <div>
+            <h2 class="visually-hidden" id="HeaderLanguageLabelUnified">{{ 'localization.language_label' | t }}</h2>
+            {%- render 'language-localization', localPosition: 'HeaderLanguageUnified' -%}
+          </div>
+        {%- endform -%}
+      </localization-form>
+    {%- endif -%}
+  </div>
+  {%- if section.settings.search_type == 'bar' -%}
+    <div class="header__search-bar large-up-show">
+      {% render 'header-search-bar', input_id: 'Search-Unified-Bar' %}
+    </div>
+    <div class="large-up-hide">
+      {% render 'header-search', input_id: 'Search-In-Modal-Unified' %}
+    </div>
+  {%- else -%}
+    {% render 'header-search', input_id: 'Search-In-Modal-Unified' %}
+  {%- endif -%}
+
+  {%- if shop.customer_accounts_enabled -%}
+    <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__icon header__icon--account link focus-inset{% if section.settings.menu != blank %} small-hide{% endif %}" rel="nofollow">
+      {%- if section.settings.enable_customer_avatar -%}
+        <account-icon>
+          {%- if customer and customer.has_avatar? -%}
+            {{ customer | avatar }}
+          {%- else -%}
+            <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
+          {%- endif -%}
+        </account-icon>
+      {%- else -%}
+        <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
+      {%- endif -%}
+      <span class="visually-hidden">
+        {%- liquid
+          if customer
+            echo 'customer.account_fallback' | t
+          else
+            echo 'customer.log_in' | t
+          endif
+        -%}
+      </span>
+    </a>
+  {%- endif -%}
+
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when '@app' -%}
+        {% render block %}
+    {%- endcase -%}
+  {%- endfor -%}
+
+  <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
+    {% if cart == empty %}
+      <span class="svg-wrapper">{{ 'icon-cart-empty.svg' | inline_asset_content }}</span>
+    {% else %}
+      <span class="svg-wrapper">{{ 'icon-cart.svg' | inline_asset_content }}</span>
+    {% endif %}
+    <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+    {%- if cart != empty -%}
+      <div class="cart-count-bubble">
+        {%- if cart.item_count < 100 -%}
+          <span aria-hidden="true">{{ cart.item_count }}</span>
+        {%- endif -%}
+        <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+      </div>
+    {%- endif -%}
+  </a>
+{%- endcapture -%}
+
+<header class="nvgd-header nvgd-header--{{ logo_pos }} nvgd-mobile-logo--{{ mobile_logo_pos }}">
+    <div class="nvgd-header-container">
+        {%- comment -%} Hamburger — first in DOM, shows only on mobile {%- endcomment -%}
+        <div class="nvgd-mobile-menu-toggle">
+            <button type="button" class="nvgd-hamburger-btn" aria-label="{{ 'sections.header.menu' | t }}" id="mobileDrawerToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        {%- comment -%} ========== TOP-LEFT / TOP-CENTER: Two-row layout ========== {%- endcomment -%}
+        <div class="nvgd-header-top-row">
+            <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset nvgd-logo-link">
+                {{ logo_markup }}
+            </a>
+        </div>
+        <div class="nvgd-header-nav-row">
+            <nav class="nvgd-nav" id="nvgdMainNavRow">
+                {{ nav_markup }}
+            </nav>
+        </div>
+
+        {%- comment -%} ========== MIDDLE-LEFT / MIDDLE-CENTER: Inline single-row layout ========== {%- endcomment -%}
+        <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset nvgd-logo-link nvgd-inline-element">
+            {{ logo_markup }}
+        </a>
+
+        <nav class="nvgd-nav nvgd-inline-element" id="nvgdMainNav">
+            {{ nav_markup }}
+        </nav>
+
+        <div class="header__icons nvgd-inline-element{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header-localization{% endif %}">
+            {{ icons_markup }}
+        </div>
+    </div>
+</header>
+
+<div class="nvgd-dropdown-backdrop" id="nvgdDropdownBackdrop"></div>
+
+{%- comment -%} ============================================
+  MOBILE DRAWER — Card-based design
+============================================ {%- endcomment -%}
+<div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Menu">
+    {%- comment -%} Header: X | Logo | Search + Cart {%- endcomment -%}
+    <div class="mobile-drawer__header">
+        <button type="button" class="mobile-drawer__close" id="mobileDrawerClose" aria-label="Close menu">
+            <svg width="22" height="22" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+        <div class="mobile-drawer__logo">
+            <a href="{{ routes.root_url }}" class="link link--text">
+                {%- if settings.logo != blank -%}
+                    <img src="{{ settings.logo | image_url: width: 200 }}" alt="{{ settings.logo.alt | default: shop.name | escape }}" loading="lazy" width="200" height="{{ 200 | divided_by: settings.logo.aspect_ratio | ceil }}" style="max-height: 30px; width: auto;">
+                {%- else -%}
+                    <span class="h2" style="font-size: 18px;">{{ shop.name }}</span>
+                {%- endif -%}
+            </a>
+        </div>
+
+        <div class="mobile-drawer__header-icons">
+            <button type="button" class="mobile-drawer__header-icon" aria-label="Search" id="mobileDrawerSearchToggle">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/>
+                    <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    {%- comment -%} Inline search bar {%- endcomment -%}
+    <div class="mobile-drawer__search" id="mobileDrawerSearch">
+        <form action="{{ routes.search_url }}" method="get" class="mobile-drawer__search-form" role="search">
+            <div class="mobile-drawer__search-field">
+                <svg class="mobile-drawer__search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/>
+                    <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                </svg>
+                <input
+                    type="search"
+                    name="q"
+                    class="mobile-drawer__search-input"
+                    placeholder="{{ 'general.search.placeholder' | t }}"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    id="mobileDrawerSearchInput"
+                >
+                <button type="button" class="mobile-drawer__search-clear" id="mobileDrawerSearchClear" aria-label="Clear search">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {%- comment -%} Scrollable Body {%- endcomment -%}
+    <div class="mobile-drawer__body">
+
+        {% if main_menu and main_menu.links.size > 0 %}
+
+            {%- comment -%} === CARD SECTION: items with children or linked images === {%- endcomment -%}
+            {% for link in main_menu.links %}
+                {%- assign card_image = nil -%}
+                {%- if link.object -%}
+                    {%- if link.object.featured_image -%}
+                        {%- assign card_image = link.object.featured_image -%}
+                    {%- elsif link.object.image -%}
+                        {%- assign card_image = link.object.image -%}
+                    {%- endif -%}
+                {%- endif -%}
+                {%- if card_image == nil and link.links.size > 0 -%}
+                    {%- for child_link in link.links limit: 1 -%}
+                        {%- if child_link.object -%}
+                            {%- if child_link.object.featured_image -%}
+                                {%- assign card_image = child_link.object.featured_image -%}
+                            {%- elsif child_link.object.image -%}
+                                {%- assign card_image = child_link.object.image -%}
+                            {%- endif -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                {%- endif -%}
+
+                {%- if link.links.size > 0 and card_image -%}
+                    <div class="mobile-menu-card" data-mobile-card-trigger>
+                        <div class="mobile-menu-card__text">
+                            <div class="mobile-menu-card__title">{{ link.title | escape }}</div>
+                        </div>
+                        <div class="mobile-menu-card__image">
+                            <img src="{{ card_image | image_url: width: 200 }}" alt="{{ link.title | escape }}" loading="lazy" width="200" height="{{ 200 | divided_by: card_image.aspect_ratio | ceil }}">
+                        </div>
+                        <div class="mobile-menu-card__chevron">
+                            <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+                                <path d="M1 1L7 7L13 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="mobile-menu-card-content">
+                        <div class="mobile-menu-card-content__inner">
+                            {%- assign has_child_images = false -%}
+                            {%- for child_link in link.links -%}
+                                {%- if child_link.links.size > 0 -%}{%- continue -%}{%- endif -%}
+                                {%- if child_link.object -%}
+                                    {%- if child_link.object.featured_image or child_link.object.image -%}
+                                        {%- assign has_child_images = true -%}
+                                        {%- break -%}
+                                    {%- endif -%}
+                                {%- endif -%}
+                            {%- endfor -%}
+
+                            {%- if has_child_images -%}
+                                <div class="mobile-sub-grid">
+                                    {%- for child_link in link.links -%}
+                                        {%- if child_link.links.size > 0 -%}{%- continue -%}{%- endif -%}
+                                        {%- assign child_image = nil -%}
+                                        {%- if child_link.object -%}
+                                            {%- if child_link.object.featured_image -%}
+                                                {%- assign child_image = child_link.object.featured_image -%}
+                                            {%- elsif child_link.object.image -%}
+                                                {%- assign child_image = child_link.object.image -%}
+                                            {%- endif -%}
+                                        {%- endif -%}
+                                        {%- if child_image -%}
+                                            <a href="{{ child_link.url }}" class="mobile-sub-grid__item">
+                                                <span class="mobile-sub-grid__img">
+                                                    <img src="{{ child_image | image_url: width: 300 }}" alt="{{ child_link.title | escape }}" loading="lazy" width="300" height="{{ 300 | divided_by: child_image.aspect_ratio | ceil }}">
+                                                </span>
+                                                <span class="mobile-sub-grid__title">{{ child_link.title | escape }}</span>
+                                            </a>
+                                        {%- endif -%}
+                                    {%- endfor -%}
+                                </div>
+                            {%- endif -%}
+
+                            {%- for child_link in link.links -%}
+                                {%- if child_link.links.size > 0 -%}{%- continue -%}{%- endif -%}
+                                {%- assign child_image = nil -%}
+                                {%- if child_link.object -%}
+                                    {%- if child_link.object.featured_image -%}
+                                        {%- assign child_image = child_link.object.featured_image -%}
+                                    {%- elsif child_link.object.image -%}
+                                        {%- assign child_image = child_link.object.image -%}
+                                    {%- endif -%}
+                                {%- endif -%}
+                                {%- unless child_image -%}
+                                    <a href="{{ child_link.url }}" class="mobile-sub-text-link">{{ child_link.title | escape }}</a>
+                                {%- endunless -%}
+                            {%- endfor -%}
+
+                            {%- for child_link in link.links -%}
+                                {%- if child_link.links.size > 0 and child_link.links.size <= 5 -%}
+                                    <div class="mobile-sub-section">
+                                        <div class="mobile-sub-section__title">{{ child_link.title | escape }}</div>
+                                        {%- for sub_link in child_link.links -%}
+                                            <a href="{{ sub_link.url }}" class="mobile-sub-section__link">{{ sub_link.title | escape }}</a>
+                                        {%- endfor -%}
+                                    </div>
+                                {%- endif -%}
+                            {%- endfor -%}
+                        </div>
+                    </div>
+
+                {%- elsif card_image and link.links.size == 0 -%}
+                    <a href="{{ link.url }}" class="mobile-menu-card" style="text-decoration: none;">
+                        <div class="mobile-menu-card__text">
+                            <div class="mobile-menu-card__title">{{ link.title | escape }}</div>
+                        </div>
+                        <div class="mobile-menu-card__image">
+                            <img src="{{ card_image | image_url: width: 200 }}" alt="{{ link.title | escape }}" loading="lazy" width="200" height="{{ 200 | divided_by: card_image.aspect_ratio | ceil }}">
+                        </div>
+                    </a>
+                {%- endif -%}
+            {% endfor %}
+
+            {%- comment -%} === ICON LINKS === {%- endcomment -%}
+            <div class="mobile-icon-links">
+                {%- if shop.customer_accounts_enabled -%}
+                    <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="mobile-icon-link">
+                        <span class="mobile-icon-link__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <span>{{ 'customer.log_in' | t | default: 'Anmelden' }}</span>
+                    </a>
+                {%- endif -%}
+
+                {% for link in main_menu.links %}
+                    {%- assign link_image = nil -%}
+                    {%- if link.object -%}
+                        {%- if link.object.featured_image -%}
+                            {%- assign link_image = link.object.featured_image -%}
+                        {%- elsif link.object.image -%}
+                            {%- assign link_image = link.object.image -%}
+                        {%- endif -%}
+                    {%- endif -%}
+                    {%- if link_image == nil and link.links.size > 0 -%}
+                        {%- for child_link in link.links limit: 1 -%}
+                            {%- if child_link.object -%}
+                                {%- if child_link.object.featured_image -%}
+                                    {%- assign link_image = child_link.object.featured_image -%}
+                                {%- elsif child_link.object.image -%}
+                                    {%- assign link_image = child_link.object.image -%}
+                                {%- endif -%}
+                            {%- endif -%}
+                        {%- endfor -%}
+                    {%- endif -%}
+
+                    {%- if link.links.size == 0 and link_image == nil -%}
+                        <a href="{{ link.url }}" class="mobile-icon-link">
+                            <span class="mobile-icon-link__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 16v-4"/>
+                                    <path d="M12 8h.01"/>
+                                </svg>
+                            </span>
+                            <span>{{ link.title | escape }}</span>
+                        </a>
+                    {%- endif -%}
+                {% endfor %}
+            </div>
+
+            {%- comment -%} === TEXT SECTION === {%- endcomment -%}
+            {% for link in main_menu.links %}
+                {%- if link.links.size > 0 -%}
+                    {%- for child_link in link.links -%}
+                        {%- if child_link.links.size > 0 and child_link.links.size <= 5 -%}
+                            <div class="mobile-text-section">
+                                <div class="mobile-text-section__title">{{ child_link.title | escape }}</div>
+                                {%- for sub_link in child_link.links -%}
+                                    <a href="{{ sub_link.url }}" class="mobile-text-section__link">{{ sub_link.title | escape }}</a>
+                                {%- endfor -%}
+                            </div>
+                        {%- endif -%}
+                    {%- endfor -%}
+                {%- endif -%}
+            {% endfor %}
+
+        {% endif %}
+    </div>
+
+    {%- comment -%} Footer {%- endcomment -%}
+    <div class="mobile-drawer__footer">
+        {%- if localization.available_countries or localization.available_languages -%}
+            <div class="menu-drawer__localization header-localization">
+                {%- if localization.available_countries and localization.available_countries.size > 1 -%}
+                    <localization-form>
+                        {%- form 'localization', id: 'HeaderCountryMobileFormUnified', class: 'localization-form' -%}
+                            <div>
+                                <h2 class="visually-hidden" id="HeaderCountryMobileLabelUnified">{{ 'localization.country_label' | t }}</h2>
+                                {%- render 'country-localization', localPosition: 'HeaderCountryMobileUnified' -%}
+                            </div>
+                        {%- endform -%}
+                    </localization-form>
+                {% endif %}
+                {%- if localization.available_languages and localization.available_languages.size > 1 -%}
+                    <localization-form>
+                        {%- form 'localization', id: 'HeaderLanguageMobileFormUnified', class: 'localization-form' -%}
+                            <div>
+                                <h2 class="visually-hidden" id="HeaderLanguageMobileLabelUnified">{{ 'localization.language_label' | t }}</h2>
+                                {%- render 'language-localization', localPosition: 'HeaderLanguageMobileUnified' -%}
+                            </div>
+                        {%- endform -%}
+                    </localization-form>
+                {%- endif -%}
+            </div>
+        {%- endif -%}
+
+        <ul class="list list-social list-unstyled" role="list">
+            {%- if settings.social_twitter_link != blank -%}
+                <li class="list-social__item"><a href="{{ settings.social_twitter_link }}" class="list-social__link link"><span class="svg-wrapper">{{ 'icon-twitter.svg' | inline_asset_content }}</span></a></li>
+            {%- endif -%}
+            {%- if settings.social_facebook_link != blank -%}
+                <li class="list-social__item"><a href="{{ settings.social_facebook_link }}" class="list-social__link link"><span class="svg-wrapper">{{ 'icon-facebook.svg' | inline_asset_content }}</span></a></li>
+            {%- endif -%}
+            {%- if settings.social_instagram_link != blank -%}
+                <li class="list-social__item"><a href="{{ settings.social_instagram_link }}" class="list-social__link link"><span class="svg-wrapper">{{ 'icon-instagram.svg' | inline_asset_content }}</span></a></li>
+            {%- endif -%}
+            {%- if settings.social_tiktok_link != blank -%}
+                <li class="list-social__item"><a href="{{ settings.social_tiktok_link }}" class="list-social__link link"><span class="svg-wrapper">{{ 'icon-tiktok.svg' | inline_asset_content }}</span></a></li>
+            {%- endif -%}
+            {%- if settings.social_youtube_link != blank -%}
+                <li class="list-social__item"><a href="{{ settings.social_youtube_link }}" class="list-social__link link"><span class="svg-wrapper">{{ 'icon-youtube.svg' | inline_asset_content }}</span></a></li>
+            {%- endif -%}
+        </ul>
+    </div>
+</div>
+
+{%- comment -%} ============================================
+  JAVASCRIPT
+============================================ {%- endcomment -%}
+<script src="{{ 'header-unified.js' | asset_url }}" defer="defer"></script>

@@ -1,0 +1,244 @@
+{%- assign section_id = section.id -%}
+{%- assign current_title = block.settings.title_override -%}
+{%- if current_title == blank -%}
+  {%- assign current_title = section.settings.collection.title | default: section.settings.title | default: 'Featured collection' -%}
+{%- endif -%}
+
+{%- style -%}
+  .collection-title-{{ block.id }} {
+    margin: 0;
+    color: {{ block.settings.color }};
+    font-size: {{ block.settings.font_size_mobile }}px;
+    font-weight: {{ block.settings.font_weight }};
+    line-height: {{ block.settings.line_height }};
+    text-align: {{ block.settings.alignment }};
+    text-transform: {{ block.settings.text_transform }};
+    letter-spacing: {{ block.settings.letter_spacing }}px;
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .collection-title-{{ block.id }} {
+      font-size: {{ block.settings.font_size_desktop }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="collection-title-wrapper collection-title-wrapper-{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- if block.settings.heading_tag == 'h1' -%}
+    <h1 class="collection-title-{{ block.id }} {{ block.settings.heading_size }}">{{ current_title }}</h1>
+  {%- elsif block.settings.heading_tag == 'h3' -%}
+    <h3 class="collection-title-{{ block.id }} {{ block.settings.heading_size }}">{{ current_title }}</h3>
+  {%- elsif block.settings.heading_tag == 'h4' -%}
+    <h4 class="collection-title-{{ block.id }} {{ block.settings.heading_size }}">{{ current_title }}</h4>
+  {%- elsif block.settings.heading_tag == 'div' -%}
+    <div class="collection-title-{{ block.id }} {{ block.settings.heading_size }}">{{ current_title }}</div>
+  {%- else -%}
+    <h2 class="collection-title-{{ block.id }} {{ block.settings.heading_size }}">{{ current_title }}</h2>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Collection title",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "title_override",
+      "label": "Heading override",
+      "info": "Leave blank to use collection title"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "div",
+          "label": "div"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size preset",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Medium"
+        },
+        {
+          "value": "h1",
+          "label": "Large"
+        },
+        {
+          "value": "h0",
+          "label": "Extra Large"
+        },
+        {
+          "value": "hxl",
+          "label": "XX Large"
+        }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "range",
+      "id": "font_size_desktop",
+      "min": 16,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (Desktop)",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "min": 14,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (Mobile)",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "UPPERCASE"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "line_height",
+      "min": 1,
+      "max": 2,
+      "step": 0.1,
+      "label": "Line height",
+      "default": 1.2
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "min": -2,
+      "max": 6,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Letter spacing",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection title"
+    }
+  ]
+}
+{% endschema %}

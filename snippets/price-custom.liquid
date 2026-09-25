@@ -1,0 +1,536 @@
+{% comment %}
+  Renders product price with optional Klarna payment option
+
+  Accepts:
+  - product: {Object} Product object
+  - block: {Object} Block object (optional)
+  - use_variant: {Boolean} Use variant price if available
+  - show_badges: {Boolean} Show sale/sold out badges
+  - price_class: {String} Additional CSS class for price
+  - show_klarna: {Boolean} Show Klarna payment option
+
+  Usage:
+  {% render 'price-custom',
+    product: product,
+    block: block,
+    use_variant: true,
+    show_badges: true,
+    price_class: 'price--large',
+    show_klarna: true
+  %}
+{% endcomment %}
+
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign compare_at_price = target.compare_at_price
+  assign price = target.price | default: 1999
+  assign available = target.available | default: false
+  assign money_price = price | money
+  if settings.currency_code_enabled
+    assign money_price = price | money_with_currency
+  endif
+
+  assign price_length = money_price | size
+  if price_length > 12
+    assign klarna_price_class = 'nvgd-klarna-price--xs'
+  elsif price_length > 10
+    assign klarna_price_class = 'nvgd-klarna-price--sm'
+  elsif price_length > 7
+    assign klarna_price_class = 'nvgd-klarna-price--md'
+  else
+    assign klarna_price_class = 'nvgd-klarna-price--lg'
+  endif
+
+  if target == product and product.price_varies
+    assign money_price = 'products.product.price.from_price_html' | t: price: money_price
+  endif
+-%}
+
+{%- if show_klarna and block -%}
+  {%- comment -%} Klarna layout: price + compare-at shown together in the Klarna row {%- endcomment -%}
+
+  {%- liquid
+    assign monthly_installments = block.settings.klarna_installments | default: 12
+    assign monthly_payment = price | divided_by: monthly_installments | money_without_trailing_zeros
+
+    assign price_size_desktop = block.settings.price_font_size_desktop | default: 24
+    assign price_size_mobile = block.settings.price_font_size_mobile | default: 18
+    assign compare_size_desktop = block.settings.compare_font_size_desktop | default: 16
+    assign compare_size_mobile = block.settings.compare_font_size_mobile | default: 14
+    assign klarna_text_size_desktop = block.settings.klarna_text_size_desktop | default: 14
+    assign klarna_text_size_mobile = block.settings.klarna_text_size_mobile | default: 12
+  -%}
+
+  <div class="nvgd-klarna-payment-option" style="--nvgd-price-size: {{ price_size_desktop }}px; --nvgd-compare-size: {{ compare_size_desktop }}px; --nvgd-klarna-text-size: {{ klarna_text_size_desktop }}px; --nvgd-price-size-mobile: {{ price_size_mobile }}px; --nvgd-compare-size-mobile: {{ compare_size_mobile }}px; --nvgd-klarna-text-size-mobile: {{ klarna_text_size_mobile }}px;">
+    <div class="nvgd-klarna-payment-container">
+      <!-- Left: Price + Compare-at + "or" -->
+      <div class="nvgd-klarna-price-section">
+        <div class="nvgd-klarna-main-price {{ klarna_price_class }}">
+          {{ money_price }}
+          {%- if compare_at_price and compare_at_price > price -%}
+            <s class="nvgd-klarna-compare-price">{{ compare_at_price | money }}</s>
+          {%- endif -%}
+        </div>
+        <div class="nvgd-klarna-or-text">{{ block.settings.klarna_or_text | default: "or" }}</div>
+      </div>
+
+      <!-- Vertical divider -->
+      <div class="nvgd-klarna-divider"></div>
+
+      <!-- Right: Klarna box with border -->
+      <div class="nvgd-klarna-financing-section">
+        <div class="nvgd-klarna-badge">
+          <div class="nvgd-klarna-logo-text">Klarna</div>
+        </div>
+        <div class="nvgd-klarna-info">
+          <div class="nvgd-klarna-monthly-price">
+            {{ block.settings.klarna_starting_text | default: "From" }} <strong>{{ monthly_payment }}/{{ block.settings.klarna_per_month_text | default: "month" }}</strong> {{ block.settings.klarna_with_text | default: "with" }}
+          </div>
+          <div class="nvgd-klarna-learn-more">
+            Klarna <a href="#" data-klarna-open>{{ block.settings.klarna_learn_more_text | default: "Learn more" }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% comment %}
+  {%- if show_badges -%}
+    <div class="nvgd-klarna-badges">
+      {%- if compare_at_price and compare_at_price > price -%}
+        <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+          {{ 'products.product.on_sale' | t }}
+        </span>
+      {%- endif -%}
+      {%- unless available -%}
+        <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
+          {{ 'products.product.sold_out' | t }}
+        </span>
+      {%- endunless -%}
+    </div>
+  {%- endif -%}
+  {% endcomment %}
+
+  <!-- Klarna Modal -->
+<div class="nvgd-klarna-modal" id="klarna-modal" data-klarna-modal>
+  <div class="nvgd-klarna-modal__content">
+    <button type="button" class="nvgd-klarna-modal__close" data-klarna-close>✕</button>
+    <div class="nvgd-klarna-modal__body">
+      {%- if block.settings.klarna_modal_iframe != blank -%}
+        <div class="nvgd-klarna-modal__iframe">
+          {{ block.settings.klarna_modal_iframe }}
+        </div>
+      {%- else -%}
+        {%- if block.settings.klarna_modal_image -%}
+          <div class="nvgd-klarna-modal__logo">
+            <img
+              src="{{ block.settings.klarna_modal_image | image_url: width: 200 }}"
+              alt="{{ block.settings.klarna_modal_title | escape }}"
+              width="200"
+              height="{{ 200 | divided_by: block.settings.klarna_modal_image.aspect_ratio | ceil }}"
+            />
+          </div>
+        {%- endif -%}
+        <div class="nvgd-klarna-modal__info">
+          {%- if block.settings.klarna_modal_title != blank -%}
+            <h2 class="nvgd-klarna-modal__title">{{ block.settings.klarna_modal_title }}</h2>
+          {%- endif -%}
+          {%- if block.settings.klarna_modal_content != blank -%}
+            <div class="nvgd-klarna-modal__description">
+              {{ block.settings.klarna_modal_content }}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{%- else -%}
+  {%- comment -%} Standard layout: no Klarna, show price normally {%- endcomment -%}
+
+  <div class="price {{ price_class }}{% if compare_at_price and compare_at_price > price %} price--on-sale{% endif %}{% unless available %} price--sold-out{% endunless %}">
+    <div class="price__container">
+      {%- if compare_at_price and compare_at_price > price -%}
+        <div class="price__sale">
+          <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+          <s class="price-item price-item--regular">
+            {{ compare_at_price | money }}
+          </s>
+          <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.sale_price' | t }}</span>
+          <span class="price-item price-item--sale price-item--last">
+            {{ money_price }}
+          </span>
+        </div>
+      {%- else -%}
+        <div class="price__regular">
+          <span class="price-item price-item--regular">
+            {{ money_price }}
+          </span>
+        </div>
+      {%- endif -%}
+
+      {%- if show_badges -%}
+        {%- if compare_at_price and compare_at_price > price -%}
+          <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+            {{ 'products.product.on_sale' | t }}
+          </span>
+        {%- endif -%}
+        {%- unless available -%}
+          <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
+            {{ 'products.product.sold_out' | t }}
+          </span>
+        {%- endunless -%}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .nvgd-klarna-price--lg {
+    font-size: 1.7rem !important;
+  }
+
+  .nvgd-klarna-price--md {
+    font-size: 1.1rem !important;
+  }
+
+  .nvgd-klarna-price--sm {
+    font-size: 0.9rem !important;
+  }
+
+  .nvgd-klarna-price--xs {
+    font-size: 0.7rem !important;
+  }
+
+  /* Prevent the price from pushing Klarna out */
+  .nvgd-klarna-payment-container {
+    flex-wrap: nowrap;
+  }
+
+  .nvgd-klarna-price-section {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .nvgd-klarna-financing-section {
+    flex-shrink: 0;
+  }
+
+  /* ===========================
+     Klarna Payment Row
+     =========================== */
+  .nvgd-klarna-payment-option {
+    margin: 10px 0;
+  }
+
+  .nvgd-klarna-payment-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .nvgd-klarna-price-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .nvgd-klarna-main-price {
+    font-size: var(--nvgd-price-size);
+    font-weight: 700;
+    color: #000;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+    letter-spacing: normal;
+  }
+
+  @media (max-width: 749px) {
+    .nvgd-klarna-main-price {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: 0;
+    }
+  }
+
+  .nvgd-klarna-compare-price {
+    font-size: var(--nvgd-compare-size);
+    font-weight: 400;
+    color: #111111;
+    text-decoration: line-through;
+    white-space: nowrap;
+  }
+
+  .nvgd-klarna-or-text {
+    color: #111111;
+    font-size: var(--nvgd-klarna-text-size);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nvgd-klarna-or-text::before,
+  .nvgd-klarna-or-text::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 12px;
+    background-color: #F5F5F5;
+  }
+
+  /* Vertical divider line */
+  .nvgd-klarna-divider {
+    width: 1px;
+    align-self: stretch;
+    min-height: 50px;
+    background-color: #F5F5F5;
+    flex-shrink: 0;
+  }
+
+  /* Right: Klarna box with border */
+  .nvgd-klarna-financing-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    border: 1px solid #E5E5E5;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .nvgd-klarna-badge {
+    background: linear-gradient(135deg, #F5F5F5 0%, #F5F5F5 100%);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nvgd-klarna-logo-text {
+    font-size: calc(var(--nvgd-klarna-text-size) + 4px);
+    font-weight: 700;
+    color: #000;
+    letter-spacing: -0.5px;
+  }
+
+  .nvgd-klarna-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .nvgd-klarna-monthly-price {
+    font-size: var(--nvgd-klarna-text-size);
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .nvgd-klarna-monthly-price strong {
+    font-size: var(--nvgd-klarna-text-size);
+    font-weight: 700;
+  }
+
+  .nvgd-klarna-learn-more {
+    font-size: var(--nvgd-klarna-text-size);
+    color: #000;
+    text-align: left;
+  }
+
+  .nvgd-klarna-learn-more a {
+    color: #000;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
+  .nvgd-klarna-learn-more a:hover {
+    color: #333;
+  }
+
+  /* ===========================
+     Responsive: stack on mobile
+     =========================== */
+  @media (max-width: 749px) {
+    .nvgd-klarna-payment-container {
+      gap: 8px;
+    }
+
+    .nvgd-klarna-financing-section {
+      gap: 6px;
+      padding: 6px 8px;
+    }
+  }  
+
+  /* ===========================
+     Klarna Modal
+     =========================== */
+  .nvgd-klarna-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nvgd-klarna-modal.active {
+    display: flex;
+  }
+
+  .nvgd-klarna-modal__content {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  .nvgd-klarna-modal__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666;
+    z-index: 10;
+  }
+
+  .nvgd-klarna-modal__close:hover {
+    color: #000;
+  }
+
+  .nvgd-klarna-modal__body {
+    display: flex;
+  }
+
+  .nvgd-klarna-modal__logo {
+    flex-shrink: 0;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .nvgd-klarna-modal__info {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: 80vh;
+  }
+
+  .nvgd-klarna-modal__title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    padding-right: 2rem;
+  }
+
+  .nvgd-klarna-modal__description {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #444;
+  }
+
+  .nvgd-klarna-modal__description p {
+    margin: 0 0 1rem 0;
+  }
+
+  .nvgd-klarna-modal__note {
+    font-size: 13px;
+    color: #888;
+    font-style: italic;
+    margin-top: 1.5rem !important;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+
+  @media (max-width: 749px) {
+    .nvgd-klarna-modal__body {
+      flex-direction: column;
+    }
+
+    .nvgd-klarna-modal__logo {
+      padding: 1.5rem;
+    }
+
+    .nvgd-klarna-modal__info {
+      padding: 1.5rem;
+    }
+
+    .nvgd-klarna-modal__title {
+      font-size: 20px;
+    }
+  }
+
+  .nvgd-klarna-modal__iframe {
+    width: 100%;
+    padding: 0;
+  }
+
+  .nvgd-klarna-modal__iframe iframe {
+    width: 100%;
+    min-height: 500px;
+    border: none;
+    display: block;
+    border-radius: 16px;
+  }
+  /* Mobile custom-property variants (hoisted from the former :root style block) */
+  @media (max-width: 749px) {
+    .nvgd-klarna-main-price {
+      font-size: var(--nvgd-price-size-mobile, var(--nvgd-price-size));
+    }
+
+    .nvgd-klarna-compare-price {
+      font-size: var(--nvgd-compare-size-mobile, var(--nvgd-compare-size));
+    }
+
+    .nvgd-klarna-or-text {
+      font-size: var(--nvgd-klarna-text-size-mobile, var(--nvgd-klarna-text-size));
+    }
+
+    .nvgd-klarna-logo-text {
+      font-size: calc(var(--nvgd-klarna-text-size-mobile, var(--nvgd-klarna-text-size)) + 4px);
+    }
+
+    .nvgd-klarna-monthly-price {
+      font-size: var(--nvgd-klarna-text-size-mobile, var(--nvgd-klarna-text-size));
+    }
+
+    .nvgd-klarna-monthly-price strong {
+      font-size: var(--nvgd-klarna-text-size-mobile, var(--nvgd-klarna-text-size));
+    }
+
+    .nvgd-klarna-learn-more {
+      font-size: var(--nvgd-klarna-text-size-mobile, var(--nvgd-klarna-text-size));
+    }
+  }
+{% endstylesheet %}
+
+<script src="{{ 'price-custom.js' | asset_url }}" defer="defer"></script>

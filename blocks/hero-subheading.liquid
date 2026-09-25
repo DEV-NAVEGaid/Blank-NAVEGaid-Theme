@@ -1,0 +1,296 @@
+{%- style -%}
+  {{ block.settings.subheading_font | font_face: font_display: 'swap' }}
+  .hero-overlay__block-{{ block.id }} {
+    margin: 0 !important;
+    color: {{ block.settings.subheading_color }};
+    font-family: {{ block.settings.subheading_font.family }}, {{ block.settings.subheading_font.fallback_families }};
+    font-size: {{ block.settings.subheading_font_size }}px;
+    font-weight: {{ block.settings.subheading_weight }};
+    line-height: {{ block.settings.subheading_line_height }};
+    letter-spacing: {{ block.settings.subheading_letter_spacing }};
+    text-align: {{ block.settings.subheading_align }};
+    text-transform: {{ block.settings.subheading_case }};
+    text-wrap: {{ block.settings.subheading_wrap }};
+    
+    {% if block.settings.subheading_bg_opacity > 0 %}
+      background-color: {{ block.settings.subheading_bg_color | color_modify: 'alpha', block.settings.subheading_bg_opacity | divided_by: 100.0 }};
+      border-radius: {{ block.settings.subheading_border_radius }}px;
+    {% endif %}
+    
+    padding-top: {{ block.settings.subheading_padding_top }}px;
+    padding-bottom: {{ block.settings.subheading_padding_bottom }}px;
+  }
+  
+  @media screen and (max-width: 749px) {
+    .hero-overlay__block-{{ block.id }} {
+      font-size: {{ block.settings.subheading_size_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="hero-overlay__subheading-wrapper-{{ section.id }}" {{ block.shopify_attributes }}>
+  <p class="hero-overlay__subheading-{{ section.id }} hero-overlay__block-{{ block.id }}">
+    {{ block.settings.subheading | escape }}
+  </p>
+</div>
+
+{% schema %}
+{
+  "name": "Subheading",
+  "settings": [
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Heading"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "select",
+      "id": "subheading_type_preset",
+      "label": "Preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "Default"
+        },
+        {
+          "value": "paragraph",
+          "label": "Paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "rte"
+    },
+    {
+      "type": "font_picker",
+      "id": "subheading_font",
+      "label": "Font family",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "subheading_font_size",
+      "min": 10,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "subheading_weight",
+      "label": "Weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "select",
+      "id": "subheading_line_height",
+      "label": "Line height",
+      "options": [
+        {
+          "value": "1.05",
+          "label": "Tight"
+        },
+        {
+          "value": "1.2",
+          "label": "Normal"
+        },
+        {
+          "value": "1.4",
+          "label": "Loose"
+        }
+      ],
+      "default": "1.2"
+    },
+    {
+      "type": "select",
+      "id": "subheading_letter_spacing",
+      "label": "Letter spacing",
+      "options": [
+        {
+          "value": "-0.02em",
+          "label": "Tight"
+        },
+        {
+          "value": "0em",
+          "label": "Normal"
+        },
+        {
+          "value": "0.04em",
+          "label": "Loose"
+        }
+      ],
+      "default": "0em"
+    },
+    {
+      "type": "select",
+      "id": "subheading_case",
+      "label": "Case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Default"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "subheading_wrap",
+      "label": "Wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "Pretty"
+        },
+        {
+          "value": "balance",
+          "label": "Balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "None"
+        }
+      ],
+      "default": "pretty"
+    },
+    {
+      "type": "select",
+      "id": "subheading_align",
+      "label": "Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "subheading_bg_color",
+      "label": "Background color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "subheading_bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Background opacity",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Background corner radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "subheading_padding_top",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "subheading_padding_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "subheading_size_mobile",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (mobile)",
+      "default": 14
+    }
+  ],
+  "presets": [
+    {
+      "name": "Subheading"
+    }
+  ]
+}
+{% endschema %}

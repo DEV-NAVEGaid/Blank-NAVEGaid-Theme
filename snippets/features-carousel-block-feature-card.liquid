@@ -1,0 +1,37 @@
+{% comment %}
+  Renders a single feature card for the Features Carousel section.
+
+  Accepts:
+  - block: {Object} Section block containing feature_card settings
+  - section_id: {String} Scoped section id used in class names
+
+  Usage:
+  {% render 'features-carousel-block-feature-card', block: block, section_id: section_id %}
+{% endcomment %}
+
+<div class="features-carousel__card-{{ section_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.image != blank %}
+    <div class="features-carousel__card-image-wrapper-{{ section_id }}">
+      <img
+        src="{{ block.settings.image | image_url: width: 800 }}"
+        alt="{{ block.settings.image.alt | default: block.settings.title | escape }}"
+        loading="lazy"
+        width="{{ block.settings.image.width }}"
+        height="{{ block.settings.image.height }}"
+        class="features-carousel__card-image-{{ section_id }}"
+      >
+    </div>
+  {% endif %}
+  <div class="features-carousel__card-content-{{ section_id }}">
+    {% if block.settings.title != blank %}
+      <h3 class="features-carousel__card-title-{{ section_id }}">
+        {{ block.settings.title }}
+      </h3>
+    {% endif %}
+    {% if block.settings.text != blank %}
+      <p class="features-carousel__card-text-{{ section_id }}">
+        {{ block.settings.text }}
+      </p>
+    {% endif %}
+  </div>
+</div>

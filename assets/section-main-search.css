@@ -1,0 +1,41 @@
+/* moved from sections/main-search.liquid inline <style> for bundling */
+.template-search__header {
+  margin-bottom: 3rem;
+}
+
+.template-search__search {
+  margin: 0 auto 3.5rem;
+  max-width: 74.1rem;
+}
+
+.template-search__search .search {
+  margin-top: 3rem;
+}
+
+.template-search--empty {
+  padding-bottom: 18rem;
+}
+
+@media screen and (min-width: 750px) {
+  .template-search__header {
+    margin-bottom: 5rem;
+  }
+}
+
+.search__button .icon {
+  height: 1.8rem;
+}
+
+/* spacing custom properties are rendered per-instance on the section
+   wrapper via a Liquid style block in sections/main-search.liquid */
+.main-search-spacing {
+  padding-top: var(--ms-pad-top-mobile, 27px);
+  padding-bottom: var(--ms-pad-bottom-mobile, 27px);
+}
+
+@media screen and (min-width: 750px) {
+  .main-search-spacing {
+    padding-top: var(--ms-pad-top, 36px);
+    padding-bottom: var(--ms-pad-bottom, 36px);
+  }
+}

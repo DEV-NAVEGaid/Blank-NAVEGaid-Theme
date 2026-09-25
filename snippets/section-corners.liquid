@@ -1,0 +1,19 @@
+{% comment %}
+  Opt-in section corners. Keep clipping separate so menus, dialogs, sticky
+  elements, and intentionally overlapping content can extend outside the frame.
+{% endcomment %}
+{%- if section.settings.custom_section_corners -%}
+  {%- style -%}
+    #shopify-section-{{ section.id }} {
+      --section-corner-radius: {{ section.settings.section_corner_radius }}px;
+      border-radius: var(--section-corner-radius);
+      {% if section.settings.clip_section_corners and section.settings.section_corner_radius > 0 %}
+        overflow: clip;
+      {% endif %}
+    }
+    #shopify-section-{{ section.id }} > :is(div, section, footer, header, article, aside, slideshow-component),
+    #shopify-section-{{ section.id }} .nvgd-section-surface {
+      border-radius: var(--section-corner-radius);
+    }
+  {%- endstyle -%}
+{%- endif -%}

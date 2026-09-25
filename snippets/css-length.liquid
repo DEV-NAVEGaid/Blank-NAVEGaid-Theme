@@ -1,0 +1,37 @@
+{%- doc -%}
+  Normalises a merchant-entered length into a valid CSS length.
+
+  Merchants type "50" as often as "50px". A bare number is invalid inside
+  translate(), width, padding and friends, and the browser discards the whole
+  declaration silently — so the setting appears to do nothing. This appends a
+  unit to bare numbers and passes anything already unit-qualified straight
+  through.
+
+  @param {string} value - Raw setting value, e.g. "50", "20%", "-10px", "0"
+  @param {string} [unit] - Unit appended to bare numbers. Defaults to "px".
+
+  @example
+  style="transform: translate({% render 'css-length', value: block.settings.transform_x_desktop %}, 0)"
+{%- enddoc -%}
+{%- liquid
+  assign raw = value | default: '0' | strip
+  if raw == blank
+    assign raw = '0'
+  endif
+
+  assign fallback = unit | default: 'px'
+  assign qualified = false
+
+  if raw == '0'
+    assign qualified = true
+  endif
+  if raw contains '%' or raw contains 'px' or raw contains 'em' or raw contains 'vw' or raw contains 'vh' or raw contains 'vmin' or raw contains 'vmax' or raw contains 'ch' or raw contains 'ex' or raw contains 'cm' or raw contains 'mm' or raw contains 'in' or raw contains 'pt' or raw contains 'pc' or raw contains 'calc' or raw contains 'var('
+    assign qualified = true
+  endif
+
+  if qualified
+    echo raw
+  else
+    echo raw | append: fallback
+  endif
+-%}

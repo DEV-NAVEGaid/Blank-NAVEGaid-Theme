@@ -1,0 +1,1156 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Simple CTA Banner - Heading Left, Form/Button Right
+  Structure: Section wrapper (spacing/width) > Container > Group wrapper (black banner)
+{% endcomment %}
+
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+{%- comment -%}
+  font_picker settings return a font object, and its family only renders once the
+  @font-face declaration is emitted, so declare every font this section renders.
+  The filter returns nothing for system fonts, so no guard is needed.
+  https://shopify.dev/docs/storefronts/themes/architecture/settings/fonts
+{%- endcomment -%}
+{%- style -%}
+  {{ section.settings.heading_font | font_face: font_display: 'swap' }}
+  {{ section.settings.button_font | font_face: font_display: 'swap' }}
+{%- endstyle -%}
+
+{%- comment -%}
+  The form blocks carry their own font_picker settings.
+{%- endcomment -%}
+{%- style -%}
+  {%- for block in section.blocks -%}
+    {{ block.settings.input_font | font_face: font_display: 'swap' }}
+    {{ block.settings.button_font | font_face: font_display: 'swap' }}
+  {%- endfor -%}
+{%- endstyle -%}
+
+{% style %}
+  /* --- Section Wrapper - page spacing & width --- */
+  .cta-banner-section-{{ section_id }} {
+    width: 100%;
+    box-sizing: border-box;
+    {% if section.settings.section_width == 'fixed' %}
+      max-width: {{ section.settings.fixed_width }}px;
+      margin-left: auto;
+      margin-right: auto;
+    {% endif %}
+    {% if section.settings.enable_global_spacing %}
+      padding: {{ settings.padding_vertical }}px {{ settings.padding_horizontal }}px;
+    {% else %}
+      padding: {{ section.settings.padding_top }}px {{ section.settings.padding_x }}px {{ section.settings.padding_bottom }}px;
+    {% endif %}
+  }
+
+  @media screen and (max-width: 749px) {
+    .cta-banner-section-{{ section_id }} {
+      {% if section.settings.enable_global_spacing %}
+        padding: {{ settings.padding_vertical_mobile }}px {{ settings.padding_horizontal_mobile }}px;
+      {% else %}
+        padding: {{ section.settings.padding_top_mobile }}px {{ section.settings.padding_x_mobile }}px {{ section.settings.padding_bottom_mobile }}px;
+      {% endif %}
+    }
+  }
+
+  /* --- Container - constrains the group --- */
+  .cta-banner-container-{{ section_id }} {
+    width: 100%;
+    margin: 0 auto;
+    {% if section.settings.enable_global_spacing %}
+      max-width: var(--page-width);
+    {% else %}
+      max-width: 100%;
+    {% endif %}
+  }
+
+  /* --- Group Wrapper - the black banner --- */
+  .cta-banner-group-{{ section_id }} {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: {% if section.settings.group_desktop_direction == 'vertical' %}column{% else %}row{% endif %};
+    justify-content: {{ section.settings.group_justify }};
+    align-items: {{ section.settings.group_align }};
+    gap: {{ section.settings.group_gap }}px;
+    background-color: {{ section.settings.background_color }};
+    border-radius: {{ section.settings.group_border_radius }}px;
+    padding: {{ section.settings.group_padding_top }}px {{ section.settings.group_padding_x }}px {{ section.settings.group_padding_bottom }}px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* --- Heading Styling --- */
+  .cta-heading-{{ section_id }} h2 {
+    font-family: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    font-weight: {{ section.settings.heading_weight }};
+    font-size: {{ section.settings.heading_size }}px;
+    color: {{ section.settings.heading_color }};
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* In horizontal mode the heading takes the remaining space so the form stays on the right */
+  {% if section.settings.group_desktop_direction != 'vertical' %}
+    @media screen and (min-width: 750px) {
+      .cta-heading-{{ section_id }} {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+    {% if section.settings.stack_on_mobile != true %}
+      @media screen and (max-width: 749px) {
+        .cta-heading-{{ section_id }} {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+      }
+    {% endif %}
+  {% endif %}
+
+  /* --- Button Styling --- */
+  .cta-button-{{ section_id }} {
+    display: inline-block;
+    font-family: {{ section.settings.button_font.family }}, {{ section.settings.button_font.fallback_families }};
+    font-weight: {{ section.settings.button_weight }};
+    font-size: {{ section.settings.button_size }}px;
+    color: {{ section.settings.button_text_color }};
+    background-color: {{ section.settings.button_bg_color }};
+    padding: {{ section.settings.button_padding_y }}px {{ section.settings.button_padding_x }}px;
+    border-radius: {{ section.settings.button_radius }}px;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .cta-button-{{ section_id }}:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+
+  /* --- Responsive --- */
+  @media screen and (max-width: 1024px) {
+    .cta-heading-{{ section_id }} h2 {
+      font-size: {{ section.settings.heading_size_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .cta-banner-group-{{ section_id }} {
+      {% if section.settings.stack_on_mobile %}
+        flex-direction: column;
+        align-items: {% if section.settings.mobile_alignment == 'center' %}center{% else %}stretch{% endif %};
+        justify-content: center;
+        text-align: {{ section.settings.mobile_alignment }};
+      {% else %}
+        flex-direction: {% if section.settings.group_desktop_direction == 'vertical' %}column{% else %}row{% endif %};
+        justify-content: {{ section.settings.group_justify }};
+        align-items: {{ section.settings.group_align }};
+      {% endif %}
+      gap: {{ section.settings.group_gap_mobile }}px;
+      padding: {{ section.settings.group_padding_top_mobile }}px {{ section.settings.group_padding_x_mobile }}px {{ section.settings.group_padding_bottom_mobile }}px;
+    }
+
+    .cta-heading-{{ section_id }} h2 {
+      font-size: {{ section.settings.heading_size_mobile }}px;
+    }
+
+    .cta-button-{{ section_id }} {
+      width: {% if section.settings.mobile_full_width_btn %}100%{% else %}auto{% endif %};
+      text-align: center;
+    }
+  }
+{% endstyle %}
+
+<div class="cta-banner-section-{{ section_id }} nvgd-section-surface">
+  <div class="cta-banner-container-{{ section_id }}">
+    <div class="cta-banner-group-{{ section_id }}">
+
+      {% if section.blocks.size > 0 %}
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'heading' %}
+              <div class="cta-heading-{{ section_id }}" {{ block.shopify_attributes }}>
+                {% if block.settings.heading != blank %}
+                  <h2>{{ block.settings.heading }}</h2>
+                {% endif %}
+              </div>
+            {% when 'button' %}
+              {% if block.settings.button_text != blank %}
+                <a
+                  class="cta-button-{{ section_id }}"
+                  {% if block.settings.button_link != blank %}
+                    href="{{ block.settings.button_link }}"
+                  {% else %}
+                    role="link"
+                    aria-disabled="true"
+                  {% endif %}
+                  {{ block.shopify_attributes }}
+                >
+                  {{ block.settings.button_text }}
+                </a>
+              {% endif %}
+            {% when 'form' %}
+              {% style %}
+                .cta-form-{{ block.id }} {
+                  width: 100%;
+                  max-width: {{ block.settings.form_max_width }}px;
+                  flex-shrink: 0;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__form {
+                  width: 100%;
+                  display: flex;
+                  flex-direction: column;
+                  gap: {{ block.settings.form_gap }}px;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__field {
+                  display: flex;
+                  align-items: center;
+                  gap: 10px;
+                  background-color: {{ block.settings.input_bg_color }};
+                  border-radius: {{ block.settings.input_radius }}px;
+                  padding: 0 {{ block.settings.input_padding_x }}px;
+                  box-sizing: border-box;
+                  transition: box-shadow 0.2s ease;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__field:focus-within {
+                  box-shadow: 0 0 0 2px {{ block.settings.input_text_color | color_modify: 'alpha', 0.45 }};
+                }
+
+                .cta-form-{{ block.id }} .cta-form__icon {
+                  display: flex;
+                  align-items: center;
+                  flex-shrink: 0;
+                  color: {{ block.settings.icon_color }};
+                }
+
+                .cta-form-{{ block.id }} .cta-form__icon svg {
+                  width: {{ block.settings.icon_size }}px;
+                  height: {{ block.settings.icon_size }}px;
+                  display: block;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__input {
+                  width: 100%;
+                  min-width: 0;
+                  border: none;
+                  background: transparent;
+                  outline: none;
+                  font-family: {{ block.settings.input_font.family }}, {{ block.settings.input_font.fallback_families }};
+                  font-size: {{ block.settings.input_size }}px;
+                  color: {{ block.settings.input_text_color }};
+                  padding: {{ block.settings.input_padding_y }}px 0;
+                  margin: 0;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__input:focus,
+                .cta-form-{{ block.id }} .cta-form__input:focus-visible {
+                  outline: none;
+                  box-shadow: none;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__input::placeholder {
+                  color: {{ block.settings.input_placeholder_color }};
+                  opacity: 1;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__button {
+                  width: 100%;
+                  font-family: {{ block.settings.button_font.family }}, {{ block.settings.button_font.fallback_families }};
+                  font-size: {{ block.settings.button_size }}px;
+                  font-weight: {{ block.settings.button_weight }};
+                  color: {{ block.settings.button_text_color }};
+                  background-color: {{ block.settings.button_bg_color }};
+                  border-radius: {{ block.settings.button_radius }}px;
+                  padding: {{ block.settings.button_padding_y }}px {{ block.settings.button_padding_x }}px;
+                  border: none;
+                  cursor: pointer;
+                  transition: opacity 0.2s ease, transform 0.2s ease;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__button:hover {
+                  opacity: 0.9;
+                  transform: scale(1.02);
+                }
+
+                .cta-form-{{ block.id }} .cta-form__message {
+                  font-size: 14px;
+                  margin: 0;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__message--success {
+                  color: #111111;
+                }
+
+                .cta-form-{{ block.id }} .cta-form__message--error {
+                  color: #111111;
+                }
+
+                {% if section.settings.stack_on_mobile or section.settings.group_desktop_direction == 'vertical' %}
+                @media screen and (max-width: 749px) {
+                  .cta-form-{{ block.id }} {
+                    max-width: 100%;
+                  }
+                }
+                {% endif %}
+              {% endstyle %}
+
+              <div class="cta-form-{{ block.id }}" {{ block.shopify_attributes }}>
+                {% form 'customer', class: 'cta-form__form' %}
+                  <input type="hidden" name="contact[tags]" value="newsletter">
+                  {% if form.posted_successfully? %}
+                    <p class="cta-form__message cta-form__message--success" tabindex="-1" autofocus>
+                      {{ 'newsletter.success' | t }}
+                    </p>
+                  {% endif %}
+                  <div class="cta-form__field">
+                    <span class="cta-form__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2.75" y="5" width="18.5" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+                        <path d="m3.5 6.5 8.5 6.5 8.5-6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                    <input
+                      type="email"
+                      name="contact[email]"
+                      class="cta-form__input"
+                      id="NewsletterForm--{{ block.id }}"
+                      value="{{ form.email }}"
+                      placeholder="{{ block.settings.placeholder | escape }}"
+                      aria-label="{{ block.settings.placeholder | escape }}"
+                      autocomplete="email"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      required
+                      {% if form.errors %}
+                        aria-invalid="true"
+                        aria-describedby="Newsletter-error--{{ block.id }}"
+                      {% endif %}
+                    >
+                  </div>
+                  {% if form.errors %}
+                    <small class="cta-form__message cta-form__message--error" id="Newsletter-error--{{ block.id }}">
+                      {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+                    </small>
+                  {% endif %}
+                  <button
+                    type="submit"
+                    name="commit"
+                    id="Subscribe-{{ block.id }}"
+                    class="cta-form__button"
+                  >
+                    {{ block.settings.button_label }}
+                  </button>
+                {% endform %}
+              </div>
+          {% endcase %}
+        {% endfor %}
+      {% else %}
+        <div class="cta-heading-{{ section_id }}">
+          {% if section.settings.heading != blank %}
+            <h2>{{ section.settings.heading }}</h2>
+          {% endif %}
+        </div>
+
+        {% if section.settings.button_text != blank %}
+          <a
+            class="cta-button-{{ section_id }}"
+            {% if section.settings.button_link != blank %}
+              href="{{ section.settings.button_link }}"
+            {% else %}
+              role="link"
+              aria-disabled="true"
+            {% endif %}
+          >
+            {{ section.settings.button_text }}
+          </a>
+        {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Simple CTA banner",
+  "tag": "section",
+  "class": "section-simple-cta",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Group layout"
+    },
+    {
+      "type": "select",
+      "id": "group_desktop_direction",
+      "label": "Desktop direction",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": "Horizontal (blocks side by side)"
+        },
+        {
+          "value": "vertical",
+          "label": "Vertical (blocks stacked)"
+        }
+      ],
+      "default": "horizontal"
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_on_mobile",
+      "label": "Stack vertically on mobile",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Group background color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "group_border_radius",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Group corner radius",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "group_padding_x",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Group side padding",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "group_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Group top padding",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "group_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Group bottom padding",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "group_padding_x_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Group side padding (mobile)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "group_padding_top_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Group top padding (mobile)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "group_padding_bottom_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Group bottom padding (mobile)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "group_gap",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap between blocks (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "group_gap_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap between blocks (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "group_justify",
+      "label": "Group horizontal alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "End"
+        },
+        {
+          "value": "space-between",
+          "label": "Space Between"
+        }
+      ],
+      "default": "space-between"
+    },
+    {
+      "type": "select",
+      "id": "group_align",
+      "label": "Group vertical alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "End"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading text",
+      "default": "Heading"
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading font",
+      "default": "assistant_n7"
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        },
+        {
+          "value": "800",
+          "label": "Extra Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Font size (desktop)",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "heading_size_tablet",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Font size (tablet)",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 18,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Font size (mobile)",
+      "default": 28
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Button"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "button_padding_x",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "button_padding_y",
+      "min": 5,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Vertical padding",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Button font size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "button_weight",
+      "label": "Button weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "font_picker",
+      "id": "button_font",
+      "label": "Button font",
+      "default": "assistant_n7"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed Width"
+        }
+      ],
+      "default": "fixed",
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "fixed_width",
+      "min": 800,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "label": "Max width",
+      "default": 1200,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_full_width_btn",
+      "label": "Full width button on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing",
+      "info": "Uses theme padding and page width settings"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding (mobile)",
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 60,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 60,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding (mobile)",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding (mobile)",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Heading"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Button"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        }
+      ]
+    },
+    {
+      "type": "form",
+      "name": "Newsletter form",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Email placeholder",
+          "default": "Enter your email address"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Subscribe button label",
+          "default": "Subscribe to Newsletter"
+        },
+        {
+          "type": "header",
+          "content": "Input field"
+        },
+        {
+          "type": "color",
+          "id": "input_bg_color",
+          "label": "Background",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "input_text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "input_placeholder_color",
+          "label": "Placeholder color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "color",
+          "id": "icon_color",
+          "label": "Icon color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "range",
+          "id": "icon_size",
+          "min": 14,
+          "max": 28,
+          "step": 1,
+          "unit": "px",
+          "label": "Icon size",
+          "default": 18
+        },
+        {
+          "type": "range",
+          "id": "input_radius",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "unit": "px",
+          "label": "Corner radius",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "input_padding_x",
+          "min": 10,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Side padding",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "input_padding_y",
+          "min": 8,
+          "max": 30,
+          "step": 1,
+          "unit": "px",
+          "label": "Vertical padding",
+          "default": 14
+        },
+        {
+          "type": "range",
+          "id": "input_size",
+          "min": 12,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "label": "Font size",
+          "default": 16
+        },
+        {
+          "type": "font_picker",
+          "id": "input_font",
+          "label": "Font",
+          "default": "assistant_n4"
+        },
+        {
+          "type": "header",
+          "content": "Subscribe button"
+        },
+        {
+          "type": "color",
+          "id": "button_bg_color",
+          "label": "Background",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "range",
+          "id": "button_radius",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "unit": "px",
+          "label": "Corner radius",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "button_padding_x",
+          "min": 10,
+          "max": 60,
+          "step": 2,
+          "unit": "px",
+          "label": "Horizontal padding",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "button_padding_y",
+          "min": 8,
+          "max": 30,
+          "step": 1,
+          "unit": "px",
+          "label": "Vertical padding",
+          "default": 14
+        },
+        {
+          "type": "range",
+          "id": "button_size",
+          "min": 12,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "label": "Font size",
+          "default": 16
+        },
+        {
+          "type": "select",
+          "id": "button_weight",
+          "label": "Font weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "font_picker",
+          "id": "button_font",
+          "label": "Font",
+          "default": "assistant_n7"
+        },
+        {
+          "type": "header",
+          "content": "Layout"
+        },
+        {
+          "type": "range",
+          "id": "form_max_width",
+          "min": 200,
+          "max": 600,
+          "step": 10,
+          "unit": "px",
+          "label": "Form max width",
+          "default": 380
+        },
+        {
+          "type": "range",
+          "id": "form_gap",
+          "min": 0,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Gap between input and button",
+          "default": 12
+        }
+      ]
+    }
+  ],
+  "max_blocks": 3,
+  "presets": [
+    {
+      "name": "Simple CTA banner",
+      "blocks": [
+        {
+          "type": "heading",
+          "settings": {
+            "heading": "Heading"
+          }
+        },
+        {
+          "type": "form"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

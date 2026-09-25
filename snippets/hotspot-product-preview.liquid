@@ -1,0 +1,64 @@
+{%- liquid
+  assign preview_alt = preview_image.alt | default: title
+  assign placeholder_name = 'product-' | append: placeholder_index
+  assign placeholder_class = 'pdh-compact-placeholder-' | append: sid
+-%}
+
+<div class="pdh-compact-media-{{ sid }} pdh-compact-media">
+  {%- if preview_image != blank -%}
+    {{
+      preview_image
+      | image_url: width: 320
+      | image_tag:
+        loading: 'lazy',
+        widths: '96, 160, 240, 320',
+        sizes: '(max-width: 989px) 96px, 88px',
+        alt: preview_alt
+    }}
+  {%- else -%}
+    {% if request.design_mode %}{{ placeholder_name | placeholder_svg_tag: placeholder_class }}{% endif %}
+  {%- endif -%}
+</div>
+
+<div class="pdh-compact-details-{{ sid }} pdh-compact-details">
+  {%- if badge != blank -%}
+    <span class="pdh-card-badge-{{ sid }} pdh-card-badge">{{ badge | escape }}</span>
+  {%- endif -%}
+
+  <h3 id="{{ title_id }}" class="pdh-compact-title-{{ sid }} pdh-compact-title">
+    {%- if url != blank and url != '#' -%}
+      <a href="{{ url | escape }}">{{ title | escape }}</a>
+    {%- else -%}
+      {{ title | escape }}
+    {%- endif -%}
+  </h3>
+
+  {%- if desc != blank -%}
+    <p class="pdh-compact-desc-{{ sid }} pdh-compact-desc">{{ desc | escape }}</p>
+  {%- endif -%}
+
+  {%- if price != blank -%}
+  <div class="pdh-compact-price-wrap-{{ sid }} pdh-compact-price-wrap">
+    <span class="pdh-compact-price-{{ sid }} pdh-compact-price">{{ price }}</span>
+    {%- if compare_price != blank -%}
+      <span class="pdh-compact-compare-{{ sid }} pdh-compact-compare">{{ compare_price }}</span>
+    {%- endif -%}
+  </div>
+  {%- endif -%}
+
+  {%- if highlight != blank -%}
+    <div class="pdh-card-highlight-{{ sid }} pdh-card-highlight">
+      <span class="pdh-check-icon-{{ sid }} pdh-check-icon">&#10003;</span>
+      <span>{{ highlight | escape }}</span>
+    </div>
+  {%- endif -%}
+
+  {%- render 'hotspot-buy-button',
+    product: product,
+    sid: sid,
+    index: index,
+    location: location,
+    label: button_label,
+    url: url
+  -%}
+</div>

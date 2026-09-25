@@ -1,0 +1,2986 @@
+{% render 'section-corners', section: section %}
+<script src="{{ 'product-discovery-hotspot.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{% assign sid = section.id | replace: '_', '' | downcase %}
+
+{% comment %} Find blocks by type {% endcomment %}
+{% assign heading_block = nil %}
+{% assign card_block = nil %}
+
+{% for block in section.blocks %}
+  {% if block.type == 'heading' %}
+    {% assign heading_block = block %}
+  {% elsif block.type == 'product_card' %}
+    {% assign card_block = block %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} Aspect ratio computation {% endcomment %}
+{% assign img_ratio = section.settings.image_ratio %}
+{% if img_ratio == '1:1' %}
+  {% assign ratio_val = 100 %}
+{% elsif img_ratio == '4:3' %}
+  {% assign ratio_val = 75 %}
+{% elsif img_ratio == '3:2' %}
+  {% assign ratio_val = 66.666 %}
+{% elsif img_ratio == '16:9' %}
+  {% assign ratio_val = 56.25 %}
+{% elsif img_ratio == '2:3' %}
+  {% assign ratio_val = 150 %}
+{% elsif img_ratio == '3:4' %}
+  {% assign ratio_val = 133.333 %}
+{% elsif img_ratio == '5:4' %}
+  {% assign ratio_val = 80 %}
+{% elsif img_ratio == 'custom' %}
+  {% assign ratio_val = section.settings.custom_ratio %}
+{% else %}
+  {% assign ratio_val = 66.666 %}
+{% endif %}
+
+{% style %}
+  /* Per-instance custom properties only; all rules live in the bundled stylesheet below. */
+  #shopify-section-{{ section.id }} {
+    --pdh-z: {{ section.settings.z_index }};
+    --pdh-bg: {{ section.settings.section_bg }};
+    --pdh-gap: {{ section.settings.desktop_gap }}px;
+    --pdh-img-br: {{ section.settings.image_border_radius }}px;
+    --pdh-pin-size: {{ section.settings.hotspot_dot_size }}px;
+    --pdh-pin-btn: {{ section.settings.hotspot_dot_size | plus: 14 }}px;
+    --pdh-pin-center: {{ section.settings.hotspot_dot_size | divided_by: 2.2 | round }}px;
+    --pdh-dot-color: {{ section.settings.hotspot_dot_color }};
+    --pdh-halo-color: {{ section.settings.hotspot_active_halo_color }};
+    --pdh-popup-w: {{ section.settings.popup_card_width | default: 310 }}px;
+    --pdh-max-w: {% if section.settings.enable_global_spacing %}var(--page-width){% elsif section.settings.section_width == 'fixed' %}{{ section.settings.container_width }}px{% else %}100%{% endif %};
+    --pdh-img-flex: {% if section.settings.enable_popup_card %}1 1 auto{% elsif section.settings.desktop_layout == '50/50' %}0 0 calc({{ section.settings.desktop_gap }}px / 2){% elsif section.settings.desktop_layout == '60/40' %}0 0 calc({{ section.settings.desktop_gap }}px * 0.4){% else %}0 0 calc({{ section.settings.desktop_gap }}px * 0.45){% endif %};
+    --pdh-frame-pt: {% if img_ratio == 'natural' %}0{% else %}{{ ratio_val }}%{% endif %};
+    --pdh-pt: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px{% else %}{{ section.settings.padding_top }}px{% endif %};
+    --pdh-pb: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px{% else %}{{ section.settings.padding_bottom }}px{% endif %};
+    --pdh-pl: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_left }}px{% endif %};
+    --pdh-pr: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_right }}px{% endif %};
+    --pdh-card-bg: {{ card_block.settings.card_bg | default: '#FFFFFF' }};
+    --pdh-card-br: {{ card_block.settings.card_border_radius | default: 20 }}px;
+    --pdh-card-bc: {{ card_block.settings.card_border_color | default: 'rgba(0,0,0,0.06)' }};
+    --pdh-card-pad: {{ card_block.settings.card_padding | default: 32 }}px;
+    --pdh-card-pad-m: {{ card_block.settings.card_padding_mobile | default: 22 }}px;
+    --pdh-badge-py: {{ card_block.settings.badge_padding_y | default: 4 }}px;
+    --pdh-badge-px: {{ card_block.settings.badge_padding_x | default: 12 }}px;
+    --pdh-badge-bg: {{ card_block.settings.badge_bg | default: '#F5F5F5' }};
+    --pdh-badge-color: {{ card_block.settings.badge_color | default: '#111111' }};
+    --pdh-badge-ff: {{ card_block.settings.badge_font_family | default: 'inherit' }};
+    --pdh-badge-fs: {{ card_block.settings.badge_font_size | default: 11 }}px;
+    --pdh-badge-fw: {{ card_block.settings.badge_font_weight | default: '700' }};
+    --pdh-badge-ls: {{ card_block.settings.badge_letter_spacing | default: 1.5 }}px;
+    --pdh-badge-br: {{ card_block.settings.badge_border_radius | default: 16 }}px;
+    --pdh-title-color: {{ card_block.settings.title_color | default: '#111111' }};
+    --pdh-title-ff: {{ card_block.settings.title_font_family | default: "inherit" }};
+    --pdh-title-fs: {{ card_block.settings.title_font_size | default: 28 }}px;
+    --pdh-title-fs-m: {{ card_block.settings.title_font_size_mobile | default: 22 }}px;
+    --pdh-title-fs-pop: {{ card_block.settings.title_font_size | default: 28 | times: 0.88 | round }}px;
+    --pdh-title-fw: {{ card_block.settings.title_font_weight | default: '600' }};
+    --pdh-title-lh: {{ card_block.settings.title_line_height | default: '1.2' }};
+    --pdh-desc-color: {{ card_block.settings.desc_color | default: '#111111' }};
+    --pdh-desc-ff: {{ card_block.settings.desc_font_family | default: 'inherit' }};
+    --pdh-desc-fs: {{ card_block.settings.desc_font_size | default: 13 }}px;
+    --pdh-desc-fs-m: {{ card_block.settings.desc_font_size_mobile | default: 12 }}px;
+    --pdh-desc-fw: {{ card_block.settings.desc_font_weight | default: '400' }};
+    --pdh-desc-lh: {{ card_block.settings.desc_line_height | default: '1.55' }};
+    --pdh-compact-desc-color: {{ card_block.settings.desc_color | default: '#111111' }};
+    --pdh-desc-clamp: {{ card_block.settings.desc_line_clamp | default: 4 }};
+    --pdh-price-color: {{ card_block.settings.price_color | default: '#111111' }};
+    --pdh-price-ff: {{ card_block.settings.price_font_family | default: 'inherit' }};
+    --pdh-price-fs: {{ card_block.settings.price_font_size | default: 20 }}px;
+    --pdh-price-fs-compare: {{ card_block.settings.price_font_size | default: 20 | times: 0.85 | round }}px;
+    --pdh-price-fw: {{ card_block.settings.price_font_weight | default: '600' }};
+    --pdh-compare-color: {{ card_block.settings.compare_price_color | default: '#111111' }};
+    --pdh-highlight-color: {{ card_block.settings.highlight_color | default: '#111111' }};
+    --pdh-highlight-ff: {{ card_block.settings.highlight_font_family | default: 'inherit' }};
+    --pdh-highlight-fs: {{ card_block.settings.highlight_font_size | default: 12 }}px;
+    --pdh-highlight-fw: {{ card_block.settings.highlight_font_weight | default: '400' }};
+    --pdh-highlight-icon: {{ card_block.settings.highlight_icon_color | default: '#F5F5F5' }};
+    --pdh-btn-bg: {{ card_block.settings.button_bg | default: '#111111' }};
+    --pdh-btn-hover-bg: {{ card_block.settings.button_hover_bg | default: '#111111' }};
+    --pdh-btn-color: {{ card_block.settings.button_color | default: '#FFFFFF' }};
+    --pdh-btn-ff: {{ card_block.settings.button_font_family | default: 'inherit' }};
+    --pdh-btn-fs: {{ card_block.settings.button_font_size | default: 12 }}px;
+    --pdh-btn-fw: {{ card_block.settings.button_font_weight | default: '600' }};
+    --pdh-btn-ls: {{ card_block.settings.button_letter_spacing | default: 2 }}px;
+    --pdh-btn-br: {{ card_block.settings.button_border_radius | default: 30 }}px;
+    --pdh-btn-h: {{ card_block.settings.button_height | default: 46 }}px;
+    --pdh-thumb-d: {{ card_block.settings.thumb_size_desktop | default: 72 }}px;
+    --pdh-thumb-m: {{ card_block.settings.thumb_size_mobile | default: 60 }}px;
+    --pdh-thumb-br: {{ card_block.settings.thumb_border_radius | default: 12 }}px;
+    --pdh-thumb-bw: {{ card_block.settings.thumb_border_width | default: 2 }}px;
+    --pdh-thumb-bc: {{ card_block.settings.thumb_inactive_border_color | default: 'transparent' }};
+    --pdh-thumb-bc-active: {{ card_block.settings.thumb_active_border_color | default: '#F5F5F5' }};
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} {
+      --pdh-pt-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px{% else %}{{ section.settings.padding_top_mobile }}px{% endif %};
+      --pdh-pb-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px{% else %}{{ section.settings.padding_bottom_mobile }}px{% endif %};
+      --pdh-pl-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_left_mobile }}px{% endif %};
+      --pdh-pr-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_right_mobile }}px{% endif %};
+    }
+  }
+{% endstyle %}
+
+<product-discovery-hotspot
+  class="pdh-section-{{ sid }} pdh-section{% if section.settings.enable_hotspot_pulse %} pdh-pulse-on{% endif %}{% if card_block.settings.desc_line_clamp != 'none' %} pdh-clamp-on{% endif %}{% unless section.settings.show_side_column %} pdh-no-side-col{% endunless %}"
+  data-section-id="{{ section.id }}"
+  data-interaction="{{ section.settings.hotspot_interaction }}"
+  data-display-mode="{% if section.settings.enable_popup_card %}floating-preview{% else %}side-panel{% endif %}"
+>
+  <div class="pdh-container-{{ sid }} pdh-container">
+
+    {%- comment -%} ── Block Component 1: Section Heading ── {%- endcomment -%}
+    {%- if heading_block != nil -%}
+      {%- assign hb = heading_block.settings -%}
+      <div class="pdh-header-wrap-{{ sid }} pdh-header-wrap"
+        style="--pdh-hdr-align: {{ heading_block.settings.heading_alignment }}; --pdh-hdr-gap: {{ heading_block.settings.heading_gap }}px; --pdh-heading-color: {{ heading_block.settings.heading_color }}; --pdh-heading-ff: {{ heading_block.settings.heading_font_family }}; --pdh-heading-fs: {{ heading_block.settings.heading_font_size }}px; --pdh-heading-fs-m: {{ heading_block.settings.heading_font_size_mobile }}px; --pdh-heading-fw: {{ heading_block.settings.heading_font_weight }}; --pdh-heading-lh: {{ heading_block.settings.heading_line_height }}; --pdh-heading-ls: {{ heading_block.settings.heading_letter_spacing }}px; --pdh-heading-tt: {{ heading_block.settings.heading_text_transform }}; --pdh-heading-gap: {{ heading_block.settings.title_subtitle_gap }}px; --pdh-sub-color: {{ heading_block.settings.subheading_color }}; --pdh-sub-ff: {{ heading_block.settings.subheading_font_family }}; --pdh-sub-fs: {{ heading_block.settings.subheading_font_size }}px; --pdh-sub-fs-m: {{ heading_block.settings.subheading_font_size_mobile }}px; --pdh-sub-fw: {{ heading_block.settings.subheading_font_weight }}; --pdh-sub-lh: {{ heading_block.settings.subheading_line_height }}; --pdh-sub-ls: {{ heading_block.settings.subheading_letter_spacing }}px;"
+        {{ heading_block.shopify_attributes }}
+      >
+        {%- if hb.heading != blank -%}
+          <{{ hb.heading_tag }} class="pdh-heading-{{ sid }} pdh-heading">
+            {{- hb.heading | escape -}}
+          </{{ hb.heading_tag }}>
+        {%- endif -%}
+        {%- if hb.subheading != blank -%}
+          <p class="pdh-subheading-{{ sid }} pdh-subheading">
+            {{- hb.subheading | escape -}}
+          </p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Resolve products from each merchant-reorderable hotspot block. A selected
+      collection supplies products by matching block position when no override is set.
+    {%- endcomment -%}
+    {%- assign hotspot_blocks = section.blocks | where: 'type', 'hotspot_pin' -%}
+    {%- assign col_products = section.settings.collection.products -%}
+
+    <div class="pdh-main-grid-{{ sid }} pdh-main-grid">
+
+      {%- comment -%} ── Left Column: Lifestyle Image with Hotspot Pins & Pop-Up Cards ── {%- endcomment -%}
+      <div class="pdh-image-col-{{ sid }} pdh-image-col">
+        <div class="pdh-lifestyle-frame-{{ sid }} pdh-lifestyle-frame">
+          <div class="pdh-image-inner-{{ sid }} pdh-image-inner">
+            {%- if section.settings.lifestyle_image != blank -%}
+              {%- assign lifestyle_alt = section.settings.lifestyle_image.alt | default: section.settings.heading | default: 'Product Discovery Hotspot' -%}
+              {{ section.settings.lifestyle_image | image_url: width: 1600 | image_tag: loading: 'lazy', alt: lifestyle_alt }}
+            {%- else -%}
+              {% if request.design_mode %}{{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+            {%- endif -%}
+          </div>
+
+          {%- comment -%} Render hotspot pins with floating product cards {%- endcomment -%}
+          {%- for pin_block in hotspot_blocks -%}
+            {%- assign i = forloop.index0 -%}
+            {%- assign default_x = 22 -%}
+            {%- assign default_y = 65 -%}
+            {%- if i == 1 -%}
+              {%- assign default_x = 45 -%}
+              {%- assign default_y = 35 -%}
+            {%- elsif i == 2 -%}
+              {%- assign default_x = 70 -%}
+              {%- assign default_y = 38 -%}
+            {%- endif -%}
+
+            {%- assign pin_x = pin_block.settings.pin_x | default: default_x -%}
+            {%- assign pin_y = pin_block.settings.pin_y | default: default_y -%}
+
+            {%- comment -%} Resolve current product for this pin {%- endcomment -%}
+            {%- assign current_prod = nil -%}
+            {%- if pin_block.settings.product != blank -%}
+              {%- assign current_prod = pin_block.settings.product -%}
+            {%- elsif col_products != blank and col_products[i] != blank -%}
+              {%- assign current_prod = col_products[i] -%}
+            {%- endif -%}
+
+            {%- assign p_title = '' -%}
+            {%- assign p_desc = '' -%}
+            {%- assign p_price = '' -%}
+            {%- assign p_compare = '' -%}
+            {%- assign p_url = '' -%}
+            {%- assign p_badge = '' -%}
+            {%- assign p_highlight = '' -%}
+            {%- if current_prod != nil -%}
+              {%- assign p_title = current_prod.title -%}
+              {%- assign p_desc = current_prod.description | strip_html | truncatewords: 26 -%}
+              {%- assign p_price = current_prod.price | money -%}
+              {%- if current_prod.compare_at_price > current_prod.price -%}
+                {%- assign p_compare = current_prod.compare_at_price | money -%}
+              {%- else -%}
+                {%- assign p_compare = '' -%}
+              {%- endif -%}
+              {%- assign p_url = current_prod.url -%}
+            {%- endif -%}
+
+            {%- comment -%} Block overrides {%- endcomment -%}
+            {%- if pin_block.settings.badge_text != blank -%}
+              {%- assign p_badge = pin_block.settings.badge_text -%}
+            {%- endif -%}
+            {%- if pin_block.settings.custom_title != blank -%}
+              {%- assign p_title = pin_block.settings.custom_title -%}
+            {%- endif -%}
+            {%- if pin_block.settings.custom_description != blank -%}
+              {%- assign p_desc = pin_block.settings.custom_description -%}
+            {%- endif -%}
+            {%- if pin_block.settings.highlight_bullet != blank -%}
+              {%- assign p_highlight = pin_block.settings.highlight_bullet -%}
+            {%- endif -%}
+
+            {%- assign preview_image = pin_block.settings.custom_image -%}
+            {%- if preview_image == blank and current_prod.featured_image != blank -%}
+              {%- assign preview_image = current_prod.featured_image -%}
+            {%- endif -%}
+            {%- assign placeholder_index = i | plus: 1 -%}
+            {%- assign popup_title_id = 'HotspotPopupTitle-' | append: section.id | append: '-' | append: pin_block.id -%}
+
+            {%- comment -%} Calculate smart pop-up position {%- endcomment -%}
+            {%- assign popup_pos = pin_block.settings.popup_position | default: 'auto' -%}
+            {%- if popup_pos == 'auto' -%}
+              {%- if pin_x > 55 -%}
+                {%- assign popup_pos = 'left' -%}
+              {%- elsif pin_x < 45 -%}
+                {%- assign popup_pos = 'right' -%}
+              {%- elsif pin_y > 55 -%}
+                {%- assign popup_pos = 'top' -%}
+              {%- else -%}
+                {%- assign popup_pos = 'bottom' -%}
+              {%- endif -%}
+            {%- endif -%}
+
+            <div
+              data-hotspot-item class="pdh-hotspot-item pdh-hotspot-item-{{ sid }}{% if i == 0 %} is-active{% endif %}"
+              style="left: {{ pin_x }}%; top: {{ pin_y }}%;"
+              data-index="{{ i }}"
+              {% if pin_block != nil %}{{ pin_block.shopify_attributes }}{% endif %}
+            >
+              <button
+                type="button"
+                class="pdh-hotspot-pin-{{ sid }} pdh-hotspot-pin"
+                data-index="{{ i }}"
+                aria-label="{% if p_title != blank %}View {{ p_title | escape }}{% else %}Product hotspot{% endif %}"
+                aria-pressed="{% if i == 0 %}true{% else %}false{% endif %}"
+                {% if section.settings.enable_popup_card %}
+                  aria-expanded="false"
+                  aria-controls="HotspotPopup-{{ section.id }}-{{ pin_block.id }} HotspotCard-{{ section.id }}-{{ pin_block.id }}"
+                {% else %}
+                  aria-controls="HotspotCard-{{ section.id }}-{{ pin_block.id }}"
+                {% endif %}
+              >
+                <span class="pdh-pin-halo-{{ sid }} pdh-pin-halo"></span>
+                <span class="pdh-pin-core-{{ sid }} pdh-pin-core">
+                  <span class="pdh-pin-center-{{ sid }} pdh-pin-center"></span>
+                </span>
+              </button>
+
+              {%- comment -%} ── Floating Pop-Up Card on Hover ── {%- endcomment -%}
+              {%- if section.settings.enable_popup_card -%}
+                <div
+                  id="HotspotPopup-{{ section.id }}-{{ pin_block.id }}"
+                  class="pdh-popup-card pdh-popup-card-{{ sid }} pdh-popup-pos-{{ popup_pos }}"
+                  data-hotspot-popup
+                  data-index="{{ i }}"
+                  role="region"
+                  aria-labelledby="HotspotPopupTitle-{{ section.id }}-{{ pin_block.id }}"
+                  aria-hidden="true"
+                >
+                  {% render 'hotspot-product-preview',
+                    sid: sid,
+                    preview_image: preview_image,
+                    placeholder_index: placeholder_index,
+                    title: p_title,
+                    title_id: popup_title_id,
+                    badge: p_badge,
+                    desc: p_desc,
+                    highlight: p_highlight,
+                    price: p_price,
+                    compare_price: p_compare,
+                    url: p_url,
+                    product: current_prod,
+                    button_label: card_block.settings.button_text,
+                    index: i,
+                    location: 'popup'
+                  %}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- comment -%} ── Right Column: Interactive Side Card + Thumbnails ── {%- endcomment -%}
+      <div class="pdh-content-col-{{ sid }} pdh-content-col">
+
+          {%- comment -%} Product cards stack {%- endcomment -%}
+          <div class="pdh-card-container-{{ sid }} pdh-card-container" {% if card_block != nil %}{{ card_block.shopify_attributes }}{% endif %}>
+            {%- for pin_block in hotspot_blocks -%}
+              {%- assign i = forloop.index0 -%}
+              
+              {%- comment -%} Resolve current product {%- endcomment -%}
+              {%- assign current_prod = nil -%}
+              {%- if pin_block.settings.product != blank -%}
+                {%- assign current_prod = pin_block.settings.product -%}
+              {%- elsif col_products != blank and col_products[i] != blank -%}
+                {%- assign current_prod = col_products[i] -%}
+              {%- endif -%}
+
+              {%- assign p_title = '' -%}
+              {%- assign p_desc = '' -%}
+              {%- assign p_price = '' -%}
+              {%- assign p_compare = '' -%}
+              {%- assign p_url = '' -%}
+              {%- assign p_badge = '' -%}
+              {%- assign p_highlight = '' -%}
+              {%- if current_prod != nil -%}
+                {%- assign p_title = current_prod.title -%}
+                {%- assign p_desc = current_prod.description | strip_html | truncatewords: 28 -%}
+                {%- assign p_price = current_prod.price | money -%}
+                {%- if current_prod.compare_at_price > current_prod.price -%}
+                  {%- assign p_compare = current_prod.compare_at_price | money -%}
+                {%- else -%}
+                  {%- assign p_compare = '' -%}
+                {%- endif -%}
+                {%- assign p_url = current_prod.url -%}
+              {%- endif -%}
+
+              {%- comment -%} Block overrides {%- endcomment -%}
+              {%- if pin_block.settings.badge_text != blank -%}
+                {%- assign p_badge = pin_block.settings.badge_text -%}
+              {%- endif -%}
+              {%- if pin_block.settings.custom_title != blank -%}
+                {%- assign p_title = pin_block.settings.custom_title -%}
+              {%- endif -%}
+              {%- if pin_block.settings.custom_description != blank -%}
+                {%- assign p_desc = pin_block.settings.custom_description -%}
+              {%- endif -%}
+              {%- if pin_block.settings.highlight_bullet != blank -%}
+                {%- assign p_highlight = pin_block.settings.highlight_bullet -%}
+              {%- endif -%}
+
+              {%- assign preview_image = pin_block.settings.custom_image -%}
+              {%- if preview_image == blank and current_prod.featured_image != blank -%}
+                {%- assign preview_image = current_prod.featured_image -%}
+              {%- endif -%}
+              {%- assign placeholder_index = i | plus: 1 -%}
+              {%- assign card_title_id = 'HotspotCardTitle-' | append: section.id | append: '-' | append: pin_block.id -%}
+
+              <div
+                id="HotspotCard-{{ section.id }}-{{ pin_block.id }}"
+                data-hotspot-card
+                class="pdh-card-item pdh-card-item-{{ sid }} {% if card_block != nil %} pdh-card-shadow-{{ card_block.settings.card_shadow }}{% endif %}{% if section.settings.enable_popup_card %} pdh-card-item-{{ sid }}--compact{% endif %}{% if i == 0 %} is-active{% endif %}"
+                data-index="{{ i }}"
+                role="region"
+                aria-labelledby="{{ card_title_id }}"
+                {% unless i == 0 %}hidden{% endunless %}
+              >
+                {%- if section.settings.enable_popup_card -%}
+                  {% render 'hotspot-product-preview',
+                    sid: sid,
+                    preview_image: preview_image,
+                    placeholder_index: placeholder_index,
+                    title: p_title,
+                    title_id: card_title_id,
+                    badge: p_badge,
+                    desc: p_desc,
+                    highlight: p_highlight,
+                    price: p_price,
+                    compare_price: p_compare,
+                    url: p_url,
+                    product: current_prod,
+                    button_label: card_block.settings.button_text,
+                    index: i,
+                    location: 'compact'
+                  %}
+                {%- else -%}
+                  {%- if p_badge != blank -%}
+                    <span class="pdh-card-badge-{{ sid }} pdh-card-badge">{{ p_badge | escape }}</span>
+                  {%- endif -%}
+
+                  <h3 id="{{ card_title_id }}" class="pdh-card-title-{{ sid }} pdh-card-title">
+                    {%- if p_url != blank and p_url != '#' -%}
+                      <a href="{{ p_url | escape }}">{{ p_title | escape }}</a>
+                    {%- else -%}
+                      {{ p_title | escape }}
+                    {%- endif -%}
+                  </h3>
+
+                  {%- if p_desc != blank -%}
+                    <p class="pdh-card-desc-{{ sid }} pdh-card-desc">{{ p_desc }}</p>
+                  {%- endif -%}
+
+                  {%- if p_price != blank -%}<div class="pdh-card-price-wrap-{{ sid }} pdh-card-price-wrap">
+                    <span class="pdh-card-price-{{ sid }} pdh-card-price">{{ p_price }}</span>
+                    {%- if p_compare != blank -%}
+                      <span class="pdh-card-compare-price-{{ sid }} pdh-card-compare-price">{{ p_compare }}</span>
+                    {%- endif -%}
+                  </div>{%- endif -%}
+
+                  {%- if p_highlight != blank -%}
+                    <div class="pdh-card-highlight-{{ sid }} pdh-card-highlight">
+                      <span class="pdh-check-icon-{{ sid }} pdh-check-icon">&#10003;</span>
+                      <span>{{ p_highlight | escape }}</span>
+                    </div>
+                  {%- endif -%}
+
+                  {% render 'hotspot-buy-button', product: current_prod, sid: sid, index: i, location: 'card', label: card_block.settings.button_text, url: p_url %}
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%} Product thumbnails column / row {%- endcomment -%}
+          {%- if section.settings.show_side_column -%}
+            <div class="pdh-thumbs-wrap-{{ sid }} pdh-thumbs-wrap" role="group" aria-label="Featured products">
+            {%- for pin_block in hotspot_blocks -%}
+              {%- assign i = forloop.index0 -%}
+              {%- assign current_prod = nil -%}
+              {%- if pin_block.settings.product != blank -%}
+                {%- assign current_prod = pin_block.settings.product -%}
+              {%- elsif col_products != blank and col_products[i] != blank -%}
+                {%- assign current_prod = col_products[i] -%}
+              {%- endif -%}
+
+              <button
+                type="button"
+                data-hotspot-thumb class="pdh-thumb-btn pdh-thumb-btn-{{ sid }}{% if i == 0 %} is-active{% endif %}"
+                data-index="{{ i }}"
+                aria-label="Select product {{ i | plus: 1 }}"
+                aria-pressed="{% if i == 0 %}true{% else %}false{% endif %}"
+                aria-controls="HotspotCard-{{ section.id }}-{{ pin_block.id }}{% if section.settings.enable_popup_card %} HotspotPopup-{{ section.id }}-{{ pin_block.id }}{% endif %}"
+              >
+                {%- if pin_block.settings.custom_image != blank -%}
+                  {%- assign thumb_alt = pin_block.settings.custom_image.alt | default: 'Product thumbnail' -%}
+                  {{ pin_block.settings.custom_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: thumb_alt }}
+                {%- elsif current_prod.featured_image != blank -%}
+                  {%- assign thumb_alt = current_prod.title | default: 'Product thumbnail' -%}
+                  {{ current_prod.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: thumb_alt }}
+                {%- else -%}
+                  {%- assign placeholder_idx = i | plus: 1 -%}
+                  {% if request.design_mode %}{{ 'product-' | append: placeholder_idx | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+                {%- endif -%}
+              </button>
+            {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+      </div>
+
+    </div>
+
+  </div>
+</product-discovery-hotspot>
+
+{% stylesheet %}
+/* moved from inline style block for bundling */
+
+/* Section Level Styles */
+.pdh-section {
+  display: block;
+  position: relative;
+  z-index: var(--pdh-z);
+  background-color: var(--pdh-bg);
+  padding-top: var(--pdh-pt, 0px);
+  padding-bottom: var(--pdh-pb, 0px);
+  padding-left: var(--pdh-pl, 0px);
+  padding-right: var(--pdh-pr, 0px);
+}
+
+@media screen and (max-width: 749px) {
+  .pdh-section {
+    padding-top: var(--pdh-pt-m, 0px);
+    padding-bottom: var(--pdh-pb-m, 0px);
+    padding-left: var(--pdh-pl-m, 0px);
+    padding-right: var(--pdh-pr-m, 0px);
+  }
+}
+
+.pdh-container {
+  margin: 0 auto;
+  width: 100%;
+  max-width: var(--pdh-max-w, 100%);
+}
+
+/* Section Header Block */
+.pdh-header-wrap {
+  width: 100%;
+  text-align: var(--pdh-hdr-align, left);
+  margin-bottom: var(--pdh-hdr-gap, 36px);
+}
+
+.pdh-heading {
+  margin: 0;
+  color: var(--pdh-heading-color, #111111);
+  font-family: var(--pdh-heading-ff, inherit);
+  font-size: var(--pdh-heading-fs, 38px);
+  font-weight: var(--pdh-heading-fw, 500);
+  line-height: var(--pdh-heading-lh, 1.15);
+  letter-spacing: var(--pdh-heading-ls, 0px);
+  text-transform: var(--pdh-heading-tt, none);
+  margin-bottom: var(--pdh-heading-gap, 12px);
+}
+
+.pdh-subheading {
+  margin: 0;
+  color: var(--pdh-sub-color, #111111);
+  font-family: var(--pdh-sub-ff, inherit);
+  font-size: var(--pdh-sub-fs, 14px);
+  font-weight: var(--pdh-sub-fw, 400);
+  line-height: var(--pdh-sub-lh, 1.5);
+  letter-spacing: var(--pdh-sub-ls, 0px);
+}
+
+@media screen and (max-width: 749px) {
+  .pdh-heading {
+    font-size: var(--pdh-heading-fs-m, 26px);
+  }
+  .pdh-subheading {
+    font-size: var(--pdh-sub-fs-m, 13px);
+  }
+}
+
+/* Main Grid / Split Layout */
+.pdh-main-grid {
+  display: flex;
+  align-items: center;
+  gap: var(--pdh-gap, 32px);
+  width: 100%;
+}
+
+/* Lifestyle Hotspot Image Column */
+.pdh-image-col {
+  flex: var(--pdh-img-flex, 0 0 calc(55% - 14.4px));
+  min-width: 0;
+}
+
+.pdh-lifestyle-frame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--pdh-img-br, 24px);
+  background-color: #F5F5F5;
+  padding-top: var(--pdh-frame-pt, 66.666%);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.pdh-image-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--pdh-img-br, 24px);
+  overflow: hidden;
+}
+
+.pdh-image-inner img,
+.pdh-image-inner svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hotspot Pin Item Wrapper */
+.pdh-hotspot-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+.pdh-hotspot-item.is-active,
+.pdh-hotspot-item:hover {
+  z-index: 45;
+}
+
+/* Hotspot Pin Button */
+.pdh-hotspot-pin {
+  width: var(--pdh-pin-btn, 32px);
+  height: var(--pdh-pin-btn, 32px);
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pdh-hotspot-pin:hover,
+.pdh-hotspot-pin:focus-visible {
+  transform: scale(1.15);
+}
+
+.pdh-hotspot-pin:focus-visible {
+  outline: 3px solid var(--pdh-halo-color, #E5E5E5);
+  outline-offset: 2px;
+}
+
+.pdh-pin-core {
+  width: var(--pdh-pin-size, 18px);
+  height: var(--pdh-pin-size, 18px);
+  border-radius: 50%;
+  background-color: var(--pdh-dot-color, #FFFFFF);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.pdh-pin-center {
+  width: var(--pdh-pin-center, 8px);
+  height: var(--pdh-pin-center, 8px);
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  opacity: 0.95;
+  transition: transform 0.3s ease;
+}
+
+.pdh-pin-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--pdh-halo-color, #F5F5F5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@keyframes pdh-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+}
+
+.pdh-pulse-on .pdh-hotspot-pin .pdh-pin-halo {
+  animation: pdh-pulse 2.4s infinite cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Active Pin State */
+.pdh-hotspot-item.is-active .pdh-pin-core {
+  transform: scale(1.1);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 4px var(--pdh-halo-color, #F5F5F5), 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.pdh-hotspot-item.is-active .pdh-pin-halo {
+  opacity: 0.9;
+  width: 180%;
+  height: 180%;
+  background-color: var(--pdh-halo-color, #F5F5F5);
+}
+
+.pdh-hotspot-item.is-active .pdh-pin-center {
+  background-color: #F5F5F5;
+  transform: scale(1.2);
+}
+
+/* Floating Pop-Up Card anchored to Hotspot Pin */
+.pdh-popup-card {
+  position: absolute;
+  width: var(--pdh-popup-w, 310px);
+  max-width: calc(100vw - 32px);
+  background-color: var(--pdh-card-bg, #FFFFFF);
+  border-radius: var(--pdh-card-br, 20px);
+  border: 1px solid var(--pdh-card-bc, rgba(0,0,0,0.06));
+  padding: 16px;
+  box-shadow: 0 16px 45px -6px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.94);
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
+}
+
+/* Hit Bridge to prevent flickering when mouse travels from pin to popup */
+.pdh-popup-card::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  bottom: -16px;
+  left: -16px;
+  right: -16px;
+  z-index: -1;
+}
+
+/* Pop-up show state: Desktop Only */
+@media screen and (min-width: 990px) {
+  .pdh-hotspot-item.show-popup .pdh-popup-card {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+/* Position: Right (Default when pin is on the left half) */
+.pdh-popup-pos-right {
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.94);
+}
+.pdh-hotspot-item.show-popup .pdh-popup-pos-right {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Position: Left (When pin is on the right half) */
+.pdh-popup-pos-left {
+  right: calc(100% + 14px);
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%) scale(0.94);
+}
+.pdh-hotspot-item.show-popup .pdh-popup-pos-left {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Position: Top (Above pin) */
+.pdh-popup-pos-top {
+  bottom: calc(100% + 14px);
+  top: auto;
+  left: 50%;
+  transform: translateX(-50%) scale(0.94);
+}
+.pdh-hotspot-item.show-popup .pdh-popup-pos-top {
+  transform: translateX(-50%) scale(1);
+}
+
+/* Position: Bottom (Below pin) */
+.pdh-popup-pos-bottom {
+  top: calc(100% + 14px);
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%) scale(0.94);
+}
+.pdh-hotspot-item.show-popup .pdh-popup-pos-bottom {
+  transform: translateX(-50%) scale(1);
+}
+
+.pdh-compact-media {
+  width: 88px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--pdh-thumb-br, 12px);
+  background: #F5F5F5;
+}
+
+.pdh-compact-media img,
+.pdh-compact-media svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.pdh-compact-details {
+  min-width: 0;
+}
+
+.pdh-compact-title {
+  margin: 0 0 8px;
+  color: var(--pdh-title-color, #111111);
+  font-family: var(--pdh-title-ff, inherit);
+  font-size: 18px;
+  font-weight: var(--pdh-title-fw, 600);
+  line-height: 1.2;
+}
+
+.pdh-compact-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.pdh-compact-title a:hover {
+  text-decoration: underline;
+}
+
+.pdh-compact-price-wrap {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pdh-compact-details .pdh-card-badge {
+  margin-bottom: 8px;
+}
+
+.pdh-compact-details .pdh-card-highlight {
+  margin-bottom: 12px;
+}
+
+.pdh-compact-desc {
+  margin: 0 0 10px;
+  color: var(--pdh-compact-desc-color, #111111);
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pdh-compact-price,
+.pdh-compact-compare {
+  font-family: var(--pdh-price-ff, inherit);
+  font-variant-numeric: tabular-nums;
+}
+
+.pdh-compact-price {
+  color: var(--pdh-price-color, #111111);
+  font-size: 16px;
+  font-weight: var(--pdh-price-fw, 600);
+}
+
+.pdh-compact-compare {
+  color: var(--pdh-compare-color, #111111);
+  font-size: 13px;
+  text-decoration: line-through;
+}
+/* Right Side: Product Card + Thumbnails */
+.pdh-content-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pdh-section[data-display-mode='floating-preview'] .pdh-content-col {
+  flex: 0 0 auto;
+}
+
+@media screen and (min-width: 990px) {
+  .pdh-section[data-display-mode='floating-preview'] .pdh-card-container {
+    display: none;
+  }
+
+  .pdh-section[data-display-mode='floating-preview'].pdh-no-side-col .pdh-content-col {
+    display: none;
+  }
+}
+
+/* Card Stack Container */
+.pdh-card-container {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.pdh-card-item {
+  background-color: var(--pdh-card-bg, #FFFFFF);
+  border-radius: var(--pdh-card-br, 20px);
+  border: 1px solid var(--pdh-card-bc, rgba(0,0,0,0.06));
+  padding: var(--pdh-card-pad, 32px);
+  display: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.pdh-card-shadow-none { box-shadow: none; }
+.pdh-card-shadow-subtle { box-shadow: 0 4px 16px rgba(0,0,0,0.04); }
+.pdh-card-shadow-soft-glow { box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.08); }
+.pdh-card-shadow-elevated { box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.12); }
+
+.pdh-card-item.is-active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pdh-card-item--compact.is-active {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+/* Card Elements & Block Typography */
+.pdh-card-badge {
+  display: inline-block;
+  padding: var(--pdh-badge-py, 4px) var(--pdh-badge-px, 12px);
+  background-color: var(--pdh-badge-bg, #F5F5F5);
+  color: var(--pdh-badge-color, #111111);
+  font-family: var(--pdh-badge-ff, inherit);
+  font-size: var(--pdh-badge-fs, 11px);
+  font-weight: var(--pdh-badge-fw, 700);
+  letter-spacing: var(--pdh-badge-ls, 1.5px);
+  text-transform: uppercase;
+  border-radius: var(--pdh-badge-br, 16px);
+  margin-bottom: 16px;
+}
+
+.pdh-card-title {
+  margin: 0 0 14px 0;
+  color: var(--pdh-title-color, #111111);
+  font-family: var(--pdh-title-ff, inherit);
+  font-size: var(--pdh-title-fs, 28px);
+  font-weight: var(--pdh-title-fw, 600);
+  line-height: var(--pdh-title-lh, 1.2);
+}
+
+.pdh-popup-card .pdh-card-title {
+  font-size: var(--pdh-title-fs-pop, 25px);
+  margin-bottom: 10px;
+}
+
+.pdh-card-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.pdh-card-title a:hover {
+  opacity: 0.85;
+}
+
+.pdh-card-desc {
+  margin: 0 0 20px 0;
+  color: var(--pdh-desc-color, #111111);
+  font-family: var(--pdh-desc-ff, inherit);
+  font-size: var(--pdh-desc-fs, 13px);
+  font-weight: var(--pdh-desc-fw, 400);
+  line-height: var(--pdh-desc-lh, 1.55);
+}
+
+.pdh-clamp-on .pdh-card-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--pdh-desc-clamp, 4);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pdh-popup-card .pdh-card-desc {
+  font-size: 12px;
+  margin-bottom: 14px;
+  -webkit-line-clamp: 3;
+}
+
+.pdh-card-price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pdh-card-price {
+  color: var(--pdh-price-color, #111111);
+  font-family: var(--pdh-price-ff, inherit);
+  font-size: var(--pdh-price-fs, 20px);
+  font-weight: var(--pdh-price-fw, 600);
+}
+
+.pdh-card-compare-price {
+  color: var(--pdh-compare-color, #111111);
+  font-family: var(--pdh-price-ff, inherit);
+  font-size: var(--pdh-price-fs-compare, 17px);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.pdh-card-highlight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  color: var(--pdh-highlight-color, #111111);
+  font-family: var(--pdh-highlight-ff, inherit);
+  font-size: var(--pdh-highlight-fs, 12px);
+  font-weight: var(--pdh-highlight-fw, 400);
+  line-height: 1.4;
+}
+
+.pdh-popup-card .pdh-card-highlight {
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+
+.pdh-check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pdh-highlight-icon, #111111);
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Add to Cart Button */
+.pdh-atc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--pdh-btn-h, 46px);
+  background-color: var(--pdh-btn-bg, #111111);
+  color: var(--pdh-btn-color, #FFFFFF);
+  font-family: var(--pdh-btn-ff, inherit);
+  font-size: var(--pdh-btn-fs, 12px);
+  font-weight: var(--pdh-btn-fw, 600);
+  letter-spacing: var(--pdh-btn-ls, 2px);
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--pdh-btn-br, 30px);
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease, opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.pdh-atc-btn:hover {
+  background-color: var(--pdh-btn-hover-bg, #111111);
+  transform: translateY(-1px);
+}
+
+.pdh-atc-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Vertical / Horizontal Thumbnails */
+.pdh-thumbs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.pdh-thumb-btn {
+  position: relative;
+  width: var(--pdh-thumb-d, 72px);
+  height: var(--pdh-thumb-d, 72px);
+  border-radius: var(--pdh-thumb-br, 12px);
+  border: var(--pdh-thumb-bw, 2px) solid var(--pdh-thumb-bc, transparent);
+  padding: 0;
+  margin: 0;
+  background: #FFFFFF;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pdh-thumb-btn:hover {
+  transform: scale(1.04);
+}
+
+.pdh-thumb-btn:focus-visible {
+  outline: 3px solid var(--pdh-halo-color, #E5E5E5);
+  outline-offset: 2px;
+}
+
+.pdh-thumb-btn.is-active {
+  border-color: var(--pdh-thumb-bc-active, #E5E5E5);
+  box-shadow: 0 4px 14px rgba(245, 245, 245, 0.35);
+}
+
+.pdh-thumb-btn img,
+.pdh-thumb-btn svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Responsive / Mobile Layout */
+@media screen and (max-width: 989px) {
+  .pdh-main-grid {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pdh-image-col {
+    width: 100%;
+    flex: none;
+  }
+  .pdh-content-col {
+    width: 100%;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .pdh-card-container {
+    width: 100%;
+  }
+  .pdh-thumbs-wrap {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    gap: 12px;
+  }
+  .pdh-thumb-btn {
+    width: var(--pdh-thumb-m, 60px);
+    height: var(--pdh-thumb-m, 60px);
+  }
+  .pdh-card-item {
+    padding: var(--pdh-card-pad-m, 22px);
+  }
+  .pdh-card-item--compact {
+    padding: 16px;
+  }
+  .pdh-card-title {
+    font-size: var(--pdh-title-fs-m, 22px);
+  }
+  .pdh-card-desc {
+    font-size: var(--pdh-desc-fs-m, 12px);
+  }
+
+  /* On mobile, completely hide the floating pop-up card (only show desktop) */
+  .pdh-popup-card {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdh-hotspot-pin .pdh-pin-halo {
+    animation: none;
+  }
+
+  .pdh-hotspot-pin,
+  .pdh-pin-core,
+  .pdh-pin-center,
+  .pdh-popup-card,
+  .pdh-card-item,
+  .pdh-thumb-btn,
+  .pdh-atc-btn {
+    transition-duration: 0.01ms;
+  }
+
+  .pdh-hotspot-pin:hover,
+  .pdh-hotspot-pin:focus-visible,
+  .pdh-thumb-btn:hover,
+  .pdh-atc-btn:hover {
+    transform: none;
+  }
+}
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Discovery Hotspot",
+  "tag": "section",
+  "class": "section-product-discovery-hotspot",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    },
+    {
+      "type": "header",
+      "content": "Collection & Content"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Up to 3 products are featured from this collection."
+    },
+    {
+      "type": "image_picker",
+      "id": "lifestyle_image",
+      "label": "Lifestyle / Hotspot Image",
+      "info": "Hero photo containing your featured products."
+    },
+    {
+      "type": "header",
+      "content": "Image Aspect Ratio"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        {
+          "value": "1:1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4:3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "3:2",
+          "label": "Photo (3:2)"
+        },
+        {
+          "value": "5:4",
+          "label": "Classic (5:4)"
+        },
+        {
+          "value": "16:9",
+          "label": "Widescreen (16:9)"
+        },
+        {
+          "value": "2:3",
+          "label": "Portrait (2:3)"
+        },
+        {
+          "value": "3:4",
+          "label": "Tall (3:4)"
+        },
+        {
+          "value": "natural",
+          "label": "Natural (Original)"
+        },
+        {
+          "value": "custom",
+          "label": "Custom %"
+        }
+      ],
+      "default": "3:2"
+    },
+    {
+      "type": "range",
+      "id": "custom_ratio",
+      "min": 30,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Custom Height % (of width)",
+      "default": 65,
+      "info": "Active when 'Custom %' is selected above."
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Image Corner Radius",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Hotspot Pin Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_popup_card",
+      "label": "Use Floating Product Previews",
+      "default": false,
+      "info": "Off: hotspots change the side product card. On: the image expands and compact product previews appear beside hotspots."
+    },
+    {
+      "type": "range",
+      "id": "popup_card_width",
+      "min": 240,
+      "max": 380,
+      "step": 10,
+      "unit": "px",
+      "label": "Pop-up Card Width",
+      "default": 300,
+      "visible_if": "{{ section.settings.enable_popup_card }}"
+    },
+    {
+      "type": "select",
+      "id": "hotspot_interaction",
+      "label": "Hotspot Trigger Mode",
+      "options": [
+        {
+          "value": "hover",
+          "label": "Hover & Click (Desktop hover, Mobile tap)"
+        },
+        {
+          "value": "click",
+          "label": "Click / Tap only"
+        }
+      ],
+      "default": "hover"
+    },
+    {
+      "type": "color",
+      "id": "hotspot_dot_color",
+      "label": "Pin Dot Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "hotspot_active_halo_color",
+      "label": "Label",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "hotspot_dot_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Pin Dot Size",
+      "default": 18
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hotspot_pulse",
+      "label": "Enable Soft Pulsing Animation",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Desktop Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_side_column",
+      "label": "Show Product Thumbnails",
+      "default": true,
+      "info": "Shows product image previews beside the card or image. Turn off for a cleaner layout."
+    },
+    {
+      "type": "select",
+      "id": "desktop_layout",
+      "label": "Column Proportions",
+      "options": [
+        {
+          "value": "50/50",
+          "label": "50% Image / 50% Card"
+        },
+        {
+          "value": "55/45",
+          "label": "55% Image / 45% Card"
+        },
+        {
+          "value": "60/40",
+          "label": "60% Image / 40% Card"
+        }
+      ],
+      "default": "55/45",
+      "visible_if": "{{ section.settings.enable_popup_card == false }}"
+    },
+    {
+      "type": "range",
+      "id": "desktop_gap",
+      "min": 16,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap between Columns",
+      "default": 32
+    },
+    {
+      "type": "header",
+      "content": "Section Container & Spacing"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Container Width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Theme Page Width"
+        },
+        {
+          "value": "fixed",
+          "label": "Custom Max-Width"
+        },
+        {
+          "value": "full",
+          "label": "Full Width"
+        }
+      ],
+      "default": "fixed"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 800,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "label": "Container Max-Width",
+      "default": 1280
+    },
+    {
+      "type": "range",
+      "id": "z_index",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "label": "Z-Index",
+      "default": 1
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "label": "Use Global Theme Spacing",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top (Desktop)",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom (Desktop)",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Left (Desktop)",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Right (Desktop)",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top (Mobile)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom (Mobile)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Left (Mobile)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Right (Mobile)",
+      "default": 20
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Section Heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading Text",
+          "default": "Heading"
+        },
+        {
+          "type": "select",
+          "id": "heading_tag",
+          "label": "HTML Tag",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "textarea",
+          "id": "subheading",
+          "label": "Subheading Text",
+          "default": "Text"
+        },
+        {
+          "type": "select",
+          "id": "heading_alignment",
+          "label": "Alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "heading_gap",
+          "min": 0,
+          "max": 100,
+          "step": 4,
+          "unit": "px",
+          "label": "Gap Below Header",
+          "default": 36
+        },
+        {
+          "type": "range",
+          "id": "title_subtitle_gap",
+          "min": 0,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Gap: Title to Subtitle",
+          "default": 12
+        },
+        {
+          "type": "header",
+          "content": "Heading Typography"
+        },
+        {
+          "type": "color",
+          "id": "heading_color",
+          "label": "Color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "heading_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "'Cormorant Garamond', Garamond, serif",
+              "label": "Cormorant Garamond (Serif)"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            },
+            {
+              "value": "'Bodoni Moda', Didot, serif",
+              "label": "Bodoni Moda (Editorial Serif)"
+            },
+            {
+              "value": "'Italiana', serif",
+              "label": "Italiana (Luxury Display)"
+            },
+            {
+              "value": "'Marcellus', serif",
+              "label": "Marcellus (Roman Serif)"
+            },
+            {
+              "value": "Georgia, serif",
+              "label": "Georgia (Classic Serif)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "'Lato', sans-serif",
+              "label": "Lato"
+            },
+            {
+              "value": "'Raleway', sans-serif",
+              "label": "Raleway"
+            },
+            {
+              "value": "'Open Sans', sans-serif",
+              "label": "Open Sans"
+            },
+            {
+              "value": "system-ui, -apple-system, sans-serif",
+              "label": "System Sans-Serif"
+            },
+            {
+              "value": "ui-monospace, monospace",
+              "label": "Monospace"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "heading_font_size",
+          "min": 20,
+          "max": 80,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Desktop)",
+          "default": 38
+        },
+        {
+          "type": "range",
+          "id": "heading_font_size_mobile",
+          "min": 16,
+          "max": 48,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Mobile)",
+          "default": 28
+        },
+        {
+          "type": "select",
+          "id": "heading_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light (300)"
+            },
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            },
+            {
+              "value": "700",
+              "label": "Bold (700)"
+            },
+            {
+              "value": "800",
+              "label": "ExtraBold (800)"
+            }
+          ],
+          "default": "500"
+        },
+        {
+          "type": "select",
+          "id": "heading_line_height",
+          "label": "Line Height",
+          "options": [
+            {
+              "value": "1.1",
+              "label": "1.1 (Tight)"
+            },
+            {
+              "value": "1.2",
+              "label": "1.2 (Default)"
+            },
+            {
+              "value": "1.3",
+              "label": "1.3 (Comfortable)"
+            },
+            {
+              "value": "1.4",
+              "label": "1.4 (Loose)"
+            }
+          ],
+          "default": "1.2"
+        },
+        {
+          "type": "range",
+          "id": "heading_letter_spacing",
+          "min": -2,
+          "max": 6,
+          "step": 1,
+          "unit": "px",
+          "label": "Letter Spacing",
+          "default": 0
+        },
+        {
+          "type": "select",
+          "id": "heading_text_transform",
+          "label": "Text Transform",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "capitalize",
+              "label": "Capitalize"
+            },
+            {
+              "value": "uppercase",
+              "label": "UPPERCASE"
+            },
+            {
+              "value": "lowercase",
+              "label": "lowercase"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "header",
+          "content": "Subheading Typography"
+        },
+        {
+          "type": "color",
+          "id": "subheading_color",
+          "label": "Color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "subheading_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "'Cormorant Garamond', Garamond, serif",
+              "label": "Cormorant Garamond (Serif)"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            },
+            {
+              "value": "'Bodoni Moda', Didot, serif",
+              "label": "Bodoni Moda (Editorial Serif)"
+            },
+            {
+              "value": "'Italiana', serif",
+              "label": "Italiana (Luxury Display)"
+            },
+            {
+              "value": "'Marcellus', serif",
+              "label": "Marcellus (Roman Serif)"
+            },
+            {
+              "value": "Georgia, serif",
+              "label": "Georgia (Classic Serif)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "'Lato', sans-serif",
+              "label": "Lato"
+            },
+            {
+              "value": "'Raleway', sans-serif",
+              "label": "Raleway"
+            },
+            {
+              "value": "'Open Sans', sans-serif",
+              "label": "Open Sans"
+            },
+            {
+              "value": "system-ui, -apple-system, sans-serif",
+              "label": "System Sans-Serif"
+            },
+            {
+              "value": "ui-monospace, monospace",
+              "label": "Monospace"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "subheading_font_size",
+          "min": 10,
+          "max": 28,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Desktop)",
+          "default": 14
+        },
+        {
+          "type": "range",
+          "id": "subheading_font_size_mobile",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Mobile)",
+          "default": 13
+        },
+        {
+          "type": "select",
+          "id": "subheading_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light (300)"
+            },
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "subheading_line_height",
+          "label": "Line Height",
+          "options": [
+            {
+              "value": "1.3",
+              "label": "1.3"
+            },
+            {
+              "value": "1.5",
+              "label": "1.5"
+            },
+            {
+              "value": "1.7",
+              "label": "1.7"
+            }
+          ],
+          "default": "1.5"
+        },
+        {
+          "type": "range",
+          "id": "subheading_letter_spacing",
+          "min": -1,
+          "max": 4,
+          "step": 1,
+          "unit": "px",
+          "label": "Letter Spacing",
+          "default": 0
+        }
+      ]
+    },
+    {
+      "type": "hotspot_pin",
+      "name": "Hotspot Pin (Product)",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Pin Coordinates (Image Overlay)"
+        },
+        {
+          "type": "range",
+          "id": "pin_x",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal Position (X %)",
+          "default": 25
+        },
+        {
+          "type": "range",
+          "id": "pin_y",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical Position (Y %)",
+          "default": 65
+        },
+        {
+          "type": "select",
+          "id": "popup_position",
+          "label": "Pop-up Card Position",
+          "options": [
+            {
+              "value": "auto",
+              "label": "Auto (Smart Detect)"
+            },
+            {
+              "value": "top",
+              "label": "Above Pin"
+            },
+            {
+              "value": "bottom",
+              "label": "Below Pin"
+            },
+            {
+              "value": "left",
+              "label": "Left of Pin"
+            },
+            {
+              "value": "right",
+              "label": "Right of Pin"
+            }
+          ],
+          "default": "auto",
+          "visible_if": "{{ section.settings.enable_popup_card }}"
+        },
+        {
+          "type": "header",
+          "content": "Product Assignment"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Specific Product Override",
+          "info": "Leave blank to automatically take the product from the section collection."
+        },
+        {
+          "type": "header",
+          "content": "Card Content Customization"
+        },
+        {
+          "type": "text",
+          "id": "badge_text",
+          "label": "Badge Text",
+          "info": "Optional badge"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Custom Title Override",
+          "info": "Overrides product title if set."
+        },
+        {
+          "type": "textarea",
+          "id": "custom_description",
+          "label": "Custom Description Snippet",
+          "info": "Overrides product description on card if set."
+        },
+        {
+          "type": "text",
+          "id": "highlight_bullet",
+          "label": "Highlight Benefit Note",
+          "info": "Optional note"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom Thumbnail Image",
+          "info": "Overrides the product featured image thumbnail if set."
+        }
+      ]
+    },
+    {
+      "type": "product_card",
+      "name": "Product Card & Style",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Card Container"
+        },
+        {
+          "type": "color",
+          "id": "card_bg",
+          "label": "Card Background",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "card_border_color",
+          "label": "Border Color",
+          "default": "#E5E5E5"
+        },
+        {
+          "type": "range",
+          "id": "card_border_radius",
+          "min": 0,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Border Radius",
+          "default": 20
+        },
+        {
+          "type": "select",
+          "id": "card_shadow",
+          "label": "Shadow Elevation",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "subtle",
+              "label": "Subtle"
+            },
+            {
+              "value": "soft-glow",
+              "label": "Label"
+            },
+            {
+              "value": "elevated",
+              "label": "Strongly Elevated"
+            }
+          ],
+          "default": "soft-glow"
+        },
+        {
+          "type": "range",
+          "id": "card_padding",
+          "min": 16,
+          "max": 60,
+          "step": 2,
+          "unit": "px",
+          "label": "Padding (Desktop)",
+          "default": 28
+        },
+        {
+          "type": "range",
+          "id": "card_padding_mobile",
+          "min": 12,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Padding (Mobile)",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "Badge Typography & Styling"
+        },
+        {
+          "type": "color",
+          "id": "badge_color",
+          "label": "Badge Text Color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "badge_bg",
+          "label": "Badge Background Color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "select",
+          "id": "badge_font_family",
+          "label": "Badge Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            },
+            {
+              "value": "system-ui, -apple-system, sans-serif",
+              "label": "System Sans-Serif"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "badge_font_size",
+          "min": 8,
+          "max": 18,
+          "step": 1,
+          "unit": "px",
+          "label": "Badge Font Size",
+          "default": 11
+        },
+        {
+          "type": "select",
+          "id": "badge_font_weight",
+          "label": "Badge Font Weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            },
+            {
+              "value": "700",
+              "label": "Bold (700)"
+            },
+            {
+              "value": "800",
+              "label": "ExtraBold (800)"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "range",
+          "id": "badge_letter_spacing",
+          "min": 0,
+          "max": 6,
+          "step": 0.5,
+          "unit": "px",
+          "label": "Badge Letter Spacing",
+          "default": 1.5
+        },
+        {
+          "type": "range",
+          "id": "badge_border_radius",
+          "min": 0,
+          "max": 30,
+          "step": 2,
+          "unit": "px",
+          "label": "Badge Border Radius",
+          "default": 16
+        },
+        {
+          "type": "range",
+          "id": "badge_padding_x",
+          "min": 4,
+          "max": 24,
+          "step": 2,
+          "unit": "px",
+          "label": "Badge H-Padding",
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "badge_padding_y",
+          "min": 2,
+          "max": 14,
+          "step": 1,
+          "unit": "px",
+          "label": "Badge V-Padding",
+          "default": 5
+        },
+        {
+          "type": "header",
+          "content": "Product Title Typography"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "title_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "'Cormorant Garamond', Garamond, serif",
+              "label": "Cormorant Garamond (Serif)"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            },
+            {
+              "value": "'Bodoni Moda', Didot, serif",
+              "label": "Bodoni Moda (Editorial Serif)"
+            },
+            {
+              "value": "'Italiana', serif",
+              "label": "Italiana (Luxury Display)"
+            },
+            {
+              "value": "'Marcellus', serif",
+              "label": "Marcellus (Roman Serif)"
+            },
+            {
+              "value": "Georgia, serif",
+              "label": "Georgia (Classic Serif)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "system-ui, -apple-system, sans-serif",
+              "label": "System Sans-Serif"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "title_font_size",
+          "min": 18,
+          "max": 50,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Desktop)",
+          "default": 28
+        },
+        {
+          "type": "range",
+          "id": "title_font_size_mobile",
+          "min": 14,
+          "max": 36,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Mobile)",
+          "default": 22
+        },
+        {
+          "type": "select",
+          "id": "title_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            },
+            {
+              "value": "700",
+              "label": "Bold (700)"
+            },
+            {
+              "value": "800",
+              "label": "ExtraBold (800)"
+            }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "select",
+          "id": "title_line_height",
+          "label": "Line Height",
+          "options": [
+            {
+              "value": "1.1",
+              "label": "1.1"
+            },
+            {
+              "value": "1.2",
+              "label": "1.2"
+            },
+            {
+              "value": "1.3",
+              "label": "1.3"
+            },
+            {
+              "value": "1.4",
+              "label": "1.4"
+            }
+          ],
+          "default": "1.2"
+        },
+        {
+          "type": "header",
+          "content": "Description Typography"
+        },
+        {
+          "type": "color",
+          "id": "desc_color",
+          "label": "Color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "desc_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "Georgia, serif",
+              "label": "Georgia (Classic Serif)"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "desc_font_size",
+          "min": 10,
+          "max": 22,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Desktop)",
+          "default": 13
+        },
+        {
+          "type": "range",
+          "id": "desc_font_size_mobile",
+          "min": 10,
+          "max": 20,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size (Mobile)",
+          "default": 12
+        },
+        {
+          "type": "select",
+          "id": "desc_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light (300)"
+            },
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "desc_line_height",
+          "label": "Line Height",
+          "options": [
+            {
+              "value": "1.4",
+              "label": "1.4"
+            },
+            {
+              "value": "1.55",
+              "label": "1.55"
+            },
+            {
+              "value": "1.7",
+              "label": "1.7"
+            }
+          ],
+          "default": "1.55"
+        },
+        {
+          "type": "select",
+          "id": "desc_line_clamp",
+          "label": "Max Lines (Truncate)",
+          "options": [
+            {
+              "value": "2",
+              "label": "2 Lines"
+            },
+            {
+              "value": "3",
+              "label": "3 Lines"
+            },
+            {
+              "value": "4",
+              "label": "4 Lines"
+            },
+            {
+              "value": "5",
+              "label": "5 Lines"
+            },
+            {
+              "value": "none",
+              "label": "No limit (Show all)"
+            }
+          ],
+          "default": "4"
+        },
+        {
+          "type": "header",
+          "content": "Price Typography"
+        },
+        {
+          "type": "color",
+          "id": "price_color",
+          "label": "Price Color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "compare_price_color",
+          "label": "Compare-At Price Color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "select",
+          "id": "price_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Playfair Display', Georgia, serif",
+              "label": "Playfair Display (Serif)"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "price_font_size",
+          "min": 14,
+          "max": 38,
+          "step": 1,
+          "unit": "px",
+          "label": "Price Font Size",
+          "default": 20
+        },
+        {
+          "type": "select",
+          "id": "price_font_weight",
+          "label": "Price Font Weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            },
+            {
+              "value": "700",
+              "label": "Bold (700)"
+            }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "header",
+          "content": "Highlight Bullet Typography"
+        },
+        {
+          "type": "color",
+          "id": "highlight_color",
+          "label": "Text Color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "highlight_icon_color",
+          "label": "Checkmark Icon Color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "select",
+          "id": "highlight_font_family",
+          "label": "Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'DM Sans', sans-serif",
+              "label": "DM Sans"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "highlight_font_size",
+          "min": 9,
+          "max": 20,
+          "step": 1,
+          "unit": "px",
+          "label": "Font Size",
+          "default": 12
+        },
+        {
+          "type": "select",
+          "id": "highlight_font_weight",
+          "label": "Font Weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light (300)"
+            },
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "header",
+          "content": "Add to Cart Button"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Label",
+          "default": "Button"
+        },
+        {
+          "type": "color",
+          "id": "button_bg",
+          "label": "Button Background",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "button_color",
+          "label": "Button Text Color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_hover_bg",
+          "label": "Button Hover Background",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "button_font_family",
+          "label": "Button Font Family",
+          "options": [
+            {
+              "value": "inherit",
+              "label": "Default (Theme Font)"
+            },
+            {
+              "value": "'Inter', -apple-system, sans-serif",
+              "label": "Inter (Modern Sans)"
+            },
+            {
+              "value": "'Outfit', sans-serif",
+              "label": "Outfit (Clean Sans)"
+            },
+            {
+              "value": "'Poppins', sans-serif",
+              "label": "Poppins (Geometric Sans)"
+            },
+            {
+              "value": "'Montserrat', sans-serif",
+              "label": "Montserrat (Geometric Sans)"
+            },
+            {
+              "value": "'Plus Jakarta Sans', sans-serif",
+              "label": "Plus Jakarta Sans"
+            },
+            {
+              "value": "'Cinzel', Georgia, serif",
+              "label": "Cinzel (Luxury Serif)"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "range",
+          "id": "button_font_size",
+          "min": 10,
+          "max": 20,
+          "step": 1,
+          "unit": "px",
+          "label": "Button Font Size",
+          "default": 12
+        },
+        {
+          "type": "select",
+          "id": "button_font_weight",
+          "label": "Button Font Weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Regular (400)"
+            },
+            {
+              "value": "500",
+              "label": "Medium (500)"
+            },
+            {
+              "value": "600",
+              "label": "SemiBold (600)"
+            },
+            {
+              "value": "700",
+              "label": "Bold (700)"
+            }
+          ],
+          "default": "600"
+        },
+        {
+          "type": "range",
+          "id": "button_letter_spacing",
+          "min": 0,
+          "max": 6,
+          "step": 0.5,
+          "unit": "px",
+          "label": "Button Letter Spacing",
+          "default": 2
+        },
+        {
+          "type": "range",
+          "id": "button_border_radius",
+          "min": 0,
+          "max": 40,
+          "step": 2,
+          "unit": "px",
+          "label": "Button Border Radius",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "button_height",
+          "min": 36,
+          "max": 64,
+          "step": 2,
+          "unit": "px",
+          "label": "Button Height",
+          "default": 48
+        },
+        {
+          "type": "header",
+          "content": "Thumbnails Style"
+        },
+        {
+          "type": "range",
+          "id": "thumb_size_desktop",
+          "min": 44,
+          "max": 110,
+          "step": 2,
+          "unit": "px",
+          "label": "Thumbnail Size (Desktop)",
+          "default": 72
+        },
+        {
+          "type": "range",
+          "id": "thumb_size_mobile",
+          "min": 40,
+          "max": 90,
+          "step": 2,
+          "unit": "px",
+          "label": "Thumbnail Size (Mobile)",
+          "default": 60
+        },
+        {
+          "type": "range",
+          "id": "thumb_border_radius",
+          "min": 0,
+          "max": 30,
+          "step": 2,
+          "unit": "px",
+          "label": "Thumbnail Corner Radius",
+          "default": 12
+        },
+        {
+          "type": "color",
+          "id": "thumb_active_border_color",
+          "label": "Active Border Color",
+          "default": "#E5E5E5"
+        },
+        {
+          "type": "color",
+          "id": "thumb_inactive_border_color",
+          "label": "Inactive Border Color",
+          "default": "rgba(0,0,0,0.06)"
+        },
+        {
+          "type": "range",
+          "id": "thumb_border_width",
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "unit": "px",
+          "label": "Border Width",
+          "default": 2
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Discovery Hotspot",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "product_card"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

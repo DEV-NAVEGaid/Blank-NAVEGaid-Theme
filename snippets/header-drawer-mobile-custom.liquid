@@ -1,0 +1,239 @@
+<header-drawer data-breakpoint="{% if section.settings.menu_type_desktop == 'drawer' %}desktop{% else %}tablet{% endif %}">
+  <details id="Details-menu-drawer-container-custom" class="menu-drawer-container">
+    <summary
+      class="header__icon header__icon--menu header__icon--summary link focus-inset"
+      aria-label="{{ 'sections.header.menu' | t }}"
+    >
+      <span>
+        {{- 'icon-hamburger.svg' | inline_asset_content -}}
+        {{- 'icon-close.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+    <div id="menu-drawer-custom" class="gradient menu-drawer menu-drawer--custom motion-reduce color-{{ section.settings.menu_color_scheme }}">
+      <div class="menu-drawer__inner-container">
+        <div class="menu-drawer__navigation-container">
+          <nav class="menu-drawer__navigation">
+            <div class="mobile-custom-menu" id="mobileCustomMenu">
+              
+              {%- comment -%} MENU TYPE 1: Menu + Image {%- endcomment -%}
+              {%- for block in blocks -%}
+                {%- if block.type == 'mobile_menu_image' -%}
+                  <div class="mobile-menu-item mobile-menu-item--image" {{ block.shopify_attributes }}>
+                    {%- if block.settings.has_submenu and block.settings.menu_id != blank -%}
+                      <div class="mobile-accordion" data-accordion>
+                        <button type="button" class="mobile-accordion__trigger" data-accordion-trigger>
+                          <span class="mobile-accordion__text">{{ block.settings.title }}</span>
+                          {%- if block.settings.image != blank -%}
+                            <span class="mobile-accordion__image">
+                              {{ block.settings.image | image_url: width: 120 | image_tag: loading: 'lazy' }}
+                            </span>
+                          {%- endif -%}
+                          <span class="mobile-accordion__icon">
+                            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </span>
+                        </button>
+                        
+                        <div class="mobile-accordion__content" data-accordion-content>
+                          <div class="mobile-accordion__inner">
+                            {%- assign has_image_items = false -%}
+                            {%- for subblock in blocks -%}
+                              {%- if subblock.type == 'mobile_submenu_item' and subblock.settings.parent_id == block.settings.menu_id and subblock.settings.image != blank -%}
+                                {%- assign has_image_items = true -%}
+                                {%- break -%}
+                              {%- endif -%}
+                            {%- endfor -%}
+                            
+                            {%- if has_image_items -%}
+                              <div class="mobile-submenu-grid">
+                                {%- for subblock in blocks -%}
+                                  {%- if subblock.type == 'mobile_submenu_item' and subblock.settings.parent_id == block.settings.menu_id and subblock.settings.image != blank -%}
+                                    <a href="{{ subblock.settings.link }}" class="mobile-submenu-grid__item" {{ subblock.shopify_attributes }}>
+                                      <span class="mobile-submenu-grid__image">
+                                        {{ subblock.settings.image | image_url: width: 200 | image_tag: loading: 'lazy' }}
+                                      </span>
+                                      <span class="mobile-submenu-grid__title">{{ subblock.settings.title }}</span>
+                                    </a>
+                                  {%- endif -%}
+                                {%- endfor -%}
+                              </div>
+                            {%- endif -%}
+
+                            {%- for subblock in blocks -%}
+                              {%- if subblock.type == 'mobile_submenu_item' and subblock.settings.parent_id == block.settings.menu_id and subblock.settings.image == blank -%}
+                                <a href="{{ subblock.settings.link }}" class="mobile-submenu-link" {{ subblock.shopify_attributes }}>
+                                  {{ subblock.settings.title }}
+                                </a>
+                              {%- endif -%}
+                            {%- endfor -%}
+
+                            {%- for subblock in blocks -%}
+                              {%- if subblock.type == 'mobile_submenu_header' and subblock.settings.parent_id == block.settings.menu_id -%}
+                                <div class="mobile-submenu-section" {{ subblock.shopify_attributes }}>
+                                  <h3 class="mobile-submenu-section__title">{{ subblock.settings.title }}</h3>
+                                  <ul class="mobile-submenu-section__list">
+                                    {%- for linkblock in blocks -%}
+                                      {%- if linkblock.type == 'mobile_submenu_text_link' and linkblock.settings.submenu_group_id == subblock.settings.submenu_group_id -%}
+                                        <li>
+                                          <a href="{{ linkblock.settings.link }}" class="mobile-submenu-section__link" {{ linkblock.shopify_attributes }}>
+                                            {{ linkblock.settings.title }}
+                                          </a>
+                                        </li>
+                                      {%- endif -%}
+                                    {%- endfor -%}
+                                  </ul>
+                                </div>
+                              {%- endif -%}
+                            {%- endfor -%}
+                          </div>
+                        </div>
+                      </div>
+                    {%- else -%}
+                      <a href="{{ block.settings.link }}" class="mobile-menu-link mobile-menu-link--image">
+                        <span class="mobile-menu-link__text">{{ block.settings.title }}</span>
+                        {%- if block.settings.image != blank -%}
+                          <span class="mobile-menu-link__image">
+                            {{ block.settings.image | image_url: width: 120 | image_tag: loading: 'lazy' }}
+                          </span>
+                        {%- endif -%}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- comment -%} MENU TYPE 2: Icon + Menu {%- endcomment -%}
+              {%- for block in blocks -%}
+                {%- if block.type == 'mobile_menu_icon' -%}
+                  <div class="mobile-menu-item mobile-menu-item--icon" {{ block.shopify_attributes }}>
+                    <a href="{{ block.settings.link }}" class="mobile-menu-link mobile-menu-link--icon">
+                      <span class="mobile-menu-link__icon">
+                        {%- case block.settings.icon -%}
+                          {%- when 'account' -%}
+                            {{ 'icon-account.svg' | inline_asset_content }}
+                          {%- when 'cart' -%}
+                            {{ 'icon-cart.svg' | inline_asset_content }}
+                          {%- when 'search' -%}
+                            {{ 'icon-search.svg' | inline_asset_content }}
+                          {%- when 'heart' -%}
+                            {{ 'icon-heart.svg' | inline_asset_content }}
+                          {%- when 'star' -%}
+                            {{ 'icon-star.svg' | inline_asset_content }}
+                          {%- when 'help' -%}
+                            {{ 'icon-chat-bubble.svg' | inline_asset_content }}
+                          {%- when 'info' -%}
+                            {{ 'icon-info.svg' | inline_asset_content }}
+                          {%- when 'phone' -%}
+                            {{ 'icon-phone.svg' | inline_asset_content }}
+                          {%- when 'mail' -%}
+                            {{ 'icon-email.svg' | inline_asset_content }}
+                          {%- when 'location' -%}
+                            {{ 'icon-map-pin.svg' | inline_asset_content }}
+                          {%- when 'gift' -%}
+                            {{ 'icon-gift.svg' | inline_asset_content }}
+                          {%- when 'tag' -%}
+                            {{ 'icon-discount.svg' | inline_asset_content }}
+                        {%- endcase -%}
+                      </span>
+                      <span class="mobile-menu-link__text">{{ block.settings.title }}</span>
+                    </a>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+
+              {%- comment -%} MENU TYPE 3: Text Parent with Children {%- endcomment -%}
+              {%- for block in blocks -%}
+                {%- if block.type == 'mobile_menu_text_parent' -%}
+                  <div class="mobile-menu-item mobile-menu-item--text-group" {{ block.shopify_attributes }}>
+                    <div class="mobile-menu-text-group">
+                      <span class="mobile-menu-text-group__title">{{ block.settings.title }}</span>
+                      <ul class="mobile-menu-text-group__list">
+                        {%- for childblock in blocks -%}
+                          {%- if childblock.type == 'mobile_menu_text_child' and childblock.settings.parent_id == block.settings.menu_id -%}
+                            <li {{ childblock.shopify_attributes }}>
+                              <a href="{{ childblock.settings.link }}" class="mobile-menu-text-group__link">
+                                {{ childblock.settings.title }}
+                              </a>
+                            </li>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </ul>
+                    </div>
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+
+            </div>
+          </nav>
+          
+          <div class="menu-drawer__utility-links">
+            {%- if localization.available_countries or localization.available_languages -%}
+              <div class="menu-drawer__localization header-localization">
+                {%- if localization.available_countries and localization.available_countries.size > 1 -%}
+                  <localization-form>
+                    {%- form 'localization', id: 'HeaderCountryMobileFormCustom', class: 'localization-form' -%}
+                      <div>
+                        <h2 class="visually-hidden" id="HeaderCountryMobileLabelCustom">{{ 'localization.country_label' | t }}</h2>
+                        {%- render 'country-localization', localPosition: 'HeaderCountryMobileCustom' -%}
+                      </div>
+                    {%- endform -%}
+                  </localization-form>
+                {% endif %}
+                {%- if localization.available_languages and localization.available_languages.size > 1 -%}
+                  <localization-form>
+                    {%- form 'localization', id: 'HeaderLanguageMobileFormCustom', class: 'localization-form' -%}
+                      <div>
+                        <h2 class="visually-hidden" id="HeaderLanguageMobileLabelCustom">{{ 'localization.language_label' | t }}</h2>
+                        {%- render 'language-localization', localPosition: 'HeaderLanguageMobileCustom' -%}
+                      </div>
+                    {%- endform -%}
+                  </localization-form>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+            <ul class="list list-social list-unstyled" role="list">
+              {%- if settings.social_twitter_link != blank -%}
+                <li class="list-social__item">
+                  <a href="{{ settings.social_twitter_link }}" class="list-social__link link">
+                    <span class="svg-wrapper">{{ 'icon-twitter.svg' | inline_asset_content }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+              {%- if settings.social_facebook_link != blank -%}
+                <li class="list-social__item">
+                  <a href="{{ settings.social_facebook_link }}" class="list-social__link link">
+                    <span class="svg-wrapper">{{ 'icon-facebook.svg' | inline_asset_content }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+              {%- if settings.social_instagram_link != blank -%}
+                <li class="list-social__item">
+                  <a href="{{ settings.social_instagram_link }}" class="list-social__link link">
+                    <span class="svg-wrapper">{{ 'icon-instagram.svg' | inline_asset_content }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+              {%- if settings.social_tiktok_link != blank -%}
+                <li class="list-social__item">
+                  <a href="{{ settings.social_tiktok_link }}" class="list-social__link link">
+                    <span class="svg-wrapper">{{ 'icon-tiktok.svg' | inline_asset_content }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+              {%- if settings.social_youtube_link != blank -%}
+                <li class="list-social__item">
+                  <a href="{{ settings.social_youtube_link }}" class="list-social__link link">
+                    <span class="svg-wrapper">{{ 'icon-youtube.svg' | inline_asset_content }}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+</header-drawer>
+
+<script src="{{ 'header-drawer-mobile-custom.js' | asset_url }}" defer="defer"></script>

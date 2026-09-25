@@ -1,0 +1,26 @@
+{%- if product != blank -%}
+  {%- assign form_id = 'HotspotForm-' | append: section.id | append: '-' | append: index | append: '-' | append: location -%}
+  <product-form data-section-id="{{ section.id }}">
+    <div class="product-form__error-message-wrapper" role="alert" hidden>
+      <span class="product-form__error-message"></span>
+    </div>
+    {%- form 'product', product, class: 'pdh-form', id: form_id -%}
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="pdh-atc-btn-{{ sid }} pdh-atc-btn" {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
+        <span>
+          {%- if product.selected_or_first_available_variant.available -%}
+            {{ label | default: 'Add to cart' | escape }}
+          {%- else -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- endif -%}
+        </span>
+        {% render 'loading-spinner' %}
+      </button>
+    {%- endform -%}
+  </product-form>
+{%- elsif url != blank and url != '#' -%}
+  <a class="pdh-atc-btn-{{ sid }} pdh-atc-btn" href="{{ url }}">{{ 'products.product.view_full_details' | t }}</a>
+{%- else -%}
+  <button type="button" class="pdh-atc-btn-{{ sid }} pdh-atc-btn" disabled>{{ 'products.product.unavailable' | t }}</button>
+{%- endif -%}

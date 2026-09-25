@@ -1,0 +1,125 @@
+{% for i in (1..5) %}
+  {% assign heading_key = 'heading_' | append: i %}
+  {% assign accordion_type_key = 'accordion_type_' | append: i %}
+  {% assign content_key = 'content_' | append: i %}
+  {% assign page_key = 'page_' | append: i %}
+  {% assign section_name_key = 'section_name_' | append: i %}
+
+  {% assign heading = block.settings[heading_key] %}
+  {% assign accordion_type = block.settings[accordion_type_key] %}
+  {% assign content = block.settings[content_key] %}
+  {% assign page = block.settings[page_key] %}
+  {% assign section_name = block.settings[section_name_key] %}
+
+  {% assign should_display = false %}
+
+  {% if heading != blank %}
+    {% if accordion_type == 'navigate' %}
+      {% if section_name != blank %}
+        {% assign should_display = true %}
+      {% endif %}
+    {% else %}
+      {% if content != blank or page != blank %}
+        {% assign should_display = true %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  {% if should_display %}
+    <div class="nvgd-product-accordion nvgd-accordion nvgd-accordion-{{ accordion_type }}">
+      <details id="nvgd-Details-{{ block.id }}-{{ i }}">
+        {% if accordion_type == 'navigate' %}
+          <summary>
+            <a href="#{{ section_name }}" class="nvgd-accordion-navigate" data-section-name="{{ section_name }}">
+              <div class="nvgd-summary-title">
+                <h2 class="nvgd-accordion-title inline-richtext {{ block.settings.type_preset }}">
+                  {{ heading | escape }}
+                </h2>
+              </div>
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </a>
+          </summary>
+        {% else %}
+          <summary>
+            <div class="nvgd-summary-title">
+              <h2 class="nvgd-accordion-title inline-richtext {{ block.settings.type_preset }}">
+                {{ heading | escape }}
+              </h2>
+            </div>
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </summary>
+          <div class="nvgd-accordion-content rte" id="nvgd-ProductAccordion-{{ block.id }}-{{ i }}">
+            {{ content }}
+            {{ page.content }}
+          </div>
+        {% endif %}
+      </details>
+    </div>
+  {% endif %}
+{% endfor %}
+
+<script src="{{ 'product-block-accordion-group.js' | asset_url }}" defer="defer"></script>
+
+{% stylesheet %}
+  .nvgd-product-accordion {
+    margin: 0;
+  }
+
+  .nvgd-accordion details {
+    border-top: 1px solid #E5E5E5;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .nvgd-accordion details:last-child {
+    border-bottom: 1px solid #E5E5E5;
+    padding-bottom: 10px;
+  }
+
+  .nvgd-accordion summary {
+    cursor: pointer;
+    padding: 1rem 0;
+    margin-top: 10px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nvgd-accordion summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nvgd-summary-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .nvgd-accordion-title {
+    margin: 0;
+    font-weight: 600;
+    display: inline-block;
+    max-width: calc(100% - 6rem);
+    min-height: 1.6rem;
+    word-break: break-word;
+  }
+
+  .nvgd-accordion-content {
+    padding: 1rem;
+  }
+
+  .nvgd-accordion-navigate {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .nvgd-accordion-navigate:hover {
+    opacity: 0.8;
+  }
+{% endstylesheet %}

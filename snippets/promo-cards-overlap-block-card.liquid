@@ -1,0 +1,1196 @@
+{% comment %}
+  Renders a single promo card for the Promo Cards Overlap section.
+
+  Resolves per-block typography presets, sets block-scoped custom properties,
+  and renders configured slot columns; on mobile, slots 1 and 2 share a row and slot 3 follows.
+
+  Accepts:
+  - block: {Object} Section block containing card settings
+  - section: {Object} Section object (used for section.settings.*)
+
+  Usage:
+  {% render 'promo-cards-overlap-block-card', block: block, section: section %}
+{% endcomment %}
+
+      {%- comment -%}
+        =============================================
+        TYPOGRAPHY RESOLUTION (per block)
+
+        If global typography is ON → resolve presets to font properties + clamp values
+        =============================================
+      {%- endcomment -%}
+
+      {% if section.settings.enable_global_typography %}
+
+        {%- comment -%} ===== HEADING preset ===== {%- endcomment -%}
+        {% case block.settings.heading_preset %}
+          {% when 'h1' %}
+            {% assign _hd_font_key = settings.type_font_h1 %}
+            {% assign _hd_size = settings.type_size_h1 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h1 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h1 %}
+            {% assign _hd_case = settings.type_case_h1 %}
+          {% when 'h2' %}
+            {% assign _hd_font_key = settings.type_font_h2 %}
+            {% assign _hd_size = settings.type_size_h2 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h2 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h2 %}
+            {% assign _hd_case = settings.type_case_h2 %}
+          {% when 'h3' %}
+            {% assign _hd_font_key = settings.type_font_h3 %}
+            {% assign _hd_size = settings.type_size_h3 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h3 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h3 %}
+            {% assign _hd_case = settings.type_case_h3 %}
+          {% when 'h4' %}
+            {% assign _hd_font_key = settings.type_font_h4 %}
+            {% assign _hd_size = settings.type_size_h4 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h4 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h4 %}
+            {% assign _hd_case = settings.type_case_h4 %}
+          {% when 'h5' %}
+            {% assign _hd_font_key = settings.type_font_h5 %}
+            {% assign _hd_size = settings.type_size_h5 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h5 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h5 %}
+            {% assign _hd_case = settings.type_case_h5 %}
+          {% when 'h6' %}
+            {% assign _hd_font_key = settings.type_font_h6 %}
+            {% assign _hd_size = settings.type_size_h6 | times: 1 %}
+            {% assign _hd_lh = settings.type_line_height_h6 %}
+            {% assign _hd_ls = settings.type_letter_spacing_h6 %}
+            {% assign _hd_case = settings.type_case_h6 %}
+        {% endcase %}
+
+        {% case _hd_font_key %}
+          {% when 'heading' %}
+            {% assign _hd_family = settings.type_header_font.family %}
+            {% assign _hd_fallback = settings.type_header_font.fallback_families %}
+            {% assign _hd_weight = settings.type_header_font.weight %}
+            {% assign _hd_style = settings.type_header_font.style %}
+          {% when 'accent' %}
+            {% assign _hd_family = settings.type_accent_font.family %}
+            {% assign _hd_fallback = settings.type_accent_font.fallback_families %}
+            {% assign _hd_weight = settings.type_accent_font.weight %}
+            {% assign _hd_style = settings.type_accent_font.style %}
+          {% when 'subheading' %}
+            {% assign _hd_family = settings.type_subheading_font.family %}
+            {% assign _hd_fallback = settings.type_subheading_font.fallback_families %}
+            {% assign _hd_weight = settings.type_subheading_font.weight %}
+            {% assign _hd_style = settings.type_subheading_font.style %}
+          {% when 'body' %}
+            {% assign _hd_family = settings.type_body_font.family %}
+            {% assign _hd_fallback = settings.type_body_font.fallback_families %}
+            {% assign _hd_weight = settings.type_body_font.weight %}
+            {% assign _hd_style = settings.type_body_font.style %}
+        {% endcase %}
+
+        {% assign _hd_min = _hd_size | times: 0.45 | round %}
+        {% assign _hd_preferred = _hd_size | times: 0.14 | round %}
+
+        {% case _hd_lh %}
+          {% when 'display-tight' %}{% assign _hd_lh_val = 1.05 %}
+          {% when 'display-normal' %}{% assign _hd_lh_val = 1.2 %}
+          {% when 'display-loose' %}{% assign _hd_lh_val = 1.4 %}
+        {% endcase %}
+
+        {% case _hd_ls %}
+          {% when 'heading-tight' %}{% assign _hd_ls_val = '-0.02em' %}
+          {% when 'heading-normal' %}{% assign _hd_ls_val = '0em' %}
+          {% when 'heading-loose' %}{% assign _hd_ls_val = '0.04em' %}
+        {% endcase %}
+
+        {%- comment -%} ===== SUBHEADING preset ===== {%- endcomment -%}
+        {% case block.settings.subheading_preset %}
+          {% when 'h4' %}
+            {% assign _sh_font_key = settings.type_font_h4 %}
+            {% assign _sh_size = settings.type_size_h4 | times: 1 %}
+            {% assign _sh_lh = settings.type_line_height_h4 %}
+            {% assign _sh_case = settings.type_case_h4 %}
+          {% when 'h5' %}
+            {% assign _sh_font_key = settings.type_font_h5 %}
+            {% assign _sh_size = settings.type_size_h5 | times: 1 %}
+            {% assign _sh_lh = settings.type_line_height_h5 %}
+            {% assign _sh_case = settings.type_case_h5 %}
+          {% when 'h6' %}
+            {% assign _sh_font_key = settings.type_font_h6 %}
+            {% assign _sh_size = settings.type_size_h6 | times: 1 %}
+            {% assign _sh_lh = settings.type_line_height_h6 %}
+            {% assign _sh_case = settings.type_case_h6 %}
+          {% when 'paragraph' %}
+            {% assign _sh_font_key = 'body' %}
+            {% assign _sh_size = settings.type_size_paragraph | times: 1 %}
+            {% assign _sh_lh = settings.type_line_height_paragraph %}
+            {% assign _sh_case = 'none' %}
+        {% endcase %}
+
+        {% case _sh_font_key %}
+          {% when 'heading' %}
+            {% assign _sh_family = settings.type_header_font.family %}
+            {% assign _sh_fallback = settings.type_header_font.fallback_families %}
+            {% assign _sh_weight = settings.type_header_font.weight %}
+            {% assign _sh_style = settings.type_header_font.style %}
+          {% when 'accent' %}
+            {% assign _sh_family = settings.type_accent_font.family %}
+            {% assign _sh_fallback = settings.type_accent_font.fallback_families %}
+            {% assign _sh_weight = settings.type_accent_font.weight %}
+            {% assign _sh_style = settings.type_accent_font.style %}
+          {% when 'subheading' %}
+            {% assign _sh_family = settings.type_subheading_font.family %}
+            {% assign _sh_fallback = settings.type_subheading_font.fallback_families %}
+            {% assign _sh_weight = settings.type_subheading_font.weight %}
+            {% assign _sh_style = settings.type_subheading_font.style %}
+          {% when 'body' %}
+            {% assign _sh_family = settings.type_body_font.family %}
+            {% assign _sh_fallback = settings.type_body_font.fallback_families %}
+            {% assign _sh_weight = settings.type_body_font.weight %}
+            {% assign _sh_style = settings.type_body_font.style %}
+        {% endcase %}
+
+        {% assign _sh_min = _sh_size | times: 0.7 | round %}
+        {% assign _sh_preferred = _sh_size | times: 0.3 | round %}
+
+        {% case _sh_lh %}
+          {% when 'display-tight' %}{% assign _sh_lh_val = 1.05 %}
+          {% when 'display-normal' %}{% assign _sh_lh_val = 1.2 %}
+          {% when 'display-loose' %}{% assign _sh_lh_val = 1.4 %}
+          {% when 'body-tight' %}{% assign _sh_lh_val = 1.3 %}
+          {% when 'body-normal' %}{% assign _sh_lh_val = 1.5 %}
+          {% when 'body-loose' %}{% assign _sh_lh_val = 1.7 %}
+        {% endcase %}
+
+        {%- comment -%} ===== BODY TEXT preset ===== {%- endcomment -%}
+        {% case block.settings.body_preset %}
+          {% when 'h5' %}
+            {% assign _bt_font_key = settings.type_font_h5 %}
+            {% assign _bt_size = settings.type_size_h5 | times: 1 %}
+            {% assign _bt_lh = settings.type_line_height_h5 %}
+            {% assign _bt_case = settings.type_case_h5 %}
+          {% when 'h6' %}
+            {% assign _bt_font_key = settings.type_font_h6 %}
+            {% assign _bt_size = settings.type_size_h6 | times: 1 %}
+            {% assign _bt_lh = settings.type_line_height_h6 %}
+            {% assign _bt_case = settings.type_case_h6 %}
+          {% when 'paragraph' %}
+            {% assign _bt_font_key = 'body' %}
+            {% assign _bt_size = settings.type_size_paragraph | times: 1 %}
+            {% assign _bt_lh = settings.type_line_height_paragraph %}
+            {% assign _bt_case = 'none' %}
+        {% endcase %}
+
+        {% case _bt_font_key %}
+          {% when 'heading' %}
+            {% assign _bt_family = settings.type_header_font.family %}
+            {% assign _bt_fallback = settings.type_header_font.fallback_families %}
+            {% assign _bt_weight = settings.type_header_font.weight %}
+            {% assign _bt_style = settings.type_header_font.style %}
+          {% when 'accent' %}
+            {% assign _bt_family = settings.type_accent_font.family %}
+            {% assign _bt_fallback = settings.type_accent_font.fallback_families %}
+            {% assign _bt_weight = settings.type_accent_font.weight %}
+            {% assign _bt_style = settings.type_accent_font.style %}
+          {% when 'subheading' %}
+            {% assign _bt_family = settings.type_subheading_font.family %}
+            {% assign _bt_fallback = settings.type_subheading_font.fallback_families %}
+            {% assign _bt_weight = settings.type_subheading_font.weight %}
+            {% assign _bt_style = settings.type_subheading_font.style %}
+          {% when 'body' %}
+            {% assign _bt_family = settings.type_body_font.family %}
+            {% assign _bt_fallback = settings.type_body_font.fallback_families %}
+            {% assign _bt_weight = settings.type_body_font.weight %}
+            {% assign _bt_style = settings.type_body_font.style %}
+        {% endcase %}
+
+        {% assign _bt_min = _bt_size | times: 0.7 | round %}
+        {% assign _bt_preferred = _bt_size | times: 0.3 | round %}
+
+        {% case _bt_lh %}
+          {% when 'display-tight' %}{% assign _bt_lh_val = 1.05 %}
+          {% when 'display-normal' %}{% assign _bt_lh_val = 1.2 %}
+          {% when 'display-loose' %}{% assign _bt_lh_val = 1.4 %}
+          {% when 'body-tight' %}{% assign _bt_lh_val = 1.3 %}
+          {% when 'body-normal' %}{% assign _bt_lh_val = 1.5 %}
+          {% when 'body-loose' %}{% assign _bt_lh_val = 1.7 %}
+        {% endcase %}
+
+        {%- comment -%} ===== BUTTON preset ===== {%- endcomment -%}
+        {% case block.settings.button_preset %}
+          {% when 'h5' %}
+            {% assign _btn_font_key = settings.type_font_h5 %}
+            {% assign _btn_size = settings.type_size_h5 | times: 1 %}
+            {% assign _btn_case = settings.type_case_h5 %}
+          {% when 'h6' %}
+            {% assign _btn_font_key = settings.type_font_h6 %}
+            {% assign _btn_size = settings.type_size_h6 | times: 1 %}
+            {% assign _btn_case = settings.type_case_h6 %}
+          {% when 'paragraph' %}
+            {% assign _btn_font_key = 'body' %}
+            {% assign _btn_size = settings.type_size_paragraph | times: 1 %}
+            {% assign _btn_case = 'none' %}
+        {% endcase %}
+
+        {% case _btn_font_key %}
+          {% when 'heading' %}
+            {% assign _btn_family = settings.type_header_font.family %}
+            {% assign _btn_fallback = settings.type_header_font.fallback_families %}
+            {% assign _btn_weight = settings.type_header_font.weight %}
+            {% assign _btn_style = settings.type_header_font.style %}
+          {% when 'accent' %}
+            {% assign _btn_family = settings.type_accent_font.family %}
+            {% assign _btn_fallback = settings.type_accent_font.fallback_families %}
+            {% assign _btn_weight = settings.type_accent_font.weight %}
+            {% assign _btn_style = settings.type_accent_font.style %}
+          {% when 'subheading' %}
+            {% assign _btn_family = settings.type_subheading_font.family %}
+            {% assign _btn_fallback = settings.type_subheading_font.fallback_families %}
+            {% assign _btn_weight = settings.type_subheading_font.weight %}
+            {% assign _btn_style = settings.type_subheading_font.style %}
+          {% when 'body' %}
+            {% assign _btn_family = settings.type_body_font.family %}
+            {% assign _btn_fallback = settings.type_body_font.fallback_families %}
+            {% assign _btn_weight = settings.type_body_font.weight %}
+            {% assign _btn_style = settings.type_body_font.style %}
+        {% endcase %}
+
+        {% assign _btn_min = _btn_size | times: 0.8 | round %}
+        {% assign _btn_preferred = _btn_size | times: 0.4 | round %}
+
+      {% endif %}
+
+      {%- capture pc_cols -%}{% if block.settings.s1_type != 'none' %}{{ block.settings.s1_width }}fr {% endif %}{% if block.settings.s2_type != 'none' %}{{ block.settings.s2_width }}fr {% endif %}{% if block.settings.s3_type != 'none' %}{{ block.settings.s3_width }}fr {% endif %}{%- endcapture -%}
+
+      {%- comment -%}
+        Block-scoped custom properties (referenced by the bundled stylesheet below).
+      {%- endcomment -%}
+      {%- capture pc_style -%}
+--pc-bg: {{ block.settings.bg_color }};
+--pc-radius: {{ block.settings.border_radius }}px;
+--pad-x: {{ block.settings.padding_x }}px;
+--pad-y: {{ block.settings.padding_y }}px;
+--pad-x-m: {{ block.settings.padding_x_mobile }}px;
+--pad-y-m: {{ block.settings.padding_y_mobile }}px;
+--pc-mb: {{ block.settings.margin_bottom }}px;
+--pc-ovf: {% if block.settings.s1_popout or block.settings.s2_popout or block.settings.s3_popout %}visible{% else %}hidden{% endif %};
+--pc-minh-d: {{ section.settings.min_height_desktop }}px;
+--pc-minh-m: {{ section.settings.min_height_mobile }}px;
+--pc-w: {% if block.settings.use_custom_card_width %}{{ block.settings.custom_card_width }}{% else %}{{ block.settings.card_width }}{% endif %}%;
+--pc-w-m: {% if block.settings.use_custom_card_width_mobile %}{{ block.settings.custom_card_width_mobile }}{% else %}{{ block.settings.card_width_mobile }}{% endif %}%;
+--pc-ml: {% if block.settings.card_alignment == 'start' %}0{% else %}auto{% endif %};
+--pc-mr: {% if block.settings.card_alignment == 'end' %}0{% else %}auto{% endif %};
+--pc-ml-m: {% if block.settings.card_alignment_mobile == 'start' %}0{% else %}auto{% endif %};
+--pc-mr-m: {% if block.settings.card_alignment_mobile == 'end' %}0{% else %}auto{% endif %};
+{%- if block.settings.bg_image != blank -%}
+--pc-bg-image: url('{{ block.settings.bg_image | image_url: width: 1600 }}');
+--pc-bg-size: cover;
+--pc-bg-rep: no-repeat;
+--pc-bg-pos: {% if block.settings.bg_position_custom %}{{ block.settings.bg_position_x }}% {{ block.settings.bg_position_y }}%{% else %}{{ block.settings.bg_position }}{% endif %};
+{%- endif -%}
+{%- if block.settings.bg_image_mobile != blank -%}
+--pc-bg-image-m: url('{{ block.settings.bg_image_mobile | image_url: width: 1600 }}');
+{%- endif -%}
+{%- if section.settings.fixed_height_desktop > 0 -%}
+--pc-fixed-h: {{ section.settings.fixed_height_desktop }}px;
+{%- endif -%}
+{%- if section.settings.fixed_height_mobile > 0 -%}
+--pc-fixed-h-m: {{ section.settings.fixed_height_mobile }}px;
+{%- endif -%}
+--pc-cols: {{ pc_cols }};
+--pc-gap: {{ block.settings.gap }}px;
+--pc-gap-m: {{ block.settings.gap_mobile }}px;
+--pc-align: {{ block.settings.vertical_alignment }};
+--pc-media-radius: {{ block.settings.media_radius }}px;
+--pc-s3-col: {% if block.settings.s2_type == 'text' or block.settings.s2_type == 'media' %}1 / -1{% else %}auto{% endif %};
+--pc-mw-m: {{ block.settings.media_width_mobile }}%;
+--pc-btn-c: {{ block.settings.button_text_color }};
+--pc-btn-bg: {{ block.settings.button_bg_color }};
+--pc-btn-pad: {{ block.settings.button_padding_y }}px {{ block.settings.button_padding_x }}px;
+--pc-btn-radius: {{ block.settings.button_radius }}px;
+--pc-btn-border: {% if block.settings.button_border %}1px solid {{ block.settings.button_border_color }}{% else %}none{% endif %};
+--pc-btn-mt: {{ block.settings.button_margin_top }}px;
+--pc-btn-hover-bg: {{ block.settings.button_hover_bg_color }};
+--pc-btn-hover-c: {{ block.settings.button_hover_text_color }};
+--pc-btn-pad-m: {{ block.settings.button_padding_y_mobile }}px {{ block.settings.button_padding_x_mobile }}px;
+{%- for i in (1..3) -%}
+{%- capture ta_key -%}s{{ i }}_text_align{%- endcapture -%}
+{%- capture jf_key -%}s{{ i }}_position_horizontal{%- endcapture -%}
+{%- capture cv_key -%}s{{ i }}_content_vertical{%- endcapture -%}
+{%- capture pv_key -%}s{{ i }}_position_vertical{%- endcapture -%}
+{%- capture ch_key -%}s{{ i }}_content_horizontal{%- endcapture -%}
+{%- capture py_key -%}s{{ i }}_padding_y{%- endcapture -%}
+{%- capture px_key -%}s{{ i }}_padding_x{%- endcapture -%}
+{%- capture pop_key -%}s{{ i }}_popout{%- endcapture -%}
+{%- capture mw_key -%}s{{ i }}_max_width{%- endcapture -%}
+{%- capture tam_key -%}s{{ i }}_text_align_mobile{%- endcapture -%}
+{%- capture cvm_key -%}s{{ i }}_content_vertical_mobile{%- endcapture -%}
+{%- capture chm_key -%}s{{ i }}_content_horizontal_mobile{%- endcapture -%}
+{%- capture ord_key -%}s{{ i }}_order_mobile{%- endcapture -%}
+{%- capture head_c_key -%}s{{ i }}_heading_color{%- endcapture -%}
+{%- capture head_mg_key -%}s{{ i }}_heading_margin{%- endcapture -%}
+{%- capture sub_c_key -%}s{{ i }}_sub_color{%- endcapture -%}
+{%- capture sub_mg_key -%}s{{ i }}_sub_margin{%- endcapture -%}
+{%- capture text_c_key -%}s{{ i }}_text_color{%- endcapture -%}
+{%- capture text_mg_key -%}s{{ i }}_text_margin{%- endcapture -%}
+--pc-s{{ i }}-ta: {{ block.settings[ta_key] }};
+--pc-s{{ i }}-jf: {{ block.settings[jf_key] }};
+--pc-s{{ i }}-as: {% if block.settings[cv_key] != 'flex-start' %}stretch{% else %}{{ block.settings[pv_key] }}{% endif %};
+--pc-s{{ i }}-jc: {{ block.settings[cv_key] }};
+--pc-s{{ i }}-ai: {{ block.settings[ch_key] }};
+--pc-s{{ i }}-pad: {{ block.settings[py_key] }}px {{ block.settings[px_key] }}px;
+--pc-s{{ i }}-ta-m: {{ block.settings[tam_key] }};
+--pc-s{{ i }}-jc-m: {{ block.settings[cvm_key] }};
+--pc-s{{ i }}-ai-m: {{ block.settings[chm_key] }};
+--pc-s{{ i }}-ord: {{ block.settings[ord_key] }};
+--pc-s{{ i }}-head-c: {{ block.settings[head_c_key] }};
+--pc-s{{ i }}-head-mg: {{ block.settings[head_mg_key] }}px;
+--pc-s{{ i }}-sub-c: {{ block.settings[sub_c_key] }};
+--pc-s{{ i }}-sub-mg: {{ block.settings[sub_mg_key] }}px;
+--pc-s{{ i }}-text-c: {{ block.settings[text_c_key] }};
+--pc-s{{ i }}-text-mg: {{ block.settings[text_mg_key] }}px;
+{%- if block.settings[pop_key] -%}
+--pc-s{{ i }}-ovf: visible;
+--pc-s{{ i }}-z: 10;
+--pc-s{{ i }}-popw: {{ block.settings[mw_key] }}px;
+{%- endif -%}
+{%- unless section.settings.enable_global_typography -%}
+{%- capture head_font_key -%}s{{ i }}_heading_font{%- endcapture -%}
+{%- capture head_fw_key -%}s{{ i }}_heading_weight{%- endcapture -%}
+{%- capture head_size_key -%}s{{ i }}_heading_size{%- endcapture -%}
+{%- capture head_lh_key -%}s{{ i }}_heading_line_height{%- endcapture -%}
+{%- capture head_sm_key -%}s{{ i }}_heading_size_mobile{%- endcapture -%}
+{%- capture sub_font_key -%}s{{ i }}_sub_font{%- endcapture -%}
+{%- capture sub_size_key -%}s{{ i }}_sub_size{%- endcapture -%}
+{%- capture sub_sm_key -%}s{{ i }}_sub_size_mobile{%- endcapture -%}
+{%- capture text_font_key -%}s{{ i }}_text_font{%- endcapture -%}
+{%- capture text_size_key -%}s{{ i }}_text_size{%- endcapture -%}
+{%- capture text_lh_key -%}s{{ i }}_text_line_height{%- endcapture -%}
+{%- capture text_sm_key -%}s{{ i }}_text_size_mobile{%- endcapture -%}
+--pc-s{{ i }}-head: {{ block.settings[head_size_key] }}px;
+--pc-s{{ i }}-head-ff: {{ block.settings[head_font_key].family }}, {{ block.settings[head_font_key].fallback_families }};
+--pc-s{{ i }}-head-fw: {{ block.settings[head_fw_key] }};
+--pc-s{{ i }}-head-lh: {{ block.settings[head_lh_key] }};
+--pc-s{{ i }}-head-m: {{ block.settings[head_sm_key] }}px;
+--pc-s{{ i }}-sub: {{ block.settings[sub_size_key] }}px;
+--pc-s{{ i }}-sub-ff: {{ block.settings[sub_font_key].family }}, {{ block.settings[sub_font_key].fallback_families }};
+--pc-s{{ i }}-sub-m: {{ block.settings[sub_sm_key] }}px;
+--pc-s{{ i }}-text: {{ block.settings[text_size_key] }}px;
+--pc-s{{ i }}-text-ff: {{ block.settings[text_font_key].family }}, {{ block.settings[text_font_key].fallback_families }};
+--pc-s{{ i }}-text-lh: {{ block.settings[text_lh_key] }};
+--pc-s{{ i }}-text-m: {{ block.settings[text_sm_key] }}px;
+--pc-btn: {{ block.settings.button_size }}px;
+--pc-btn-fw: {{ block.settings.button_weight }};
+--pc-btn-m: {{ block.settings.button_size_mobile }}px;
+{%- endunless -%}
+{%- endfor -%}
+{%- if section.settings.enable_global_typography -%}
+--pc-hd-ff: {{ _hd_family }}, {{ _hd_fallback }};
+--pc-hd-fw: {{ _hd_weight }};
+--pc-hd-fs: {{ _hd_style }};
+--pc-hd-lh: {{ _hd_lh_val }};
+--pc-hd-ls: {{ _hd_ls_val }};
+--pc-hd-tt: {{ _hd_case }};
+--pc-hd-size: clamp({{ _hd_min }}px, {{ _hd_preferred }}px + 3vw, {{ _hd_size }}px);
+--pc-sh-ff: {{ _sh_family }}, {{ _sh_fallback }};
+--pc-sh-fw: {{ _sh_weight }};
+--pc-sh-fs: {{ _sh_style }};
+--pc-sh-lh: {{ _sh_lh_val }};
+--pc-sh-tt: {{ _sh_case }};
+--pc-sh-size: clamp({{ _sh_min }}px, {{ _sh_preferred }}px + 1vw, {{ _sh_size }}px);
+--pc-bt-ff: {{ _bt_family }}, {{ _bt_fallback }};
+--pc-bt-fw: {{ _bt_weight }};
+--pc-bt-fs: {{ _bt_style }};
+--pc-bt-lh: {{ _bt_lh_val }};
+--pc-bt-tt: {{ _bt_case }};
+--pc-bt-size: clamp({{ _bt_min }}px, {{ _bt_preferred }}px + 0.5vw, {{ _bt_size }}px);
+--pc-btn-ff: {{ _btn_family }}, {{ _btn_fallback }};
+--pc-btn-fw: {{ _btn_weight }};
+--pc-btn-fs: {{ _btn_style }};
+--pc-btn-tt: {{ _btn_case }};
+--pc-btn-size: clamp({{ _btn_min }}px, {{ _btn_preferred }}px + 0.5vw, {{ _btn_size }}px);
+{%- endif -%}
+{%- endcapture -%}
+
+      <div class="promo-card {% if section.settings.enable_global_typography %}pc-gtypo{% else %}pc-ctypo{% endif %}" style="{{ pc_style | escape }}" {{ block.shopify_attributes }}>
+        <div class="promo-card__inner">
+
+          <!-- Wrapper for Slots 1 & 2 (row on mobile) -->
+          <div class="pc-slots-row">
+            {% for i in (1..2) %}
+              {% capture type_key %}s{{ i }}_type{% endcapture %}
+              {% capture stretch_key %}s{{ i }}_stretch{% endcapture %}
+              {% capture stretch_mobile_key %}s{{ i }}_stretch_mobile{% endcapture %}
+              {% capture popout_key %}s{{ i }}_popout{% endcapture %}
+
+              {% assign slot_type = block.settings[type_key] %}
+              {% assign stretch_mode = block.settings[stretch_key] %}
+              {% assign stretch_mode_mobile = block.settings[stretch_mobile_key] %}
+              {% assign is_popout = block.settings[popout_key] %}
+
+              {% capture stretch_class %}{% if stretch_mode == 'vertical' %}pc-stretch-vertical{% elsif stretch_mode == 'full' %}pc-stretch-full{% endif %}{% endcapture %}
+              {% capture stretch_class_mobile %}{% if stretch_mode_mobile == 'vertical' %}pc-stretch-vertical-m{% elsif stretch_mode_mobile == 'full' %}pc-stretch-full-m{% endif %}{% endcapture %}
+
+              {% if slot_type != 'none' %}
+                <div class="pc-slot slot-{{ i }} pc-slot--{{ slot_type }} {{ stretch_class }} {{ stretch_class_mobile }}">
+
+                  {% if slot_type == 'text' %}
+                    {% capture heading_key %}s{{ i }}_heading{% endcapture %}
+                    {% capture subheading_key %}s{{ i }}_subheading{% endcapture %}
+                    {% capture text_key %}s{{ i }}_text{% endcapture %}
+                    {% capture btn_label_key %}s{{ i }}_btn_label{% endcapture %}
+                    {% capture btn_link_key %}s{{ i }}_btn_link{% endcapture %}
+                    {% capture logo_key %}s{{ i }}_inline_logo{% endcapture %}
+                    {% capture logo_height_key %}s{{ i }}_logo_height{% endcapture %}
+                    {% capture logo_move_x_key %}s{{ i }}_logo_trans_x{% endcapture %}
+                    {% capture logo_move_y_key %}s{{ i }}_logo_trans_y{% endcapture %}
+
+                    {% assign heading_val = block.settings[heading_key] %}
+                    {% assign subheading_val = block.settings[subheading_key] %}
+                    {% assign text_val = block.settings[text_key] %}
+                    {% assign btn_label_val = block.settings[btn_label_key] %}
+                    {% assign btn_link_val = block.settings[btn_link_key] %}
+                    {% assign slot_logo = block.settings[logo_key] %}
+                    {% assign logo_h = block.settings[logo_height_key] %}
+                    {% assign logo_x = block.settings[logo_move_x_key] %}
+                    {% assign logo_y = block.settings[logo_move_y_key] %}
+
+                    {% if slot_logo != blank %}
+                      {% capture logo_style %}height:{{ logo_h }}px; transform: translate({{ logo_x }}px, {{ logo_y }}px);{% endcapture %}
+                      {% capture logo_html %}
+                        <img src="{{ slot_logo | image_url: height: 120 }}" class="inline-logo" style="{{ logo_style }}" alt="Logo" loading="lazy" height="120" width="{{ 120 | times: slot_logo.aspect_ratio | ceil }}">
+                      {% endcapture %}
+                    {% endif %}
+
+                    {% if subheading_val != blank %}
+                      <p class="s{{ i }}-subheading">
+                        {{ subheading_val | replace: '[logo]', logo_html }}
+                      </p>
+                    {% endif %}
+
+                    {% if heading_val != blank %}
+                      <h2 class="s{{ i }}-heading">
+                        {{ heading_val | replace: '[logo]', logo_html }}
+                      </h2>
+                    {% endif %}
+
+                    {% if text_val != blank %}
+                      <div class="s{{ i }}-text">
+                        {{ text_val | newline_to_br | replace: '[logo]', logo_html }}
+                      </div>
+                    {% endif %}
+
+                    {% if btn_label_val != blank %}
+                      <a href="{{ btn_link_val }}" class="pc-button">{{ btn_label_val }}</a>
+                    {% endif %}
+
+                  {% elsif slot_type == 'media' %}
+                    {% capture image_key %}s{{ i }}_image{% endcapture %}
+                    {% capture video_key %}s{{ i }}_video{% endcapture %}
+                    {% capture link_key %}s{{ i }}_media_link{% endcapture %}
+                    {% capture max_width_key %}s{{ i }}_max_width{% endcapture %}
+
+                    {% assign image_val = block.settings[image_key] %}
+                    {% assign video_val = block.settings[video_key] %}
+                    {% assign media_link_val = block.settings[link_key] %}
+                    {% assign max_width_val = block.settings[max_width_key] %}
+
+                    <div class="pc-media-wrapper" {% if stretch_mode == 'none' and is_popout == false %}style="width: min(100%, {{ max_width_val }}px); max-width: 100%;"{% endif %}>
+                      {% if media_link_val != blank %}<a href="{{ media_link_val }}" style="display:block; height:100%;">{% endif %}
+
+                      {% if video_val != blank %}
+                        {{ video_val | video_tag: loop: true, muted: true, controls: false, playsinline: true, preload: 'none', loading: 'lazy', image_size: '800x', data-video-lazy-autoplay: 'true' }}
+                      {% elsif image_val != blank %}
+                        {%- assign promo_img_alt = image_val.alt | default: 'Promotional banner' -%}
+                        {{ image_val
+                          | image_url: width: 1400
+                          | image_tag:
+                            widths: '360, 540, 720, 900, 1080, 1296, 1400',
+                            sizes: '(min-width: 750px) 630px, 90vw',
+                            loading: 'lazy',
+                            alt: promo_img_alt
+                        }}
+                      {% else %}
+                        {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
+                      {% endif %}
+
+                      {% if media_link_val != blank %}</a>{% endif %}
+                    </div>
+
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <!-- Slot 3 (full width below on mobile) -->
+          {% assign i = 3 %}
+          {% capture type_key %}s{{ i }}_type{% endcapture %}
+          {% capture stretch_key %}s{{ i }}_stretch{% endcapture %}
+          {% capture stretch_mobile_key %}s{{ i }}_stretch_mobile{% endcapture %}
+          {% capture popout_key %}s{{ i }}_popout{% endcapture %}
+
+          {% assign slot_type = block.settings[type_key] %}
+          {% assign stretch_mode = block.settings[stretch_key] %}
+          {% assign stretch_mode_mobile = block.settings[stretch_mobile_key] %}
+          {% assign is_popout = block.settings[popout_key] %}
+
+          {% capture stretch_class %}{% if stretch_mode == 'vertical' %}pc-stretch-vertical{% elsif stretch_mode == 'full' %}pc-stretch-full{% endif %}{% endcapture %}
+          {% capture stretch_class_mobile %}{% if stretch_mode_mobile == 'vertical' %}pc-stretch-vertical-m{% elsif stretch_mode_mobile == 'full' %}pc-stretch-full-m{% endif %}{% endcapture %}
+
+          {% if slot_type != 'none' %}
+            <div class="pc-slot slot-{{ i }} pc-slot--{{ slot_type }} {{ stretch_class }} {{ stretch_class_mobile }}">
+
+              {% if slot_type == 'text' %}
+                {% capture heading_key %}s{{ i }}_heading{% endcapture %}
+                {% capture subheading_key %}s{{ i }}_subheading{% endcapture %}
+                {% capture text_key %}s{{ i }}_text{% endcapture %}
+                {% capture btn_label_key %}s{{ i }}_btn_label{% endcapture %}
+                {% capture btn_link_key %}s{{ i }}_btn_link{% endcapture %}
+                {% capture logo_key %}s{{ i }}_inline_logo{% endcapture %}
+                {% capture logo_height_key %}s{{ i }}_logo_height{% endcapture %}
+                {% capture logo_move_x_key %}s{{ i }}_logo_trans_x{% endcapture %}
+                {% capture logo_move_y_key %}s{{ i }}_logo_trans_y{% endcapture %}
+
+                {% assign heading_val = block.settings[heading_key] %}
+                {% assign subheading_val = block.settings[subheading_key] %}
+                {% assign text_val = block.settings[text_key] %}
+                {% assign btn_label_val = block.settings[btn_label_key] %}
+                {% assign btn_link_val = block.settings[btn_link_key] %}
+                {% assign slot_logo = block.settings[logo_key] %}
+                {% assign logo_h = block.settings[logo_height_key] %}
+                {% assign logo_x = block.settings[logo_move_x_key] %}
+                {% assign logo_y = block.settings[logo_move_y_key] %}
+
+                {% if slot_logo != blank %}
+                  {% capture logo_style %}height:{{ logo_h }}px; transform: translate({{ logo_x }}px, {{ logo_y }}px);{% endcapture %}
+                  {% capture logo_html %}
+                    <img src="{{ slot_logo | image_url: height: 120 }}" class="inline-logo" style="{{ logo_style }}" alt="Logo" loading="lazy" height="120" width="{{ 120 | times: slot_logo.aspect_ratio | ceil }}">
+                  {% endcapture %}
+                {% endif %}
+
+                {% if subheading_val != blank %}
+                  <p class="s{{ i }}-subheading">
+                    {{ subheading_val | replace: '[logo]', logo_html }}
+                  </p>
+                {% endif %}
+
+                {% if heading_val != blank %}
+                  <h2 class="s{{ i }}-heading">
+                    {{ heading_val | replace: '[logo]', logo_html }}
+                  </h2>
+                {% endif %}
+
+                {% if text_val != blank %}
+                  <div class="s{{ i }}-text">
+                    {{ text_val | newline_to_br | replace: '[logo]', logo_html }}
+                  </div>
+                {% endif %}
+
+                {% if btn_label_val != blank %}
+                  <a href="{{ btn_link_val }}" class="pc-button">{{ btn_label_val }}</a>
+                {% endif %}
+
+              {% elsif slot_type == 'media' %}
+                {% capture image_key %}s{{ i }}_image{% endcapture %}
+                {% capture video_key %}s{{ i }}_video{% endcapture %}
+                {% capture link_key %}s{{ i }}_media_link{% endcapture %}
+                {% capture max_width_key %}s{{ i }}_max_width{% endcapture %}
+
+                {% assign image_val = block.settings[image_key] %}
+                {% assign video_val = block.settings[video_key] %}
+                {% assign media_link_val = block.settings[link_key] %}
+                {% assign max_width_val = block.settings[max_width_key] %}
+
+                <div class="pc-media-wrapper" {% if stretch_mode == 'none' and is_popout == false %}style="width: min(100%, {{ max_width_val }}px); max-width: 100%;"{% endif %}>
+                  {% if media_link_val != blank %}<a href="{{ media_link_val }}" style="display:block; height:100%;">{% endif %}
+
+                  {% if video_val != blank %}
+                    {{ video_val | video_tag: loop: true, muted: true, controls: false, playsinline: true, preload: 'none', loading: 'lazy', image_size: '800x', data-video-lazy-autoplay: 'true' }}
+                  {% elsif image_val != blank %}
+                    {%- assign promo_img_alt = image_val.alt | default: 'Promotional banner' -%}
+                    {{ image_val
+                      | image_url: width: 1400
+                      | image_tag:
+                        widths: '360, 540, 720, 900, 1080, 1296, 1400',
+                        sizes: '(min-width: 750px) 630px, 90vw',
+                        loading: 'lazy',
+                        alt: promo_img_alt
+                    }}
+                  {% else %}
+                    {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
+                  {% endif %}
+
+                  {% if media_link_val != blank %}</a>{% endif %}
+                </div>
+
+              {% endif %}
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      {% stylesheet %}
+        /* moved from inline style block for bundling */
+        .promo-card {
+          position: relative;
+          box-sizing: border-box;
+          background-color: var(--pc-bg);
+          border-radius: var(--pc-radius);
+          padding: var(--pad-y) var(--pad-x);
+          margin-bottom: var(--pc-mb);
+          overflow: var(--pc-ovf);
+          height: auto;
+          min-height: var(--pc-minh-d);
+          width: var(--pc-w);
+          margin-left: var(--pc-ml);
+          margin-right: var(--pc-mr);
+          background-image: var(--pc-bg-image, none);
+          background-size: var(--pc-bg-size, auto);
+          background-repeat: var(--pc-bg-rep, repeat);
+          background-position: var(--pc-bg-pos, 0% 0%);
+        }
+
+        @media screen and (max-width: 750px) {
+          .promo-card {
+            background-image: var(--pc-bg-image-m, var(--pc-bg-image, none));
+          }
+        }
+
+        @media screen and (min-width: 750px) {
+          .promo-card {
+            height: var(--pc-fixed-h, auto);
+          }
+        }
+
+        /* --- CSS GRID ENGINE --- */
+        .promo-card__inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          min-height: max(0px, calc(var(--pc-minh-d) - (var(--pad-y) * 2)));
+          z-index: 2;
+          display: grid;
+          grid-template-columns: var(--pc-cols);
+          gap: var(--pc-gap);
+          align-items: var(--pc-align);
+        }
+
+        .pc-slot {
+          position: relative;
+          z-index: 2;
+          min-width: 0;
+          width: 100%;
+          min-height: 100%;
+        }
+
+        /* --- COLUMN POSITIONING --- */
+        .slot-1 {
+          text-align: var(--pc-s1-ta);
+          justify-self: var(--pc-s1-jf);
+          /* ponytail: a slot that hugs its content has no free space, so
+             justify-content below is a no-op. Stretch it whenever the
+             merchant has asked for content to sit anywhere but the top. */
+          align-self: var(--pc-s1-as);
+          display: flex;
+          flex-direction: column;
+          justify-content: var(--pc-s1-jc);
+          align-items: var(--pc-s1-ai);
+          padding: var(--pc-s1-pad);
+          overflow: var(--pc-s1-ovf, visible) !important;
+          z-index: var(--pc-s1-z, 2) !important;
+        }
+        .slot-2 {
+          text-align: var(--pc-s2-ta);
+          justify-self: var(--pc-s2-jf);
+          align-self: var(--pc-s2-as);
+          display: flex;
+          flex-direction: column;
+          justify-content: var(--pc-s2-jc);
+          align-items: var(--pc-s2-ai);
+          padding: var(--pc-s2-pad);
+          overflow: var(--pc-s2-ovf, visible) !important;
+          z-index: var(--pc-s2-z, 2) !important;
+        }
+        .slot-3 {
+          text-align: var(--pc-s3-ta);
+          justify-self: var(--pc-s3-jf);
+          align-self: var(--pc-s3-as);
+          display: flex;
+          flex-direction: column;
+          justify-content: var(--pc-s3-jc);
+          align-items: var(--pc-s3-ai);
+          padding: var(--pc-s3-pad);
+          overflow: var(--pc-s3-ovf, visible) !important;
+          z-index: var(--pc-s3-z, 2) !important;
+        }
+        .slot-3 {
+          grid-column: var(--pc-s3-col);
+        }
+
+        /* --- Media Handling --- */
+        .pc-stretch-vertical {
+          margin-top: calc(var(--pad-y) * -1);
+          margin-bottom: calc(var(--pad-y) * -1);
+          height: calc(100% + (var(--pad-y) * 2));
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .pc-stretch-vertical .pc-media-wrapper {
+          height: 100%;
+        }
+        .pc-stretch-vertical img, .pc-stretch-vertical video {
+          height: 100%;
+          width: auto;
+          object-fit: contain;
+          max-width: 100%;
+        }
+
+        .pc-stretch-full {
+          margin-top: calc(var(--pad-y) * -1);
+          margin-bottom: calc(var(--pad-y) * -1);
+          height: calc(100% + (var(--pad-y) * 2));
+        }
+
+        .slot-1.pc-stretch-full { margin-left: calc(var(--pad-x) * -1); width: calc(100% + var(--pad-x)); }
+        .slot-3.pc-stretch-full { margin-right: calc(var(--pad-x) * -1); width: calc(100% + var(--pad-x)); }
+
+        .pc-stretch-full .pc-media-wrapper { width: 100%; height: 100%; }
+        .pc-stretch-full img, .pc-stretch-full video { width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
+
+        .pc-media-wrapper {
+          width: 100%;
+          height: auto;
+          position: relative;
+          display: block;
+          line-height: 0;
+          max-width: 100%;
+          min-width: 0;
+          overflow: hidden;
+        }
+        .pc-media-wrapper img, .pc-media-wrapper video {
+          width: 100%;
+          height: auto;
+          max-width: 100%;
+          object-fit: contain;
+          display: block;
+          border-radius: var(--pc-media-radius);
+        }
+
+        .pc-slot.pc-stretch-vertical .pc-media-wrapper,
+        .pc-slot.pc-stretch-full .pc-media-wrapper {
+          height: 100%;
+        }
+
+        .pc-slot.pc-stretch-vertical .pc-media-wrapper img,
+        .pc-slot.pc-stretch-vertical .pc-media-wrapper video {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
+        .pc-slot.pc-stretch-full .pc-media-wrapper img,
+        .pc-slot.pc-stretch-full .pc-media-wrapper video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 0;
+        }
+
+        /* Mobile Row Wrapper for Slots 1 & 2 */
+        .pc-slots-row {
+          display: contents;
+        }
+
+        @media screen and (max-width: 749px) {
+          .pc-slots-row {
+            display: flex;
+            flex-direction: row;
+            gap: var(--pc-gap-m);
+            width: 100%;
+            align-items: stretch;
+          }
+
+          .pc-slots-row .pc-slot {
+            flex: 1;
+            min-width: 0;
+          }
+        }
+
+        /* Pop-out overrides */
+        .slot-1 .pc-media-wrapper { width: min(100%, var(--pc-s1-popw, 100%)); max-width: 100%; }
+        .slot-1 .pc-media-wrapper img { width: 100%; max-width: 100%; }
+        .slot-2 .pc-media-wrapper { width: min(100%, var(--pc-s2-popw, 100%)); max-width: 100%; }
+        .slot-2 .pc-media-wrapper img { width: 100%; max-width: 100%; }
+        .slot-3 .pc-media-wrapper { width: min(100%, var(--pc-s3-popw, 100%)); max-width: 100%; }
+        .slot-3 .pc-media-wrapper img { width: 100%; max-width: 100%; }
+
+        /* ===== TYPOGRAPHY: SLOT 1 ===== */
+        .promo-card.pc-gtypo .s1-heading {
+          font-family: var(--pc-hd-ff);
+          font-weight: var(--pc-hd-fw);
+          font-style: var(--pc-hd-fs);
+          font-size: var(--pc-hd-size);
+          line-height: var(--pc-hd-lh);
+          letter-spacing: var(--pc-hd-ls);
+          text-transform: var(--pc-hd-tt);
+          color: var(--pc-s1-head-c);
+          margin: 0 0 var(--pc-s1-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s1-heading {
+          font-family: var(--pc-s1-head-ff);
+          font-weight: var(--pc-s1-head-fw);
+          font-size: var(--pc-s1-head);
+          line-height: var(--pc-s1-head-lh);
+          color: var(--pc-s1-head-c);
+          margin: 0 0 var(--pc-s1-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s1-subheading {
+          font-family: var(--pc-sh-ff);
+          font-weight: var(--pc-sh-fw);
+          font-style: var(--pc-sh-fs);
+          font-size: var(--pc-sh-size);
+          line-height: var(--pc-sh-lh);
+          text-transform: var(--pc-sh-tt);
+          color: var(--pc-s1-sub-c);
+          margin: 0 0 var(--pc-s1-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s1-subheading {
+          font-family: var(--pc-s1-sub-ff);
+          font-size: var(--pc-s1-sub);
+          line-height: 1.3;
+          color: var(--pc-s1-sub-c);
+          margin: 0 0 var(--pc-s1-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s1-text {
+          font-family: var(--pc-bt-ff);
+          font-weight: var(--pc-bt-fw);
+          font-style: var(--pc-bt-fs);
+          font-size: var(--pc-bt-size);
+          line-height: var(--pc-bt-lh);
+          text-transform: var(--pc-bt-tt);
+          color: var(--pc-s1-text-c);
+          margin: 0 0 var(--pc-s1-text-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s1-text {
+          font-family: var(--pc-s1-text-ff);
+          font-size: var(--pc-s1-text);
+          line-height: var(--pc-s1-text-lh);
+          color: var(--pc-s1-text-c);
+          margin: 0 0 var(--pc-s1-text-mg) 0;
+          word-wrap: break-word;
+        }
+
+        /* ===== TYPOGRAPHY: SLOT 2 ===== */
+        .promo-card.pc-gtypo .s2-heading {
+          font-family: var(--pc-hd-ff);
+          font-weight: var(--pc-hd-fw);
+          font-style: var(--pc-hd-fs);
+          font-size: var(--pc-hd-size);
+          line-height: var(--pc-hd-lh);
+          letter-spacing: var(--pc-hd-ls);
+          text-transform: var(--pc-hd-tt);
+          color: var(--pc-s2-head-c);
+          margin: 0 0 var(--pc-s2-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s2-heading {
+          font-family: var(--pc-s2-head-ff);
+          font-weight: var(--pc-s2-head-fw);
+          font-size: var(--pc-s2-head);
+          line-height: var(--pc-s2-head-lh);
+          color: var(--pc-s2-head-c);
+          margin: 0 0 var(--pc-s2-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s2-subheading {
+          font-family: var(--pc-sh-ff);
+          font-weight: var(--pc-sh-fw);
+          font-style: var(--pc-sh-fs);
+          font-size: var(--pc-sh-size);
+          line-height: var(--pc-sh-lh);
+          text-transform: var(--pc-sh-tt);
+          color: var(--pc-s2-sub-c);
+          margin: 0 0 var(--pc-s2-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s2-subheading {
+          font-family: var(--pc-s2-sub-ff);
+          font-size: var(--pc-s2-sub);
+          line-height: 1.3;
+          color: var(--pc-s2-sub-c);
+          margin: 0 0 var(--pc-s2-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s2-text {
+          font-family: var(--pc-bt-ff);
+          font-weight: var(--pc-bt-fw);
+          font-style: var(--pc-bt-fs);
+          font-size: var(--pc-bt-size);
+          line-height: var(--pc-bt-lh);
+          text-transform: var(--pc-bt-tt);
+          color: var(--pc-s2-text-c);
+          margin: 0 0 var(--pc-s2-text-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s2-text {
+          font-family: var(--pc-s2-text-ff);
+          font-size: var(--pc-s2-text);
+          line-height: var(--pc-s2-text-lh);
+          color: var(--pc-s2-text-c);
+          margin: 0 0 var(--pc-s2-text-mg) 0;
+          word-wrap: break-word;
+        }
+
+        /* ===== TYPOGRAPHY: SLOT 3 ===== */
+        .promo-card.pc-gtypo .s3-heading {
+          font-family: var(--pc-hd-ff);
+          font-weight: var(--pc-hd-fw);
+          font-style: var(--pc-hd-fs);
+          font-size: var(--pc-hd-size);
+          line-height: var(--pc-hd-lh);
+          letter-spacing: var(--pc-hd-ls);
+          text-transform: var(--pc-hd-tt);
+          color: var(--pc-s3-head-c);
+          margin: 0 0 var(--pc-s3-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s3-heading {
+          font-family: var(--pc-s3-head-ff);
+          font-weight: var(--pc-s3-head-fw);
+          font-size: var(--pc-s3-head);
+          line-height: var(--pc-s3-head-lh);
+          color: var(--pc-s3-head-c);
+          margin: 0 0 var(--pc-s3-head-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s3-subheading {
+          font-family: var(--pc-sh-ff);
+          font-weight: var(--pc-sh-fw);
+          font-style: var(--pc-sh-fs);
+          font-size: var(--pc-sh-size);
+          line-height: var(--pc-sh-lh);
+          text-transform: var(--pc-sh-tt);
+          color: var(--pc-s3-sub-c);
+          margin: 0 0 var(--pc-s3-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s3-subheading {
+          font-family: var(--pc-s3-sub-ff);
+          font-size: var(--pc-s3-sub);
+          line-height: 1.3;
+          color: var(--pc-s3-sub-c);
+          margin: 0 0 var(--pc-s3-sub-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-gtypo .s3-text {
+          font-family: var(--pc-bt-ff);
+          font-weight: var(--pc-bt-fw);
+          font-style: var(--pc-bt-fs);
+          font-size: var(--pc-bt-size);
+          line-height: var(--pc-bt-lh);
+          text-transform: var(--pc-bt-tt);
+          color: var(--pc-s3-text-c);
+          margin: 0 0 var(--pc-s3-text-mg) 0;
+          word-wrap: break-word;
+        }
+        .promo-card.pc-ctypo .s3-text {
+          font-family: var(--pc-s3-text-ff);
+          font-size: var(--pc-s3-text);
+          line-height: var(--pc-s3-text-lh);
+          color: var(--pc-s3-text-c);
+          margin: 0 0 var(--pc-s3-text-mg) 0;
+          word-wrap: break-word;
+        }
+
+        .inline-logo {
+          width: auto;
+          vertical-align: middle;
+          display: inline-block;
+        }
+
+        /* ===== BUTTON ===== */
+        .promo-card.pc-gtypo .pc-button {
+          display: inline-block;
+          font-family: var(--pc-btn-ff);
+          font-weight: var(--pc-btn-fw);
+          font-style: var(--pc-btn-fs);
+          font-size: var(--pc-btn-size);
+          text-transform: var(--pc-btn-tt);
+          color: var(--pc-btn-c);
+          background-color: var(--pc-btn-bg);
+          padding: var(--pc-btn-pad);
+          border-radius: var(--pc-btn-radius);
+          text-decoration: none;
+          transition: all 0.3s ease;
+          border: var(--pc-btn-border);
+          margin-top: var(--pc-btn-mt);
+          white-space: nowrap;
+          cursor: pointer;
+          line-height: 1.2;
+        }
+        .promo-card.pc-ctypo .pc-button {
+          display: inline-block;
+          font-size: var(--pc-btn);
+          font-weight: var(--pc-btn-fw);
+          color: var(--pc-btn-c);
+          background-color: var(--pc-btn-bg);
+          padding: var(--pc-btn-pad);
+          border-radius: var(--pc-btn-radius);
+          text-decoration: none;
+          transition: all 0.3s ease;
+          border: var(--pc-btn-border);
+          margin-top: var(--pc-btn-mt);
+          white-space: nowrap;
+          cursor: pointer;
+          line-height: 1.2;
+        }
+
+        .pc-button:hover {
+          background-color: var(--pc-btn-hover-bg);
+          color: var(--pc-btn-hover-c);
+          border-color: var(--pc-btn-hover-bg);
+        }
+
+        @media screen and (max-width: 749px) {
+          .promo-card {
+            --pad-x: var(--pad-x-m);
+            --pad-y: var(--pad-y-m);
+            padding: var(--pad-y-m) var(--pad-x-m);
+            width: var(--pc-w-m) !important;
+            margin-left: var(--pc-ml-m);
+            margin-right: var(--pc-mr-m);
+            height: auto;
+            min-height: var(--pc-minh-m);
+          }
+
+          .promo-card {
+            height: var(--pc-fixed-h-m, auto) !important;
+          }
+
+          .promo-card__inner {
+            display: flex;
+            flex-direction: column;
+            gap: var(--pc-gap-m);
+            min-height: max(0px, calc(var(--pc-minh-m) - (var(--pad-y) * 2)));
+          }
+
+          .slot-1,
+          .slot-2,
+          .slot-3 {
+            width: 100%;
+            margin: 0;
+            min-height: 0;
+          }
+          /* Reset desktop stretch classes on mobile — let mobile-specific ones take over */
+          .slot-1.pc-stretch-full,
+          .slot-2.pc-stretch-full,
+          .slot-3.pc-stretch-full {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            width: 100% !important;
+          }
+
+          /* Mobile stretch: bleed to edges */
+          .slot-1.pc-stretch-full-m,
+          .slot-2.pc-stretch-full-m,
+          .slot-3.pc-stretch-full-m {
+            margin-left: calc(var(--pad-x) * -1) !important;
+            margin-right: calc(var(--pad-x) * -1) !important;
+            width: calc(100% + (var(--pad-x) * 2)) !important;
+            max-width: none !important;
+          }
+          .slot-1.pc-stretch-full-m { margin-top: calc(var(--pad-y) * -1) !important; }
+          .slot-3.pc-stretch-full-m { margin-bottom: calc(var(--pad-y) * -1) !important; }
+
+          /* Mobile stretch: vertical only */
+          .slot-1.pc-stretch-vertical-m,
+          .slot-2.pc-stretch-vertical-m,
+          .slot-3.pc-stretch-vertical-m {
+            height: auto;
+          }
+
+          /* Media wrapper for mobile stretch-full */
+          .slot-1.pc-stretch-full-m .pc-media-wrapper,
+          .slot-2.pc-stretch-full-m .pc-media-wrapper,
+          .slot-3.pc-stretch-full-m .pc-media-wrapper {
+            width: 100% !important;
+          }
+          .slot-1.pc-stretch-full-m .pc-media-wrapper img,
+          .slot-2.pc-stretch-full-m .pc-media-wrapper img,
+          .slot-3.pc-stretch-full-m .pc-media-wrapper img,
+          .slot-1.pc-stretch-full-m .pc-media-wrapper video,
+          .slot-2.pc-stretch-full-m .pc-media-wrapper video,
+          .slot-3.pc-stretch-full-m .pc-media-wrapper video {
+            width: 100%;
+            object-fit: cover;
+            border-radius: 0;
+          }
+
+          .slot-1 {
+            text-align: var(--pc-s1-ta-m);
+            justify-content: var(--pc-s1-jc-m);
+            align-items: var(--pc-s1-ai-m);
+          }
+
+          .slot-2 {
+            text-align: var(--pc-s2-ta-m);
+            justify-content: var(--pc-s2-jc-m);
+            align-items: var(--pc-s2-ai-m);
+          }
+
+          .slot-3 {
+            text-align: var(--pc-s3-ta-m);
+            justify-content: var(--pc-s3-jc-m);
+            align-items: var(--pc-s3-ai-m);
+          }
+
+          .slot-1 { order: var(--pc-s1-ord); }
+          .slot-2 { order: var(--pc-s2-ord); }
+          .slot-3 { order: var(--pc-s3-ord); }
+
+          .slot-1 .pc-media-wrapper,
+          .slot-2 .pc-media-wrapper,
+          .slot-3 .pc-media-wrapper {
+            width: var(--pc-mw-m) !important;
+            max-width: 100% !important;
+            margin: 0;
+          }
+
+          /* Reset stretch wrapper width on mobile so it doesn't stay bounded */
+          .slot-1.pc-stretch-full .pc-media-wrapper,
+          .slot-2.pc-stretch-full .pc-media-wrapper,
+          .slot-3.pc-stretch-full .pc-media-wrapper {
+            width: 100% !important;
+          }
+
+          /* Custom mode: block-level mobile overrides */
+          .promo-card.pc-ctypo .s1-heading { font-size: var(--pc-s1-head-m); }
+          .promo-card.pc-ctypo .s1-subheading { font-size: var(--pc-s1-sub-m); }
+          .promo-card.pc-ctypo .s1-text { font-size: var(--pc-s1-text-m); }
+
+          .promo-card.pc-ctypo .s2-heading { font-size: var(--pc-s2-head-m); }
+          .promo-card.pc-ctypo .s2-subheading { font-size: var(--pc-s2-sub-m); }
+          .promo-card.pc-ctypo .s2-text { font-size: var(--pc-s2-text-m); }
+
+          .promo-card.pc-ctypo .s3-heading { font-size: var(--pc-s3-head-m); }
+          .promo-card.pc-ctypo .s3-subheading { font-size: var(--pc-s3-sub-m); }
+          .promo-card.pc-ctypo .s3-text { font-size: var(--pc-s3-text-m); }
+
+          .promo-card.pc-ctypo .pc-button {
+            font-size: var(--pc-btn-m);
+          }
+
+          .pc-button {
+            padding: var(--pc-btn-pad-m);
+            width: 100%;
+            text-align: center;
+          }
+        }
+      {% endstylesheet %}

@@ -1,0 +1,7 @@
+{
+  "name": "blank-navegaid-theme",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check-json.mjs && node scripts/check-schema-values.mjs && node scripts/check-blank.mjs"
+  }
+}

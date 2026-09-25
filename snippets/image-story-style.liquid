@@ -1,0 +1,24 @@
+{{ 'section-image-story.css' | asset_url | stylesheet_tag }}
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --story-width: {{ section.settings.story_width }}px;
+    --story-gap: {{ section.settings.story_gap }}px;
+    --story-ratio: {{ section.settings.story_ratio }};
+    --story-radius: {{ section.settings.story_radius }}px;
+    --story-heading: {{ section.settings.story_heading_size }}px;
+    --story-heading-mobile: {{ section.settings.story_heading_mobile }}px;
+    --story-top: {{ section.settings.padding_top }}px;
+    --story-bottom: {{ section.settings.padding_bottom }}px;
+    --story-x: {{ section.settings.story_padding_x }}px;
+    --story-top-mobile: {{ section.settings.story_padding_top_mobile }}px;
+    --story-bottom-mobile: {{ section.settings.story_padding_bottom_mobile }}px;
+    --story-x-mobile: {{ section.settings.story_padding_x_mobile }}px;
+    --story-background: {{ section.settings.story_background }};
+    --story-ink: {{ section.settings.story_text_color }};
+    --story-muted: {{ section.settings.story_secondary_color }};
+    --story-secondary-width: {{ section.settings.story_secondary_width }}%;
+    --story-secondary-x: {{ section.settings.story_secondary_x }}%;
+    --story-secondary-y: {{ section.settings.story_secondary_y }}%;
+    --story-secondary-rotation: {{ section.settings.story_secondary_rotation }}deg;
+  }
+{%- endstyle -%}

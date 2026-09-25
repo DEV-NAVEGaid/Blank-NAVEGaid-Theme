@@ -1,0 +1,1153 @@
+{% render 'section-corners', section: section %}
+{% assign overlay_mode = section.settings.overlay_content %}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    /* Section - Full width, has ALL padding */
+    --fc-bg: {{ section.settings.bg_color }};
+    --fc-padding: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px {{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_top }}px {{ section.settings.padding_x }}px {{ section.settings.padding_bottom }}px{% endif %};
+    --fc-padding-mobile: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px {{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_top_mobile }}px {{ section.settings.padding_x_mobile }}px {{ section.settings.padding_bottom_mobile }}px{% endif %};
+    --fc-container-max: {% if section.settings.enable_global_spacing %}var(--page-width){% else %}{{ section.settings.container_width }}px{% endif %};
+
+    /* Card Style */
+    --card-bg: {{ section.settings.card_bg_color }};
+    --card-radius: {{ section.settings.card_radius }}px;
+
+    /* Image Style */
+    --img-ratio: {{ section.settings.image_ratio }};
+    --img-radius: {{ section.settings.image_radius }}px;
+    --img-padding: {{ section.settings.image_padding }}px;
+
+    /* Content & Typography */
+    --heading-color: {{ section.settings.heading_color }};
+    --text-color: {{ section.settings.text_color }};
+    --content-align: {{ section.settings.content_align }};
+    --content-padding: {{ section.settings.content_padding }}px;
+
+    /* Overlay Specifics */
+    --overlay-x: {{ section.settings.position_x }}%;
+    --overlay-y: {{ section.settings.position_y }}%;
+    --overlay-width: {{ section.settings.content_width }}%;
+    --overlay-bg: {{ section.settings.content_bg_color }};
+    --overlay-radius: {{ section.settings.content_radius }}px;
+
+    /* Grid */
+    --grid-gap: {{ section.settings.gap }}px;
+    --grid-columns: {{ section.settings.columns }};
+    --grid-columns-tablet: {{ section.settings.columns_tablet }};
+
+    /* Mobile Overrides */
+    --grid-gap-mobile: {{ section.settings.gap_mobile }}px;
+    --grid-columns-mobile: {{ section.settings.columns_mobile }};
+    --content-align-mobile: {{ section.settings.content_align_mobile }};
+    --content-padding-mobile: {{ section.settings.content_padding_mobile | default: section.settings.content_padding }}px;
+    --overlay-x-mobile: {{ section.settings.position_x_mobile }}%;
+    --overlay-y-mobile: {{ section.settings.position_y_mobile }}%;
+
+    {% if section.settings.type_preset == 'custom' %}
+    --fc-heading-font: {{ section.settings.font }};
+    --fc-heading-size: {{ section.settings.font_size }};
+    --fc-heading-lh: {% case section.settings.line_height %}{% when 'tight' %}1.2{% when 'loose' %}1.8{% else %}1.5{% endcase %};
+    --fc-heading-ls: {% case section.settings.letter_spacing %}{% when 'tight' %}-0.02em{% when 'loose' %}0.05em{% else %}normal{% endcase %};
+    --fc-heading-transform: {{ section.settings.case }};
+    {% if section.settings.wrap %}--fc-heading-wrap: {{ section.settings.wrap }};{% endif %}
+    {% endif %}
+    {% if section.settings.text_type_preset == 'custom' %}
+    --fc-text-font: {{ section.settings.text_font }};
+    --fc-text-size: {{ section.settings.text_font_size }};
+    --fc-text-lh: {% case section.settings.text_line_height %}{% when 'tight' %}1.2{% when 'loose' %}1.8{% else %}1.5{% endcase %};
+    --fc-text-ls: {% case section.settings.text_letter_spacing %}{% when 'tight' %}-0.02em{% when 'loose' %}0.05em{% else %}normal{% endcase %};
+    --fc-text-transform: {{ section.settings.text_case }};
+    {% if section.settings.text_wrap %}--fc-text-wrap: {{ section.settings.text_wrap }};{% endif %}
+    {% endif %}
+  }
+{% endstyle %}
+
+<div class="feature-cards nvgd-section-surface{% if overlay_mode %} feature-cards--overlay{% endif %}{% if section.settings.type_preset == 'custom' %} feature-cards--custom-heading{% endif %}{% if section.settings.text_type_preset == 'custom' %} feature-cards--custom-text{% endif %}">
+  <div class="feature-cards__container">
+    <div class="feature-cards__grid">
+      {% for block in section.blocks %}
+        {% render 'featured-cards-block-card', block: block, section: section, overlay_mode: overlay_mode %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+/* moved from inline style block for bundling */
+.feature-cards {
+  width: 100%;
+  background-color: var(--fc-bg);
+  padding: var(--fc-padding);
+}
+
+.feature-cards .feature-cards__container {
+  width: 100%;
+  margin: 0 auto;
+  max-width: var(--fc-container-max);
+}
+
+.feature-cards .feature-cards__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  gap: var(--grid-gap);
+}
+
+.feature-cards .feature-cards__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.feature-cards .feature-cards__media {
+  position: relative;
+  width: 100%;
+  padding: var(--img-padding);
+  box-sizing: border-box;
+}
+
+.feature-cards .feature-cards__media img,
+.feature-cards .feature-cards__media video,
+.feature-cards .feature-cards__media iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: var(--img-ratio);
+  border-radius: var(--img-radius);
+}
+
+.feature-cards .feature-cards__placeholder {
+  background-color: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: var(--img-ratio);
+  border-radius: var(--img-radius);
+}
+.feature-cards .feature-cards__placeholder svg {
+  width: 50%; opacity: 0.4;
+}
+
+.feature-cards .feature-cards__content {
+  text-align: var(--content-align);
+  padding: var(--content-padding);
+  box-sizing: border-box;
+}
+
+.feature-cards .feature-cards__heading {
+  color: var(--heading-color);
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+.feature-cards .feature-cards__text {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.feature-cards--overlay .feature-cards__content {
+  position: absolute;
+  z-index: 2;
+  top: var(--overlay-y);
+  left: var(--overlay-x);
+  transform: translate(-50%, -50%);
+  width: var(--overlay-width);
+  max-width: calc(100% - 30px);
+
+  background-color: var(--overlay-bg);
+  border-radius: var(--overlay-radius);
+}
+
+.feature-cards--custom-heading .feature-cards__heading {
+  font-family: var(--fc-heading-font);
+  font-size: var(--fc-heading-size);
+  line-height: var(--fc-heading-lh);
+  letter-spacing: var(--fc-heading-ls);
+  text-transform: var(--fc-heading-transform);
+  text-wrap: var(--fc-heading-wrap, wrap);
+}
+
+.feature-cards--custom-text .feature-cards__text {
+  font-family: var(--fc-text-font);
+  font-size: var(--fc-text-size);
+  line-height: var(--fc-text-lh);
+  letter-spacing: var(--fc-text-ls);
+  text-transform: var(--fc-text-transform);
+  text-wrap: var(--fc-text-wrap, wrap);
+}
+
+@media screen and (max-width: 750px) {
+  .feature-cards {
+    padding: var(--fc-padding-mobile);
+    --grid-gap: var(--grid-gap-mobile);
+    --grid-columns: var(--grid-columns-mobile);
+    --content-align: var(--content-align-mobile);
+    --content-padding: var(--content-padding-mobile);
+    --overlay-x: var(--overlay-x-mobile);
+    --overlay-y: var(--overlay-y-mobile);
+  }
+}
+
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  .feature-cards .feature-cards__grid {
+    grid-template-columns: repeat(var(--grid-columns-tablet), 1fr);
+  }
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Featured cards",
+  "tag": "section",
+  "class": "feature-cards-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Section background"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Card radius",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Aspect ratio",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "Square"
+        },
+        {
+          "value": "4/3",
+          "label": "Landscape"
+        },
+        {
+          "value": "16/9",
+          "label": "Wide"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait"
+        },
+        {
+          "value": "auto",
+          "label": "Original"
+        }
+      ],
+      "default": "4/3"
+    },
+    {
+      "type": "range",
+      "id": "image_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Image radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "image_padding",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Image padding",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Content layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_content",
+      "label": "Overlay on image",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "position_x",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Position X",
+      "default": 50,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "position_y",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Position Y",
+      "default": 50,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "position_x_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Position X (mobile)",
+      "default": 50,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "position_y_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Position Y (mobile)",
+      "default": 50,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Content width",
+      "default": 90,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "content_padding",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Content padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "content_padding_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Content padding (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "Text align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "content_align_mobile",
+      "label": "Text align (mobile)",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Content colors"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "content_bg_color",
+      "label": "Content background",
+      "info": "For overlay mode",
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "range",
+      "id": "content_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Content radius",
+      "default": 8,
+      "visible_if": "{{ section.settings.overlay_content }}"
+    },
+    {
+      "type": "header",
+      "content": "Heading typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "Preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "Default"
+        },
+        {
+          "value": "paragraph",
+          "label": "Paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "rte",
+      "info": "Edit presets in [theme settings](/editor?context=theme&category=typography)"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "Font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "Body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "Size",
+      "options": [
+        {
+          "value": "",
+          "label": "Default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "info": "Based on the theme's 10px root rem size.",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "Line height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "Case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Default"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "Wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "Pretty"
+        },
+        {
+          "value": "balance",
+          "label": "Balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "None"
+        }
+      ],
+      "visible_if": "{{ section.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Text typography"
+    },
+    {
+      "type": "select",
+      "id": "text_type_preset",
+      "label": "Preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "Default"
+        },
+        {
+          "value": "paragraph",
+          "label": "Paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "rte",
+      "info": "Edit presets in [theme settings](/editor?context=theme&category=typography)"
+    },
+    {
+      "type": "select",
+      "id": "text_font",
+      "label": "Font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "Body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_font_size",
+      "label": "Size",
+      "options": [
+        {
+          "value": "",
+          "label": "Default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "info": "Based on the theme's 10px root rem size.",
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_line_height",
+      "label": "Line height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_letter_spacing",
+      "label": "Letter spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Tight"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_case",
+      "label": "Case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Default"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_wrap",
+      "label": "Wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "Pretty"
+        },
+        {
+          "value": "balance",
+          "label": "Balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "None"
+        }
+      ],
+      "visible_if": "{{ section.settings.text_type_preset == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Columns (tablet)",
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns (mobile)",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap (mobile)",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Container size",
+      "visible_if": "{{ section.settings.enable_global_spacing == false }}"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container width",
+      "min": 500,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1000,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing",
+      "info": "Uses theme padding and page width settings"
+    },
+    {
+      "type": "header",
+      "content": "Padding",
+      "visible_if": "{{ section.settings.enable_global_spacing == false }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 50,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 50,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding sides",
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding top (mobile)",
+      "default": 30,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding bottom (mobile)",
+      "default": 30,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding sides (mobile)",
+      "default": 15,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Feature card",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Media"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Description",
+          "default": "Text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured cards",
+      "blocks": [
+        {
+          "type": "card",
+          "settings": {
+            "heading": "Heading"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "heading": "Heading"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "heading": "Heading"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

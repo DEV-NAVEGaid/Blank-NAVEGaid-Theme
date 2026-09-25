@@ -1,0 +1,2485 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Two Column Grid Section - Clean Version with Mobile Fix
+  Left: 1 large cell | Right: Grid of 9 cells (3×3)
+  Mobile Order: 1. Title, 2. Grid Cells, 3. Background Image (contained)
+{% endcomment %}
+
+{%- comment -%}
+  font_picker settings return a font object, and its family only renders once the
+  @font-face declaration is emitted, so declare every font this section renders.
+  The filter returns nothing for system fonts, so no guard is needed.
+  https://shopify.dev/docs/storefronts/themes/architecture/settings/fonts
+{%- endcomment -%}
+{%- style -%}
+  {%- for block in section.blocks -%}
+    {{ block.settings.heading_font | font_face: font_display: 'swap' }}
+    {{ block.settings.text_font | font_face: font_display: 'swap' }}
+    {{ block.settings.title_font | font_face: font_display: 'swap' }}
+  {%- endfor -%}
+{%- endstyle -%}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    {% if section.settings.section_bg_type == 'color' %}
+    --two-col-grid-bg-color: {{ section.settings.section_bg_color }};
+    {% endif %}
+    --two-col-grid-pad: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px 0;
+    --two-col-grid-pad-m: {{ section.settings.padding_top_mobile }}px 0 {{ section.settings.padding_bottom_mobile }}px 0;
+    --two-col-grid-cols: minmax(0, {{ section.settings.left_column_width }}fr) minmax(0, {{ section.settings.right_column_width }}fr);
+    --two-col-grid-main-gap: {{ section.settings.main_column_gap }}px;
+    --two-col-grid-right-gap: {{ section.settings.right_grid_gap }}px;
+    --two-col-grid-text-space: {{ section.settings.text_spacing }}px;
+    --two-col-grid-head-space: {{ section.settings.heading_spacing }}px;
+  }
+{% endstyle %}
+
+<div class="two-column-grid-{{ section.id }} two-col-grid
+    two-column-grid--section-{{ section.settings.section_width }}
+    two-column-grid--bg-{{ section.settings.section_bg_width }}
+    two-column-grid--content-{{ section.settings.content_width }}
+    nvgd-section-surface">
+
+  {% comment %} Background Image (Desktop Only) {% endcomment %}
+  {% if section.settings.section_bg_type == 'image' and section.settings.section_bg_image != blank %}
+    <div class="two-column-grid-{{ section.id }}__bg two-col-grid__bg">
+      <img
+        src="{{ section.settings.section_bg_image | image_url: width: 1600 }}"
+        alt=""
+        loading="lazy"
+        width="1600"
+        height="{{ 1600 | divided_by: section.settings.section_bg_image.aspect_ratio | ceil }}"
+        style="transform: scaleX({% if section.settings.flip_section_bg_horizontal %}-1{% else %}1{% endif %}) scaleY({% if section.settings.flip_section_bg_vertical %}-1{% else %}1{% endif %});"
+      >
+    </div>
+  {% endif %}
+
+  {% comment %} Content Container {% endcomment %}
+  <div class="two-column-grid-{{ section.id }}__container two-col-grid__container">
+
+    <div class="two-column-grid-{{ section.id }}__main-wrapper two-col-grid__main">
+
+      {% comment %} LEFT COLUMN - Single Large Cell {% endcomment %}
+      <div class="two-column-grid-{{ section.id }}__left-column two-col-grid__left">
+        {% assign left_block = section.blocks | where: 'type', 'left_cell' | first %}
+        {% if left_block %}
+          <div class="two-column-grid-{{ section.id }}__cell two-column-grid-{{ section.id }}__cell--left two-col-grid__cell{% if left_block.settings.use_cell_transform %} two-col-grid__cell--t{% endif %}" {{ left_block.shopify_attributes }}{% if left_block.settings.use_cell_transform %} style="--two-col-grid-cell-tf: translate(calc(({{ left_block.settings.cell_transform_x_desktop }} - 50) * 2%), calc(({{ left_block.settings.cell_transform_y_desktop }} - 50) * 2%)); --two-col-grid-cell-tf-m: translate(calc(({{ left_block.settings.cell_transform_x_mobile }} - 50) * 2%), calc(({{ left_block.settings.cell_transform_y_mobile }} - 50) * 2%));"{% endif %}>
+
+
+            <div class="two-column-grid-{{ section.id }}__cell-inner two-column-grid-{{ section.id }}__cell-inner--{{ left_block.id }} two-col-grid__cell-inner {% if left_block.settings.content_type == 'text' and left_block.settings.wrap_text_background %}two-column-grid-{{ section.id }}__cell-inner--wrapped two-col-grid__cell-inner--wrapped{% endif %}"
+                 style="{% if left_block.settings.add_cell_background %}
+                          {% if left_block.settings.cell_bg_type == 'color' %}
+                            background-color: {{ left_block.settings.cell_bg_color }};
+                          {% elsif left_block.settings.cell_bg_type == 'image' and left_block.settings.cell_bg_image != blank %}
+                            background-image: url('{{ left_block.settings.cell_bg_image | image_url: width: 1200 }}');
+                            background-size: {{ left_block.settings.cell_bg_image_width }}% auto;
+                            background-position: center;
+                            background-repeat: no-repeat;
+                          {% endif %}
+                          {% endif %}
+                          border-radius: {{ left_block.settings.cell_border_radius }}px;
+                          box-shadow: {{ left_block.settings.shadow_horizontal }}px {{ left_block.settings.shadow_vertical }}px {{ left_block.settings.shadow_blur }}px {{ left_block.settings.shadow_spread }}px {{ left_block.settings.shadow_color }};
+                          padding: {{ left_block.settings.cell_padding_top }}px {{ left_block.settings.cell_padding_right }}px {{ left_block.settings.cell_padding_bottom }}px {{ left_block.settings.cell_padding_left }}px;
+                        ">
+
+
+              <div class="two-column-grid-{{ section.id }}__content two-column-grid-{{ section.id }}__content--{{ left_block.id }} two-col-grid__content{% if left_block.settings.use_transform %} two-col-grid__content--t{% endif %}"
+                   {% if left_block.settings.use_transform %}
+                   style="transform: translate(calc(({{ left_block.settings.transform_x_desktop }} - 50) * 2%), calc(({{ left_block.settings.transform_y_desktop }} - 50) * 2%)); --two-col-grid-content-tf-m: translate(calc(({{ left_block.settings.transform_x_mobile }} - 50) * 2%), calc(({{ left_block.settings.transform_y_mobile }} - 50) * 2%));"
+                   {% else %}
+                   style="margin: 0 auto;"
+                   {% endif %}>
+
+
+                {% comment %} IMAGE CONTENT {% endcomment %}
+                {% if left_block.settings.content_type == 'image' %}
+                  {% if left_block.settings.image != blank %}
+                    <div class="cell-image-wrapper cell-image-wrapper--{{ left_block.settings.image_ratio }} cell-image-wrapper--{{ section.id }}-{{ left_block.id }} two-col-grid__img-wrap"
+                         style="width: {{ left_block.settings.image_width }}%; border-radius: {{ left_block.settings.image_border_radius }}px; --two-col-grid-img-w-m: {{ left_block.settings.image_width_mobile }}%;">
+                      <img
+                        class="cell-image"
+                        src="{{ left_block.settings.image | image_url: width: 1200 }}"
+                        alt="{{ left_block.settings.image.alt | escape }}"
+                        loading="lazy"
+                        width="{{ left_block.settings.image.width }}"
+                        height="{{ left_block.settings.image.height }}"
+                        style="transform: scaleX({% if left_block.settings.flip_image_horizontal %}-1{% else %}1{% endif %}) scaleY({% if left_block.settings.flip_image_vertical %}-1{% else %}1{% endif %});">
+                    </div>
+                  {% else %}
+                    <div class="cell-image-wrapper cell-image-wrapper--{{ left_block.settings.image_ratio }} cell-image-wrapper--{{ section.id }}-{{ left_block.id }} two-col-grid__img-wrap"
+                         style="width: {{ left_block.settings.image_width }}%; border-radius: {{ left_block.settings.image_border_radius }}px; --two-col-grid-img-w-m: {{ left_block.settings.image_width_mobile }}%;">
+                      {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: 'cell-image' }}{% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
+
+                {% comment %} TEXT CONTENT {% endcomment %}
+                {% if left_block.settings.content_type == 'text' %}
+                  <div class="cell-text">
+                    {% if left_block.settings.text_icon != blank %}
+                      <div class="cell-text__icon two-col-grid__icon" style="--two-col-grid-icon-size: {{ left_block.settings.text_icon_size_desktop }}px; --two-col-grid-icon-size-m: {{ left_block.settings.text_icon_size_mobile }}px;">
+                        <img src="{{ left_block.settings.text_icon | image_url: width: 200 }}"
+                             alt="{{ left_block.settings.heading | default: 'Icon' | escape }}"
+                             width="200" height="{{ 200 | divided_by: left_block.settings.text_icon.aspect_ratio | ceil }}"
+                             style="width: 100%; height: 100%;">
+                      </div>
+                    {% elsif left_block.settings.text_svg != blank %}
+                      <div class="cell-text__icon two-col-grid__icon" style="--two-col-grid-icon-size: {{ left_block.settings.text_icon_size_desktop }}px; --two-col-grid-icon-size-m: {{ left_block.settings.text_icon_size_mobile }}px;">
+                        {{ left_block.settings.text_svg }}
+                      </div>
+                    {% endif %}
+
+                    {% if left_block.settings.heading != blank %}
+                      <h3 class="cell-text__heading two-col-grid__heading"
+                          style="font-family: {{ left_block.settings.heading_font.family | escape }}, {{ left_block.settings.heading_font.fallback_families | escape }};
+                                 font-size: {{ left_block.settings.heading_size_desktop }}px;
+                                 font-weight: {{ left_block.settings.heading_weight }};
+                                 font-style: {{ left_block.settings.heading_style }};
+                                 color: {{ left_block.settings.heading_color }}; --two-col-grid-h-size-m: {{ left_block.settings.heading_size_mobile }}px;">
+                        {{ left_block.settings.heading }}
+                      </h3>
+                    {% endif %}
+
+                    {% if left_block.settings.text != blank %}
+                      <div class="cell-text__text two-col-grid__text"
+                           style="font-family: {{ left_block.settings.text_font.family | escape }}, {{ left_block.settings.text_font.fallback_families | escape }};
+                                  font-size: {{ left_block.settings.text_size_desktop }}px;
+                                  font-weight: {{ left_block.settings.text_weight }};
+                                  font-style: {{ left_block.settings.text_style }};
+                                  color: {{ left_block.settings.text_color }}; --two-col-grid-t-size-m: {{ left_block.settings.text_size_mobile }}px;">
+                        {{ left_block.settings.text }}
+                      </div>
+                    {% endif %}
+                  </div>
+
+                {% endif %}
+
+                {% comment %} TITLE CONTENT {% endcomment %}
+                {% if left_block.settings.content_type == 'title' %}
+                  <div class="cell-title">
+                    {% if left_block.settings.title_heading != blank %}
+                      <h2 class="cell-title__heading cell-title__heading--{{ left_block.id }} two-col-grid__title"
+                          style="font-family: {{ left_block.settings.title_font.family | escape }}, {{ left_block.settings.title_font.fallback_families | escape }};
+                                 font-size: {{ left_block.settings.title_size_desktop }}px;
+                                 font-weight: {{ left_block.settings.title_weight }};
+                                 font-style: {{ left_block.settings.title_style }};
+                                 color: {{ left_block.settings.title_color }};
+                                 text-align: {{ left_block.settings.title_alignment }}; --two-col-grid-title-size-m: {{ left_block.settings.title_size_mobile }}px; --two-col-grid-title-align-m: {{ left_block.settings.title_alignment_mobile }};">
+                        {{ left_block.settings.title_heading }}
+                      </h2>
+                    {% endif %}
+                  </div>
+
+                {% endif %}
+
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% comment %} RIGHT COLUMN - 3x3 Grid (9 cells) {% endcomment %}
+      <div class="two-column-grid-{{ section.id }}__right-grid two-col-grid__right">
+        {% assign right_blocks = section.blocks | where: 'type', 'right_cell' %}
+        {% for i in (1..9) %}
+          {% assign block_index = forloop.index %}
+          {% assign right_block = right_blocks[forloop.index0] %}
+
+          {% comment %} Check if cell should be shown {% endcomment %}
+          {% assign show_cell = false %}
+          {% case block_index %}
+            {% when 1 %}
+              {% assign show_cell = section.settings.show_right_cell_1 %}
+            {% when 2 %}
+              {% assign show_cell = section.settings.show_right_cell_2 %}
+            {% when 3 %}
+              {% assign show_cell = section.settings.show_right_cell_3 %}
+            {% when 4 %}
+              {% assign show_cell = section.settings.show_right_cell_4 %}
+            {% when 5 %}
+              {% assign show_cell = section.settings.show_right_cell_5 %}
+            {% when 6 %}
+              {% assign show_cell = section.settings.show_right_cell_6 %}
+            {% when 7 %}
+              {% assign show_cell = section.settings.show_right_cell_7 %}
+            {% when 8 %}
+              {% assign show_cell = section.settings.show_right_cell_8 %}
+            {% when 9 %}
+              {% assign show_cell = section.settings.show_right_cell_9 %}
+          {% endcase %}
+
+          <div class="two-column-grid-{{ section.id }}__cell {% unless show_cell %}two-column-grid-{{ section.id }}__cell--empty two-col-grid__cell--empty{% endunless %} two-column-grid-{{ section.id }}__cell--right-{{ block_index }} two-col-grid__cell{% if show_cell and right_block and right_block.type == 'right_cell' and right_block.settings.use_cell_transform %} two-col-grid__cell--t{% endif %}"
+               {% if right_block %}{{ right_block.shopify_attributes }}{% endif %}{% if show_cell and right_block and right_block.type == 'right_cell' and right_block.settings.use_cell_transform %} style="--two-col-grid-cell-tf: translate(calc(({{ right_block.settings.cell_transform_x_desktop }} - 50) * 2%), calc(({{ right_block.settings.cell_transform_y_desktop }} - 50) * 2%)); --two-col-grid-cell-tf-m: translate(calc(({{ right_block.settings.cell_transform_x_mobile }} - 50) * 2%), calc(({{ right_block.settings.cell_transform_y_mobile }} - 50) * 2%));"{% endif %}>
+
+            {% if show_cell and right_block and right_block.type == 'right_cell' %}
+
+
+              <div class="two-column-grid-{{ section.id }}__cell-inner two-column-grid-{{ section.id }}__cell-inner--{{ right_block.id }} two-col-grid__cell-inner {% if right_block.settings.content_type == 'text' and right_block.settings.wrap_text_background %}two-column-grid-{{ section.id }}__cell-inner--wrapped two-col-grid__cell-inner--wrapped{% endif %}"
+                   style="{% if right_block.settings.add_cell_background %}
+                            {% if right_block.settings.cell_bg_type == 'color' %}
+                              background-color: {{ right_block.settings.cell_bg_color }};
+                            {% elsif right_block.settings.cell_bg_type == 'image' and right_block.settings.cell_bg_image != blank %}
+                              background-image: url('{{ right_block.settings.cell_bg_image | image_url: width: 1200 }}');
+                              background-size: {{ right_block.settings.cell_bg_image_width }}% auto;
+                              background-position: center;
+                              background-repeat: no-repeat;
+                            {% endif %}
+                            {% endif %}
+                            border-radius: {{ right_block.settings.cell_border_radius }}px;
+                            box-shadow: {{ right_block.settings.shadow_horizontal }}px {{ right_block.settings.shadow_vertical }}px {{ right_block.settings.shadow_blur }}px {{ right_block.settings.shadow_spread }}px {{ right_block.settings.shadow_color }};
+                            padding: {{ right_block.settings.cell_padding_top }}px {{ right_block.settings.cell_padding_right }}px {{ right_block.settings.cell_padding_bottom }}px {{ right_block.settings.cell_padding_left }}px;
+                          ">
+
+
+                <div class="two-column-grid-{{ section.id }}__content two-column-grid-{{ section.id }}__content--{{ right_block.id }} two-col-grid__content{% if right_block.settings.use_transform %} two-col-grid__content--t{% endif %}"
+                     {% if right_block.settings.use_transform %}
+                     style="transform: translate(calc(({{ right_block.settings.transform_x_desktop }} - 50) * 2%), calc(({{ right_block.settings.transform_y_desktop }} - 50) * 2%)); --two-col-grid-content-tf-m: translate(calc(({{ right_block.settings.transform_x_mobile }} - 50) * 2%), calc(({{ right_block.settings.transform_y_mobile }} - 50) * 2%));"
+                     {% else %}
+                     style="margin: 0 auto;"
+                     {% endif %}>
+
+
+                  {% comment %} IMAGE CONTENT {% endcomment %}
+                  {% if right_block.settings.content_type == 'image' %}
+                    {% if right_block.settings.image != blank %}
+                      <div class="cell-image-wrapper cell-image-wrapper--{{ right_block.settings.image_ratio }} cell-image-wrapper--{{ section.id }}-{{ right_block.id }} two-col-grid__img-wrap"
+                           style="width: {{ right_block.settings.image_width }}%; border-radius: {{ right_block.settings.image_border_radius }}px; --two-col-grid-img-w-m: {{ right_block.settings.image_width_mobile }}%;">
+                        <img
+                          class="cell-image"
+                          src="{{ right_block.settings.image | image_url: width: 1200 }}"
+                          alt="{{ right_block.settings.image.alt | escape }}"
+                          loading="lazy"
+                          width="{{ right_block.settings.image.width }}"
+                          height="{{ right_block.settings.image.height }}"
+                          style="transform: scaleX({% if right_block.settings.flip_image_horizontal %}-1{% else %}1{% endif %}) scaleY({% if right_block.settings.flip_image_vertical %}-1{% else %}1{% endif %});">
+                      </div>
+                    {% else %}
+                      <div class="cell-image-wrapper cell-image-wrapper--{{ right_block.settings.image_ratio }} cell-image-wrapper--{{ section.id }}-{{ right_block.id }} two-col-grid__img-wrap"
+                           style="width: {{ right_block.settings.image_width }}%; border-radius: {{ right_block.settings.image_border_radius }}px; --two-col-grid-img-w-m: {{ right_block.settings.image_width_mobile }}%;">
+                        {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: 'cell-image' }}{% endif %}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+
+                  {% comment %} TEXT CONTENT {% endcomment %}
+                  {% if right_block.settings.content_type == 'text' %}
+                    <div class="cell-text">
+                      {% if right_block.settings.text_icon != blank %}
+                        <div class="cell-text__icon two-col-grid__icon" style="--two-col-grid-icon-size: {{ right_block.settings.text_icon_size_desktop }}px; --two-col-grid-icon-size-m: {{ right_block.settings.text_icon_size_mobile }}px;">
+                          <img src="{{ right_block.settings.text_icon | image_url: width: 200 }}"
+                               alt="{{ right_block.settings.heading | default: 'Icon' | escape }}"
+                               width="200" height="{{ 200 | divided_by: right_block.settings.text_icon.aspect_ratio | ceil }}"
+                               style="width: 100%; height: 100%;">
+                        </div>
+                      {% elsif right_block.settings.text_svg != blank %}
+                        <div class="cell-text__icon two-col-grid__icon" style="--two-col-grid-icon-size: {{ right_block.settings.text_icon_size_desktop }}px; --two-col-grid-icon-size-m: {{ right_block.settings.text_icon_size_mobile }}px;">
+                          {{ right_block.settings.text_svg }}
+                        </div>
+                      {% endif %}
+
+                      {% if right_block.settings.heading != blank %}
+                        <h3 class="cell-text__heading two-col-grid__heading"
+                            style="font-family: {{ right_block.settings.heading_font.family | escape }}, {{ right_block.settings.heading_font.fallback_families | escape }};
+                                   font-size: {{ right_block.settings.heading_size_desktop }}px;
+                                   font-weight: {{ right_block.settings.heading_weight }};
+                                   font-style: {{ right_block.settings.heading_style }};
+                                   color: {{ right_block.settings.heading_color }}; --two-col-grid-h-size-m: {{ right_block.settings.heading_size_mobile }}px;">
+                          {{ right_block.settings.heading }}
+                        </h3>
+                      {% endif %}
+
+                      {% if right_block.settings.text != blank %}
+                        <div class="cell-text__text two-col-grid__text"
+                             style="font-family: {{ right_block.settings.text_font.family | escape }}, {{ right_block.settings.text_font.fallback_families | escape }};
+                                    font-size: {{ right_block.settings.text_size_desktop }}px;
+                                    font-weight: {{ right_block.settings.text_weight }};
+                                    font-style: {{ right_block.settings.text_style }};
+                                    color: {{ right_block.settings.text_color }}; --two-col-grid-t-size-m: {{ right_block.settings.text_size_mobile }}px;">
+                          {{ right_block.settings.text }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                  {% endif %}
+
+                  {% comment %} TITLE CONTENT {% endcomment %}
+                  {% if right_block.settings.content_type == 'title' %}
+                    <div class="cell-title">
+                      {% if right_block.settings.title_heading != blank %}
+                        <h2 class="cell-title__heading cell-title__heading--{{ right_block.id }} two-col-grid__title"
+                            style="font-family: {{ right_block.settings.title_font.family | escape }}, {{ right_block.settings.title_font.fallback_families | escape }};
+                                   font-size: {{ right_block.settings.title_size_desktop }}px;
+                                   font-weight: {{ right_block.settings.title_weight }};
+                                   font-style: {{ right_block.settings.title_style }};
+                                   color: {{ right_block.settings.title_color }};
+                                   text-align: {{ right_block.settings.title_alignment }}; --two-col-grid-title-size-m: {{ right_block.settings.title_size_mobile }}px; --two-col-grid-title-align-m: {{ right_block.settings.title_alignment_mobile }};">
+                          {{ right_block.settings.title_heading }}
+                        </h2>
+                      {% endif %}
+                    </div>
+
+                  {% endif %}
+
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% comment %} END main-wrapper {% endcomment %}
+
+    {% comment %} Mobile Background Image - Shows AFTER content on mobile {% endcomment %}
+    {% if section.settings.section_bg_image_mobile != blank %}
+      <div class="two-column-grid-{{ section.id }}__mobile-bg two-col-grid__mobile-bg">
+        <img
+          src="{{ section.settings.section_bg_image_mobile | image_url: width: 1200 }}"
+          alt=""
+          loading="lazy"
+          width="1200"
+          height="{{ 1200 | divided_by: section.settings.section_bg_image_mobile.aspect_ratio | ceil }}"
+        >
+      </div>
+    {% endif %}
+
+  </div>
+  {% comment %} END container {% endcomment %}
+</div>
+
+{% stylesheet %}
+/* moved from inline <style> blocks for bundling */
+.two-col-grid {
+  position: relative;
+  background-color: var(--two-col-grid-bg-color, transparent);
+  min-height: 400px;
+}
+
+.two-col-grid__bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.two-col-grid__bg img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.two-col-grid__container {
+  position: relative;
+  padding: var(--two-col-grid-pad);
+  z-index: 1;
+}
+
+.two-col-grid__mobile-bg {
+  display: none;
+}
+
+/* Main Wrapper - 2 Columns */
+.two-col-grid__main {
+  display: grid;
+  grid-template-columns: var(--two-col-grid-cols);
+  gap: var(--two-col-grid-main-gap);
+  min-height: 400px;
+}
+
+/* Left Column - Single Large Cell */
+.two-col-grid__left {
+  position: relative;
+  min-height: 300px;
+}
+
+/* Right Column - 3x3 Grid (9 cells) */
+.two-col-grid__right {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--two-col-grid-right-gap);
+  align-content: start;
+}
+
+.two-col-grid__cell {
+  position: relative;
+  min-height: 100px;
+}
+
+.two-col-grid__cell--empty {
+  background-color: transparent;
+}
+
+.two-col-grid__cell-inner {
+  height: 100%;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.two-col-grid__cell-inner--wrapped {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.two-col-grid__content {
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Image Styles */
+.two-col-grid .cell-image-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.two-col-grid .cell-image-wrapper--full {
+  aspect-ratio: auto;
+}
+
+.two-col-grid .cell-image-wrapper--square {
+  aspect-ratio: 1 / 1;
+}
+
+.two-col-grid .cell-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Text Content Styles */
+.two-col-grid .cell-text__item {
+  margin-bottom: var(--two-col-grid-text-space);
+}
+
+.two-col-grid .cell-text__item:last-child {
+  margin-bottom: 0;
+}
+
+.two-col-grid .cell-text__icon {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.two-col-grid .cell-text__icon img,
+.two-col-grid .cell-text__icon svg {
+  display: block;
+  object-fit: contain;
+}
+
+.two-col-grid .cell-text__heading {
+  margin-bottom: var(--two-col-grid-head-space);
+}
+
+.two-col-grid .cell-text__text {
+  line-height: 1.6;
+}
+
+/* Title Content Styles */
+.two-col-grid .cell-title {
+  width: 100%;
+}
+
+.two-col-grid .cell-title__heading {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Section Width Classes */
+.two-column-grid--section-page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+}
+
+.two-column-grid--section-full {
+  width: 100%;
+}
+
+.two-column-grid--bg-full .two-col-grid__bg {
+  left: 0;
+  width: 100%;
+}
+
+.two-column-grid--bg-page .two-col-grid__bg {
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: var(--page-width);
+  width: 100%;
+}
+
+.two-column-grid--content-page .two-col-grid__container {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding-left: var(--page-padding, 20px);
+  padding-right: var(--page-padding, 20px);
+}
+
+.two-column-grid--content-full .two-col-grid__container {
+  width: 100%;
+}
+
+/* Per-block transforms (values set inline per block root) */
+.two-col-grid__cell--t {
+  transform: var(--two-col-grid-cell-tf);
+}
+
+/* Per-block icon size */
+.two-col-grid .two-col-grid__icon {
+  width: var(--two-col-grid-icon-size);
+  height: var(--two-col-grid-icon-size);
+}
+
+/* Mobile Styles */
+@media (max-width: 989px) {
+  .two-col-grid__container {
+    padding: var(--two-col-grid-pad-m);
+  }
+
+  .two-col-grid__main {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    min-height: auto;
+  }
+
+  .two-col-grid__left {
+    order: 1;
+    min-height: auto;
+  }
+
+  .two-col-grid__right {
+    order: 2;
+  }
+
+  .two-col-grid__cell {
+    min-height: auto;
+  }
+
+  .two-col-grid__cell--t {
+    transform: var(--two-col-grid-cell-tf-m) !important;
+  }
+
+  .two-col-grid__cell-inner {
+    padding: var(--two-col-grid-ci-pad-m) !important;
+    background-size: var(--two-col-grid-ci-bs-m, auto) !important;
+  }
+
+  .two-col-grid__img-wrap {
+    width: var(--two-col-grid-img-w-m) !important;
+  }
+
+  .two-col-grid .two-col-grid__icon {
+    width: var(--two-col-grid-icon-size-m) !important;
+    height: var(--two-col-grid-icon-size-m) !important;
+  }
+
+  .two-col-grid__heading {
+    font-size: var(--two-col-grid-h-size-m) !important;
+  }
+
+  .two-col-grid__text {
+    font-size: var(--two-col-grid-t-size-m) !important;
+  }
+
+  .two-col-grid__title {
+    font-size: var(--two-col-grid-title-size-m) !important;
+    text-align: var(--two-col-grid-title-align-m) !important;
+  }
+
+  .two-col-grid__content--t {
+    transform: var(--two-col-grid-content-tf-m) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-grid__bg {
+    display: none;
+  }
+
+  .two-col-grid__mobile-bg {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .two-col-grid__mobile-bg img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
+  .two-col-grid__right {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .two-col-grid__right > .two-col-grid__cell:last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-grid {
+    position: static;
+  }
+
+  .two-col-grid__bg {
+    display: none !important;
+  }
+
+  .two-col-grid__container {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-grid {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-grid {
+    position: static;
+  }
+
+  .two-col-grid__container {
+    position: static;
+    z-index: auto;
+  }
+}
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Two column grid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Main column layout"
+    },
+    {
+      "type": "range",
+      "id": "left_column_width",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "default": 50,
+      "unit": "%",
+      "label": "Left column width"
+    },
+    {
+      "type": "range",
+      "id": "right_column_width",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "default": 50,
+      "unit": "%",
+      "label": "Right column width",
+      "info": "Note: Total should equal 100%"
+    },
+    {
+      "type": "range",
+      "id": "main_column_gap",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Gap between main columns"
+    },
+    {
+      "type": "range",
+      "id": "right_grid_gap",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Gap in right grid (between 9 cells)"
+    },
+    {
+      "type": "header",
+      "content": "Right grid cell visibility (3×3 grid)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Control which cells appear in the right 3×3 grid"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_1",
+      "label": "Show cell 1 (row 1, col 1)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_2",
+      "label": "Show cell 2 (row 1, col 2)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_3",
+      "label": "Show cell 3 (row 1, col 3)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_4",
+      "label": "Show cell 4 (row 2, col 1)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_5",
+      "label": "Show cell 5 (row 2, col 2)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_6",
+      "label": "Show cell 6 (row 2, col 3)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_7",
+      "label": "Show cell 7 (row 3, col 1)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_8",
+      "label": "Show cell 8 (row 3, col 2)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_right_cell_9",
+      "label": "Show cell 9 (row 3, col 3)",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_type",
+      "label": "Background type",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "color",
+          "label": "Color"
+        },
+        {
+          "value": "image",
+          "label": "Image"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "image_picker",
+      "id": "section_bg_image",
+      "label": "Background image (desktop)"
+    },
+    {
+      "type": "checkbox",
+      "id": "flip_section_bg_horizontal",
+      "label": "Flip background horizontally",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "flip_section_bg_vertical",
+      "label": "Flip background vertically",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "section_bg_image_mobile",
+      "label": "Background image (mobile)",
+      "info": "Shows below content on mobile, not as background"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_width",
+      "label": "Background width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "text",
+      "id": "padding_top",
+      "label": "Padding top (px)",
+      "default": "50"
+    },
+    {
+      "type": "text",
+      "id": "padding_bottom",
+      "label": "Padding bottom (px)",
+      "default": "50"
+    },
+    {
+      "type": "text",
+      "id": "padding_top_mobile",
+      "label": "Padding top mobile (px)",
+      "default": "30"
+    },
+    {
+      "type": "text",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom mobile (px)",
+      "default": "30"
+    },
+    {
+      "type": "header",
+      "content": "Text spacing"
+    },
+    {
+      "type": "range",
+      "id": "text_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "Space between text items"
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 8,
+      "unit": "px",
+      "label": "Space below heading"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "left_cell",
+      "name": "Left cell (large)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "⚠️ This is the large cell on the left side"
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Content type",
+          "options": [
+            {
+              "value": "image",
+              "label": "Image"
+            },
+            {
+              "value": "text",
+              "label": "Text"
+            },
+            {
+              "value": "title",
+              "label": "Title"
+            }
+          ],
+          "default": "image"
+        },
+        {
+          "type": "header",
+          "content": "Cell background"
+        },
+        {
+          "type": "checkbox",
+          "id": "add_cell_background",
+          "label": "Add cell background",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "wrap_text_background",
+          "label": "Wrap text background",
+          "default": false
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background }}",
+          "type": "select",
+          "id": "cell_bg_type",
+          "label": "Background type",
+          "options": [
+            {
+              "value": "color",
+              "label": "Color"
+            },
+            {
+              "value": "image",
+              "label": "Image"
+            }
+          ],
+          "default": "color"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'color' }}",
+          "type": "color",
+          "id": "cell_bg_color",
+          "label": "Background color",
+          "default": "#FFFFFF"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "image_picker",
+          "id": "cell_bg_image",
+          "label": "Background image"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "range",
+          "id": "cell_bg_image_width",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "default": 100,
+          "unit": "%",
+          "label": "Background image width (desktop)"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "range",
+          "id": "cell_bg_image_width_mobile",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "default": 100,
+          "unit": "%",
+          "label": "Background image width (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_top",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 30,
+          "unit": "px",
+          "label": "Padding top (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 30,
+          "unit": "px",
+          "label": "Padding bottom (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_left",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 30,
+          "unit": "px",
+          "label": "Padding left (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_right",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 30,
+          "unit": "px",
+          "label": "Padding right (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_top_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding top (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_bottom_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding bottom (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_left_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding left (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_right_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding right (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_border_radius",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "px",
+          "label": "Border radius"
+        },
+        {
+          "type": "header",
+          "content": "Cell transform"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_cell_transform",
+          "label": "Enable cell transform",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_x_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - desktop",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_y_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - desktop",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_x_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - mobile",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_y_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - mobile",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "header",
+          "content": "Box shadow"
+        },
+        {
+          "type": "range",
+          "id": "shadow_horizontal",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow horizontal"
+        },
+        {
+          "type": "range",
+          "id": "shadow_vertical",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow vertical"
+        },
+        {
+          "type": "range",
+          "id": "shadow_blur",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow blur"
+        },
+        {
+          "type": "range",
+          "id": "shadow_spread",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow spread"
+        },
+        {
+          "type": "color",
+          "id": "shadow_color",
+          "label": "Shadow color",
+          "default": "rgba(0,0,0,0.1)"
+        },
+        {
+          "type": "header",
+          "content": "Content transform"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_transform",
+          "label": "Enable content transform",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "transform_x_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - desktop",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "transform_y_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - desktop",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "range",
+          "id": "transform_x_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - mobile",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "transform_y_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - mobile",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "header",
+          "content": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "default": 100,
+          "unit": "%",
+          "label": "Image width (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "image_width_mobile",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "default": 100,
+          "unit": "%",
+          "label": "Image width (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "image_ratio",
+          "label": "Image aspect ratio",
+          "options": [
+            {
+              "value": "full",
+              "label": "Original"
+            },
+            {
+              "value": "square",
+              "label": "Square (1:1)"
+            }
+          ],
+          "default": "full"
+        },
+        {
+          "type": "range",
+          "id": "image_border_radius",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Image border radius"
+        },
+        {
+          "type": "checkbox",
+          "id": "flip_image_horizontal",
+          "label": "Flip image horizontally",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "flip_image_vertical",
+          "label": "Flip image vertically",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Text"
+        },
+        {
+          "type": "image_picker",
+          "id": "text_icon",
+          "label": "Icon"
+        },
+        {
+          "type": "html",
+          "id": "text_svg",
+          "label": "Icon"
+        },
+        {
+          "type": "range",
+          "id": "text_icon_size_desktop",
+          "min": 20,
+          "max": 120,
+          "step": 5,
+          "default": 60,
+          "unit": "px",
+          "label": "Icon size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "text_icon_size_mobile",
+          "min": 20,
+          "max": 80,
+          "step": 5,
+          "default": 40,
+          "unit": "px",
+          "label": "Icon size (mobile)"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "font_picker",
+          "id": "heading_font",
+          "label": "Heading font",
+          "default": "assistant_n7"
+        },
+        {
+          "type": "range",
+          "id": "heading_size_desktop",
+          "min": 14,
+          "max": 60,
+          "step": 2,
+          "default": 24,
+          "unit": "px",
+          "label": "Heading size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "heading_size_mobile",
+          "min": 12,
+          "max": 40,
+          "step": 2,
+          "default": 20,
+          "unit": "px",
+          "label": "Heading size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "heading_weight",
+          "label": "Heading weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "select",
+          "id": "heading_style",
+          "label": "Heading style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "heading_color",
+          "label": "Heading color",
+          "default": "#111111"
+        },
+        {
+          "type": "font_picker",
+          "id": "text_font",
+          "label": "Text font",
+          "default": "assistant_n4"
+        },
+        {
+          "type": "range",
+          "id": "text_size_desktop",
+          "min": 12,
+          "max": 32,
+          "step": 1,
+          "default": 16,
+          "unit": "px",
+          "label": "Text size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "text_size_mobile",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "default": 14,
+          "unit": "px",
+          "label": "Text size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "text_weight",
+          "label": "Text weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "header",
+          "content": "Title"
+        },
+        {
+          "type": "text",
+          "id": "title_heading",
+          "label": "Title heading"
+        },
+        {
+          "type": "font_picker",
+          "id": "title_font",
+          "label": "Title font",
+          "default": "assistant_n7"
+        },
+        {
+          "type": "range",
+          "id": "title_size_desktop",
+          "min": 20,
+          "max": 80,
+          "step": 2,
+          "default": 48,
+          "unit": "px",
+          "label": "Title size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "title_size_mobile",
+          "min": 16,
+          "max": 60,
+          "step": 2,
+          "default": 32,
+          "unit": "px",
+          "label": "Title size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "title_weight",
+          "label": "Title weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "select",
+          "id": "title_style",
+          "label": "Title style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Title color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "title_alignment",
+          "label": "Title alignment (desktop)",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "select",
+          "id": "title_alignment_mobile",
+          "label": "Title alignment (mobile)",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    },
+    {
+      "type": "right_cell",
+      "name": "Right cell (small)",
+      "limit": 9,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "⚠️ This cell is part of the right 3×3 grid. Position is determined by order (1-9). Use section settings checkboxes to show/hide specific cells."
+        },
+        {
+          "type": "select",
+          "id": "content_type",
+          "label": "Content type",
+          "options": [
+            {
+              "value": "image",
+              "label": "Image"
+            },
+            {
+              "value": "text",
+              "label": "Text"
+            },
+            {
+              "value": "title",
+              "label": "Title"
+            }
+          ],
+          "default": "text"
+        },
+        {
+          "type": "header",
+          "content": "Cell background"
+        },
+        {
+          "type": "checkbox",
+          "id": "add_cell_background",
+          "label": "Add cell background",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "wrap_text_background",
+          "label": "Wrap text background",
+          "default": false
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background }}",
+          "type": "select",
+          "id": "cell_bg_type",
+          "label": "Background type",
+          "options": [
+            {
+              "value": "color",
+              "label": "Color"
+            },
+            {
+              "value": "image",
+              "label": "Image"
+            }
+          ],
+          "default": "color"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'color' }}",
+          "type": "color",
+          "id": "cell_bg_color",
+          "label": "Background color",
+          "default": "#FFFFFF"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "image_picker",
+          "id": "cell_bg_image",
+          "label": "Background image"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "range",
+          "id": "cell_bg_image_width",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "default": 100,
+          "unit": "%",
+          "label": "Background image width (desktop)"
+        },
+        {
+          "visible_if": "{{ block.settings.add_cell_background and block.settings.cell_bg_type == 'image' }}",
+          "type": "range",
+          "id": "cell_bg_image_width_mobile",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "default": 100,
+          "unit": "%",
+          "label": "Background image width (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_top",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding top (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding bottom (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_left",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding left (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_right",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Padding right (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_top_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 15,
+          "unit": "px",
+          "label": "Padding top (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_bottom_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 15,
+          "unit": "px",
+          "label": "Padding bottom (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_left_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 15,
+          "unit": "px",
+          "label": "Padding left (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_padding_right_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 15,
+          "unit": "px",
+          "label": "Padding right (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "cell_border_radius",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "px",
+          "label": "Border radius"
+        },
+        {
+          "type": "header",
+          "content": "Cell transform"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_cell_transform",
+          "label": "Enable cell transform",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_x_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - desktop",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_y_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - desktop",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_x_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - mobile",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "cell_transform_y_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - mobile",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "header",
+          "content": "Box shadow"
+        },
+        {
+          "type": "range",
+          "id": "shadow_horizontal",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow horizontal"
+        },
+        {
+          "type": "range",
+          "id": "shadow_vertical",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow vertical"
+        },
+        {
+          "type": "range",
+          "id": "shadow_blur",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow blur"
+        },
+        {
+          "type": "range",
+          "id": "shadow_spread",
+          "min": -50,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Shadow spread"
+        },
+        {
+          "type": "color",
+          "id": "shadow_color",
+          "label": "Shadow color",
+          "default": "rgba(0,0,0,0.1)"
+        },
+        {
+          "type": "header",
+          "content": "Content transform"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_transform",
+          "label": "Enable content transform",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "transform_x_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - desktop",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "transform_y_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - desktop",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "range",
+          "id": "transform_x_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform X - mobile",
+          "info": "0 = Left, 50 = Middle, 100 = Right"
+        },
+        {
+          "type": "range",
+          "id": "transform_y_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50,
+          "label": "Transform Y - mobile",
+          "info": "0 = Top, 50 = Middle, 100 = Bottom"
+        },
+        {
+          "type": "header",
+          "content": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "default": 100,
+          "unit": "%",
+          "label": "Image width (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "image_width_mobile",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "default": 100,
+          "unit": "%",
+          "label": "Image width (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "image_ratio",
+          "label": "Image aspect ratio",
+          "options": [
+            {
+              "value": "full",
+              "label": "Original"
+            },
+            {
+              "value": "square",
+              "label": "Square (1:1)"
+            }
+          ],
+          "default": "full"
+        },
+        {
+          "type": "range",
+          "id": "image_border_radius",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "default": 0,
+          "unit": "px",
+          "label": "Image border radius"
+        },
+        {
+          "type": "checkbox",
+          "id": "flip_image_horizontal",
+          "label": "Flip image horizontally",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "flip_image_vertical",
+          "label": "Flip image vertically",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Text"
+        },
+        {
+          "type": "image_picker",
+          "id": "text_icon",
+          "label": "Icon"
+        },
+        {
+          "type": "html",
+          "id": "text_svg",
+          "label": "Icon"
+        },
+        {
+          "type": "range",
+          "id": "text_icon_size_desktop",
+          "min": 20,
+          "max": 120,
+          "step": 5,
+          "default": 40,
+          "unit": "px",
+          "label": "Icon size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "text_icon_size_mobile",
+          "min": 20,
+          "max": 80,
+          "step": 5,
+          "default": 30,
+          "unit": "px",
+          "label": "Icon size (mobile)"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "font_picker",
+          "id": "heading_font",
+          "label": "Heading font",
+          "default": "assistant_n7"
+        },
+        {
+          "type": "range",
+          "id": "heading_size_desktop",
+          "min": 14,
+          "max": 60,
+          "step": 2,
+          "default": 18,
+          "unit": "px",
+          "label": "Heading size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "heading_size_mobile",
+          "min": 12,
+          "max": 40,
+          "step": 2,
+          "default": 16,
+          "unit": "px",
+          "label": "Heading size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "heading_weight",
+          "label": "Heading weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "select",
+          "id": "heading_style",
+          "label": "Heading style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "heading_color",
+          "label": "Heading color",
+          "default": "#111111"
+        },
+        {
+          "type": "font_picker",
+          "id": "text_font",
+          "label": "Text font",
+          "default": "assistant_n4"
+        },
+        {
+          "type": "range",
+          "id": "text_size_desktop",
+          "min": 12,
+          "max": 32,
+          "step": 1,
+          "default": 14,
+          "unit": "px",
+          "label": "Text size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "text_size_mobile",
+          "min": 10,
+          "max": 24,
+          "step": 1,
+          "default": 12,
+          "unit": "px",
+          "label": "Text size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "text_weight",
+          "label": "Text weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "header",
+          "content": "Title"
+        },
+        {
+          "type": "text",
+          "id": "title_heading",
+          "label": "Title heading"
+        },
+        {
+          "type": "font_picker",
+          "id": "title_font",
+          "label": "Title font",
+          "default": "assistant_n7"
+        },
+        {
+          "type": "range",
+          "id": "title_size_desktop",
+          "min": 20,
+          "max": 80,
+          "step": 2,
+          "default": 36,
+          "unit": "px",
+          "label": "Title size (desktop)"
+        },
+        {
+          "type": "range",
+          "id": "title_size_mobile",
+          "min": 16,
+          "max": 60,
+          "step": 2,
+          "default": 24,
+          "unit": "px",
+          "label": "Title size (mobile)"
+        },
+        {
+          "type": "select",
+          "id": "title_weight",
+          "label": "Title weight",
+          "options": [
+            {
+              "value": "300",
+              "label": "Light"
+            },
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            },
+            {
+              "value": "800",
+              "label": "Extra Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "select",
+          "id": "title_style",
+          "label": "Title style",
+          "options": [
+            {
+              "value": "normal",
+              "label": "Normal"
+            },
+            {
+              "value": "italic",
+              "label": "Italic"
+            }
+          ],
+          "default": "normal"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Title color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "title_alignment",
+          "label": "Title alignment (desktop)",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "select",
+          "id": "title_alignment_mobile",
+          "label": "Title alignment (mobile)",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Two column grid",
+      "blocks": [
+        {
+          "type": "left_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        },
+        {
+          "type": "right_cell"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

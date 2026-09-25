@@ -1,0 +1,361 @@
+{% comment %}
+  Renders the in-page product upsell list.
+
+  Accepts:
+  - block: {Object} The section block being rendered
+  - product: {Object} The product being displayed
+
+  Usage:
+  {% render 'product-block-upsell', block: block, product: product %}
+{% endcomment %}
+
+                <div class="product-upsell" id="product-upsell-{{ section.id }}" data-upsell-root {{ block.shopify_attributes }}>
+                  {%- if block.settings.heading != blank -%}
+                    <h3 class="product-upsell__heading">{{ block.settings.heading }}</h3>
+                  {%- endif -%}
+
+                  {%- assign has_manual_upsells = false -%}
+                  {%- for i in (1..5) -%}
+                    {%- assign upsell_key = 'upsell_product_' | append: i -%}
+                    {%- assign upsell_product = block.settings[upsell_key] -%}
+                    {%- if upsell_product != blank -%}
+                      {%- assign has_manual_upsells = true -%}
+                      {%- break -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+
+                  <div class="product-upsell__items">
+                  {%- if has_manual_upsells -%}
+                    {%- comment -%} Show manual upsell products {%- endcomment -%}
+                    {%- for i in (1..5) -%}
+                      {%- assign upsell_key = 'upsell_product_' | append: i -%}
+                      {%- assign help_text_key = 'help_text_' | append: i -%}
+                      {%- assign upsell_product = block.settings[upsell_key] -%}
+                      {%- assign upsell_help_text = block.settings[help_text_key] -%}
+
+                      {%- if upsell_product != blank -%}
+                        <div class="product-upsell__item">
+                          <div class="product-upsell__checkbox">
+                            <input 
+                              type="checkbox" 
+                              id="upsell-{{ i }}-{{ section.id }}" 
+                              class="product-upsell__input"
+                              data-upsell-index="{{ i }}"
+                              data-variant-id="{{ upsell_product.selected_or_first_available_variant.id }}"
+                              data-product-title="{{ upsell_product.title | escape }}"
+                              {%- unless upsell_product.selected_or_first_available_variant.available -%}disabled{%- endunless -%}
+                            >
+                          </div>
+
+                          {%- if block.settings.show_image and upsell_product.featured_image -%}
+                            <div class="product-upsell__image">
+                              <img 
+                                class="product-upsell__img"
+                                data-upsell-index="{{ i }}"
+                                src="{{ upsell_product.featured_image | image_url: width: 80 }}"
+                                loading="lazy"
+                                alt="{{ upsell_product.title }}"
+                                width="80"
+                                height="{{ 80 | divided_by: upsell_product.featured_image.aspect_ratio | ceil }}"
+                              />
+                            </div>
+                          {%- endif -%}
+
+                          <div class="product-upsell__details">
+                            <span class="product-upsell__title">{{ upsell_product.title }}</span>
+                            
+                            {%- if upsell_product.has_only_default_variant == false -%}
+                              <div class="product-upsell__variant-picker">
+                                <div class="product-upsell__select-wrapper">
+                                  <select class="product-upsell__variant-select" name="variant_id" data-upsell-index="{{ i }}">
+                                    {%- for variant in upsell_product.variants -%}
+                                      <option 
+                                        value="{{ variant.id }}" 
+                                        data-image="{% if variant.image %}{{ variant.image | image_url: width: 80 }}{% else %}{{ upsell_product.featured_image | image_url: width: 80 }}{% endif %}"
+                                        data-price="{{ variant.price | money }}"
+                                        data-available="{{ variant.available }}"
+                                        {%- if variant == upsell_product.selected_or_first_available_variant -%}selected{%- endif -%}
+                                        {%- unless variant.available -%}disabled{%- endunless -%}
+                                      >
+                                        {{ variant.title }}{% unless variant.available %} - Sold out{% endunless %}
+                                      </option>
+                                    {%- endfor -%}
+                                  </select>
+                                  <svg class="product-upsell__select-icon" width="12" height="12" viewBox="0 0 20 20" fill="none">
+                                    <path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            {%- endif -%}
+                          </div>
+
+                          {%- if block.settings.show_price -%}
+                            <div class="product-upsell__price-section">
+                              <span class="product-upsell__divider">|</span>
+                              <span class="product-upsell__price" data-upsell-index="{{ i }}">{{ upsell_product.selected_or_first_available_variant.price | money }}</span>
+                            </div>
+                          {%- endif -%}
+
+                          <button 
+                            type="button" 
+                            class="product-upsell__help-btn"
+                            data-modal-image="{{ upsell_product.featured_image | image_url: width: 600 }}"
+                            data-modal-title="{{ upsell_product.title | escape }}"
+                            data-modal-desc="{{ upsell_help_text | default: upsell_product.description | strip_html | escape }}"
+                          >?</button>
+                        </div>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- else -%}
+                    {%- comment -%} Show random products if no manual upsells {%- endcomment -%}
+                    {%- assign all_products = collections.all.products -%}
+                    {%- assign current_product_id = product.id -%}
+                    {%- assign available_products = '' -%}
+                    {%- assign product_count = 0 -%}
+                    
+                    {%- comment -%} Build a list of available product IDs (excluding current product) {%- endcomment -%}
+                    {%- for prod in all_products limit: 50 -%}
+                      {%- if prod.id != current_product_id and prod.available -%}
+                        {%- if available_products == '' -%}
+                          {%- assign available_products = prod.id | append: ',' -%}
+                        {%- else -%}
+                          {%- assign available_products = available_products | append: prod.id | append: ',' -%}
+                        {%- endif -%}
+                        {%- assign product_count = product_count | plus: 1 -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+
+                    {%- comment -%} Generate random seed based on current time {%- endcomment -%}
+                    {%- assign now_timestamp = 'now' | date: '%s' -%}
+                    {%- assign random_seed = now_timestamp | modulo: 1000 -%}
+                    
+                    {%- comment -%} Select 2 random products {%- endcomment -%}
+                    {%- assign displayed_count = 0 -%}
+                    {%- for prod in all_products limit: 50 -%}
+                      {%- if prod.id != current_product_id and prod.available and displayed_count < 2 -%}
+                        {%- assign product_index = forloop.index | plus: random_seed | modulo: product_count -%}
+                        {%- if product_index < 2 or displayed_count < 2 -%}
+                          {%- assign displayed_count = displayed_count | plus: 1 -%}
+                          {%- assign random_index = displayed_count -%}
+                          
+                          <div class="product-upsell__item">
+                            <div class="product-upsell__checkbox">
+                              <input 
+                                type="checkbox" 
+                                id="upsell-rand-{{ random_index }}-{{ section.id }}" 
+                                class="product-upsell__input"
+                                data-upsell-index="rand-{{ random_index }}"
+                                data-variant-id="{{ prod.selected_or_first_available_variant.id }}"
+                                data-product-title="{{ prod.title | escape }}"
+                                {%- unless prod.selected_or_first_available_variant.available -%}disabled{%- endunless -%}
+                              >
+                            </div>
+
+                            {%- if block.settings.show_image and prod.featured_image -%}
+                              <div class="product-upsell__image">
+                                <img 
+                                  class="product-upsell__img"
+                                  data-upsell-index="rand-{{ random_index }}"
+                                  src="{{ prod.featured_image | image_url: width: 80 }}"
+                                  loading="lazy"
+                                  alt="{{ prod.title }}"
+                                  width="80"
+                                  height="{{ 80 | divided_by: prod.featured_image.aspect_ratio | ceil }}"
+                                />
+                              </div>
+                            {%- endif -%}
+
+                            <div class="product-upsell__details">
+                              <span class="product-upsell__title">{{ prod.title }}</span>
+
+                              {%- if prod.has_only_default_variant == false -%}
+                                <div class="product-upsell__variant-picker">
+                                  <div class="product-upsell__select-wrapper">
+                                    <select class="product-upsell__variant-select" name="variant_id" data-upsell-index="rand-{{ random_index }}">
+                                      {%- for variant in prod.variants -%}
+                                        <option 
+                                          value="{{ variant.id }}" 
+                                          data-image="{% if variant.image %}{{ variant.image | image_url: width: 80 }}{% else %}{{ prod.featured_image | image_url: width: 80 }}{% endif %}"
+                                          data-price="{{ variant.price | money }}"
+                                          data-available="{{ variant.available }}"
+                                          {%- if variant == prod.selected_or_first_available_variant -%}selected{%- endif -%}
+                                          {%- unless variant.available -%}disabled{%- endunless -%}
+                                        >
+                                          {{ variant.title }}{% unless variant.available %} - Sold out{% endunless %}
+                                        </option>
+                                      {%- endfor -%}
+                                    </select>
+                                    <svg class="product-upsell__select-icon" width="12" height="12" viewBox="0 0 20 20" fill="none">
+                                      <path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                  </div>
+                                </div>
+                              {%- endif -%}
+                            </div>
+
+                            {%- if block.settings.show_price -%}
+                              <div class="product-upsell__price-section">
+                                <span class="product-upsell__divider">|</span>
+                                <span class="product-upsell__price" data-upsell-index="rand-{{ random_index }}">{{ prod.selected_or_first_available_variant.price | money }}</span>
+                              </div>
+                            {%- endif -%}
+
+                            <button 
+                              type="button" 
+                              class="product-upsell__help-btn"
+                              data-modal-image="{{ prod.featured_image | image_url: width: 600 }}"
+                              data-modal-title="{{ prod.title | escape }}"
+                              data-modal-desc="{{ prod.description | strip_html | escape }}"
+                            >?</button>
+                          </div>
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+                  </div>
+                </div>
+
+                <!-- Upsell Modal -->
+                <div class="product-upsell__modal" id="upsell-modal">
+                  <div class="product-upsell__modal-overlay"></div>
+                  <div class="product-upsell__modal-content">
+                    <button type="button" class="product-upsell__modal-close" data-upsell-modal-close>&#10005;</button>
+                    <div class="product-upsell__modal-body">
+                      <div class="product-upsell__modal-image">
+                        <img id="upsell-modal-img" alt="" width="400" height="400" />
+                      </div>
+                      <div class="product-upsell__modal-info">
+                        <h2 class="product-upsell__modal-title" id="upsell-modal-title"></h2>
+                        <p class="product-upsell__modal-description" id="upsell-modal-desc"></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+{% stylesheet %}
+  .product-upsell { margin: 1.5rem 0; }
+  .product-upsell__heading { margin: 0 0 1rem 0; font-weight: 600; font-size: 18px; }
+  .product-upsell__items { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .product-upsell__item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .product-upsell__item:hover {
+    border-color: #ccc;
+    background-color: #FFFFFF;
+  }
+
+  .product-upsell__item.selected {
+    border-color: #E5E5E5;
+    background-color: #FFFFFF;
+  }
+
+  .product-upsell__item.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .product-upsell__checkbox { flex-shrink: 0; display: flex; align-items: center; }
+  .product-upsell__input { width: 20px; height: 20px; cursor: pointer; accent-color: #000; margin: 0; }
+  .product-upsell__input:disabled { cursor: not-allowed; opacity: 0.5; }
+
+  .product-upsell__image { width: 60px; height: 60px; flex-shrink: 0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .product-upsell__image img { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.3s ease; }
+
+  .product-upsell__details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; justify-content: center; }
+  .product-upsell__title { font-weight: 500; font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Variant selector */
+  .product-upsell__variant-picker { margin-top: 0.15rem; }
+  .product-upsell__select-wrapper { position: relative; display: inline-block; }
+  .product-upsell__variant-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 100px;
+    padding: 4px 22px 4px 10px;
+    font-size: 11px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    max-width: 140px;
+  }
+  .product-upsell__variant-select:focus { outline: none; border-color: #bbb; }
+  .product-upsell__variant-select:hover { border-color: #aaa; }
+  .product-upsell__variant-select option:disabled { color: #999; font-style: italic; }
+  .product-upsell__select-icon {
+    position: absolute;
+    right: 8px;
+    top: 55%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+  }
+
+  .product-upsell__price-section { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+  .product-upsell__divider { color: #ccc; font-weight: 300; }
+  .product-upsell__price { font-size: 14px; font-weight: 500; white-space: nowrap; transition: opacity 0.3s ease; }
+
+  .product-upsell__help-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #F5F5F5;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    transition: background-color 0.2s ease;
+    margin: 0;
+    padding: 0;
+  }
+  .product-upsell__help-btn:hover { background-color: #F5F5F5; }
+
+  /* Modal */
+  .product-upsell__modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center; }
+  .product-upsell__modal.active { display: flex; }
+  .product-upsell__modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .product-upsell__modal-content { position: relative; background: #fff; border-radius: 16px; max-width: 900px; max-height: 90vh; width: 90%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: upsellModalFadeIn 0.3s ease; }
+  @keyframes upsellModalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .product-upsell__modal-close { position: absolute; top: 1rem; right: 1rem; width: 40px; height: 40px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; z-index: 10; padding: 0; margin: 0; }
+  .product-upsell__modal-close:hover { color: #000; }
+  .product-upsell__modal-body { display: flex; flex-direction: row; }
+  .product-upsell__modal-image { flex: 1; background: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  .product-upsell__modal-image img { max-width: 100%; max-height: 400px; object-fit: contain; }
+  .product-upsell__modal-info { flex: 1; padding: 2.5rem; overflow-y: auto; max-height: 80vh; }
+  .product-upsell__modal-title { font-size: 24px; font-weight: 600; margin: 0 0 1.5rem 0; line-height: 1.3; padding-right: 2rem; }
+  .product-upsell__modal-description { font-size: 15px; line-height: 1.7; color: #444; }
+
+  @media screen and (max-width: 750px) {
+    .product-upsell__item { padding: 0.875rem 1rem; gap: 0.75rem; }
+    .product-upsell__image { width: 50px; height: 50px; }
+    .product-upsell__title { font-size: 13px; }
+    .product-upsell__price { font-size: 13px; }
+    .product-upsell__help-btn { width: 24px; height: 24px; font-size: 12px; }
+    .product-upsell__variant-select { font-size: 10px; max-width: 110px; }
+    .product-upsell__modal-body { flex-direction: column; }
+    .product-upsell__modal-image { padding: 1.5rem; }
+    .product-upsell__modal-image img { max-height: 250px; }
+    .product-upsell__modal-info { padding: 1.5rem; max-height: none; }
+    .product-upsell__modal-title { font-size: 20px; padding-right: 0; }
+  }
+{% endstylesheet %}
+
+<script src="{{ 'product-block-upsell.js' | asset_url }}" defer="defer"></script>

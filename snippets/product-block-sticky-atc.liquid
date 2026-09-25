@@ -1,0 +1,475 @@
+{% comment %}
+  Renders the sticky add-to-cart bar rendered above the product layout.
+
+  Accepts:
+  - block: {Object} The section block being rendered
+  - product: {Object} The product being displayed
+
+  Usage:
+  {% render 'product-block-sticky-atc', block: block, product: product %}
+{% endcomment %}
+
+{% liquid
+  # Determine rating source
+  assign sticky_use_metafields = block.settings.use_metafields
+  assign sticky_rating_value = block.settings.manual_rating
+  assign sticky_rating_count = block.settings.manual_rating_count
+  assign sticky_scale_max = 5.0
+
+  # If using metafields and they exist, override with metafield values
+  if sticky_use_metafields and product.metafields.reviews.rating.value != blank
+    assign sticky_rating_value = product.metafields.reviews.rating.value.rating
+    assign sticky_scale_max = product.metafields.reviews.rating.value.scale_max | default: 5.0
+  endif
+
+  if sticky_use_metafields and product.metafields.reviews.rating_count != blank
+    assign sticky_rating_count = product.metafields.reviews.rating_count
+  endif
+
+  # Calculate star display
+  assign sticky_full_stars = sticky_rating_value | floor
+  assign sticky_decimal = sticky_rating_value | modulo: 1
+  assign sticky_has_half = false
+  assign sticky_half_star_position = 0
+
+  if sticky_decimal >= 0.25 and sticky_decimal < 0.75
+    assign sticky_has_half = true
+    assign sticky_half_star_position = sticky_full_stars | plus: 1
+  elsif sticky_decimal >= 0.75
+    assign sticky_full_stars = sticky_full_stars | plus: 1
+  endif
+%}
+
+<div
+  class="sticky-atc-wrapper"
+  id="sticky-atc-wrapper-{{ section.id }}"
+  data-scroll-threshold="{{ block.settings.scroll_threshold }}"
+  data-section-id="{{ section.id }}"
+  data-button-text="{{ block.settings.button_text | default: 'Add to cart' }}"
+  data-button-text-adding="{{ block.settings.button_text_adding | default: 'Adding…' }}"
+  style="--nvgd-atc-pad-v: {{ block.settings.padding_vertical | default: 14 }}px; --nvgd-atc-pad-h: {{ block.settings.padding_horizontal | default: 20 }}px; --nvgd-atc-pad-v-m: {{ block.settings.padding_vertical_mobile | default: 10 }}px; --nvgd-atc-pad-h-m: {{ block.settings.padding_horizontal_mobile | default: 15 }}px; --nvgd-atc-star: {{ block.settings.star_color | default: '#F5F5F5' }}; --nvgd-atc-star-empty: {{ block.settings.star_empty_color | default: '#F5F5F5' }};"
+  {{ block.shopify_attributes }}>
+  <!-- Main Sticky Bar -->
+  <div class="sticky-atc" id="sticky-atc-{{ section.id }}">
+    <div class="sticky-atc__container">
+      <div class="sticky-atc__left">
+        <div class="sticky-atc__image">
+          {%- if product.featured_image -%}
+            <img
+              src="{{ product.featured_image | image_url: width: 60 }}"
+              alt="{{ product.title }}"
+              width="60"
+              height="{{ 60 | divided_by: product.featured_image.aspect_ratio | ceil }}" />
+          {%- endif -%}
+        </div>
+
+        <div class="sticky-atc__info">
+          {% if sticky_rating_value > 0 and block.settings.show_rating %}
+            <div class="sticky-atc__rating">
+              <div
+                class="sticky-atc__stars"
+                role="img"
+                aria-label="{{ sticky_rating_value }} out of {{ sticky_scale_max }} stars">
+                {%- for i in (1..5) -%}
+                  {% if i <= sticky_full_stars %}
+                    <!-- Full star -->
+                    <svg
+                      class="sticky-atc__star sticky-atc__star--full"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  {% elsif sticky_has_half and i == sticky_half_star_position %}
+                    <!-- Half star -->
+                    <svg
+                      class="sticky-atc__star sticky-atc__star--half"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true">
+                      <defs>
+                        <linearGradient id="sticky-halfStar-{{ section.id }}-{{ i }}">
+                          <stop offset="50%" stop-color="{{ block.settings.star_color | default: '#F5F5F5' }}" />
+                          <stop offset="50%" stop-color="{{ block.settings.star_empty_color | default: '#F5F5F5' }}" />
+                        </linearGradient>
+                      </defs>
+                      <path fill="url(#sticky-halfStar-{{ section.id }}-{{ i }})" d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  {% else %}
+                    <!-- Empty star -->
+                    <svg
+                      class="sticky-atc__star sticky-atc__star--empty"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  {% endif %}
+                {%- endfor -%}
+              </div>
+              <span class="sticky-atc__rating-text">({{ sticky_rating_value }}/{{ sticky_scale_max }}) {{ sticky_rating_count }} {{ block.settings.rating_label | default: 'Reviews' }}</span>
+            </div>
+          {% endif %}
+          <h2 class="sticky-atc__title">{{ product.title }}</h2>
+        </div>
+      </div>
+
+      {%- if block.settings.logo -%}
+        <div class="sticky-atc__center">
+          <a href="{{ routes.root_url }}" class="sticky-atc__logo-link">
+            <img
+              src="{{ block.settings.logo | image_url: width: 400 }}"
+              alt="{{ shop.name }}"
+              width="400"
+              height="{{ 400 | divided_by: block.settings.logo.aspect_ratio | ceil }}"
+              style="max-width: {{ block.settings.logo_width }}px;" />
+          </a>
+        </div>
+      {%- endif -%}
+
+      <div class="sticky-atc__right">
+        <div
+          class="sticky-atc__price"
+          id="sticky-atc-price-{{ section.id }}"
+          data-base-price="{{ product.selected_or_first_available_variant.price }}"
+          data-currency-symbol="{{ block.settings.currency_symbol | default: '€' }}"
+          data-variant-prices="{% for v in product.variants %}{{ v.id }}:{{ v.price }}{% unless forloop.last %},{% endunless %}{% endfor %}">
+          {{ product.selected_or_first_available_variant.price | money }}
+        </div>
+
+        <button
+          type="button"
+          class="sticky-atc__button"
+          id="sticky-atc-button-{{ section.id }}"
+          style="background-color: {{ block.settings.button_color }};"
+          {% unless product.selected_or_first_available_variant.available %}
+          disabled{% endunless %}>
+          {%- if product.selected_or_first_available_variant.available -%}
+            {{ block.settings.button_text | default: "Add to cart" }}
+          {%- else -%}
+            Sold out
+          {%- endif -%}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  {%- if block.settings.show_nav -%}
+    <div class="sticky-atc__nav" style="background-color: {{ block.settings.nav_bg_color }};">
+      <div class="sticky-atc__nav-container">
+        <ul class="sticky-atc__nav-list">
+          {%- for i in (1..5) -%}
+            {%- assign label_key = 'nav_label_' | append: i -%}
+            {%- assign section_key = 'nav_section_' | append: i -%}
+            {%- assign nav_label = block.settings[label_key] -%}
+            {%- assign nav_section = block.settings[section_key] -%}
+
+            {%- if nav_label != blank and nav_section != blank -%}
+              <li class="sticky-atc__nav-item">
+                <a
+                  href="#{{ nav_section }}"
+                  class="sticky-atc__nav-link"
+                  data-section-name="{{ nav_section }}"
+                  style="color: {{ block.settings.nav_text_color }}; --nav-active-color: {{ block.settings.nav_active_color }};">
+                  {{ nav_label }}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .sticky-atc-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9998;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sticky-atc-wrapper.visible {
+    transform: translateY(0);
+  }
+
+  .sticky-atc {
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .sticky-atc__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .sticky-atc__left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticky-atc__image {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #F5F5F5;
+  }
+
+  .sticky-atc__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .sticky-atc__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .sticky-atc__rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sticky-atc__stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .sticky-atc__rating-text {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .sticky-atc__title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sticky-atc__center {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sticky-atc__center img {
+    height: auto;
+    object-fit: contain;
+  }
+
+  .sticky-atc__right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .sticky-atc__price {
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .sticky-atc__button {
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .sticky-atc__button:hover {
+    opacity: 0.9;
+  }
+
+  .sticky-atc__button:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+  }
+
+  /* Navigation Bar Styles */
+  .sticky-atc__nav {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .sticky-atc__nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .sticky-atc__nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+  }
+
+  .sticky-atc__nav-item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .sticky-atc__nav-link {
+    display: block;
+    padding: 0 20px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+
+  .sticky-atc__nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--nav-active-color, #F5F5F5);
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+
+  .sticky-atc__nav-link:hover::after,
+  .sticky-atc__nav-link.active::after {
+    transform: scaleX(1);
+  }
+
+  .sticky-atc__nav-link.active {
+    color: var(--nav-active-color, #111111) !important;
+  }
+
+  @media (max-width: 992px) {
+    .sticky-atc__center {
+      display: none;
+    }
+
+    .sticky-atc__nav-list {
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sticky-atc__container {
+      gap: 12px;
+    }
+
+    .sticky-atc__image {
+      width: 40px;
+      height: 40px;
+    }
+
+    .sticky-atc__rating {
+      display: none;
+    }
+
+    .sticky-atc__title {
+      font-size: 14px;
+    }
+
+    .sticky-atc__price {
+      font-size: 16px;
+    }
+
+    .sticky-atc__button {
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+
+    .sticky-atc__nav-container {
+      padding: 0 15px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .sticky-atc__nav-list {
+      gap: 15px;
+      justify-content: flex-start;
+      min-width: max-content;
+    }
+
+    .sticky-atc__nav-link {
+      font-size: 13px;
+      padding: 10px 5px;
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sticky-atc__info {
+      display: none;
+    }
+
+    .sticky-atc__image {
+      display: none;
+    }
+
+    .sticky-atc__left {
+      flex: 0;
+    }
+
+    .sticky-atc__right {
+      flex: 1;
+      justify-content: space-between;
+    }
+  }
+
+  .sticky-atc__container {
+    padding: var(--nvgd-atc-pad-v) var(--nvgd-atc-pad-h);
+  }
+
+  .sticky-atc__star--full {
+    fill: var(--nvgd-atc-star);
+  }
+
+  .sticky-atc__star--empty {
+    fill: var(--nvgd-atc-star-empty);
+  }
+
+  @media (max-width: 768px) {
+    .sticky-atc__container {
+      padding: var(--nvgd-atc-pad-v-m, var(--nvgd-atc-pad-v)) var(--nvgd-atc-pad-h-m, var(--nvgd-atc-pad-h));
+    }
+  }
+{% endstylesheet %}
+
+<script src="{{ 'product-block-sticky-atc.js' | asset_url }}" defer="defer"></script>

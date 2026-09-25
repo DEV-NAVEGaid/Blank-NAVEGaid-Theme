@@ -1,0 +1,118 @@
+{%- assign current_product = closest.product | default: product -%}
+
+{%- style -%}
+  .card-swatches-{{ block.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+    justify-content: {% if block.settings.alignment == 'center' %}center{% elsif block.settings.alignment == 'right' %}flex-end{% else %}flex-start{% endif %};
+  }
+
+  .card-swatch-item {
+    width: {{ block.settings.swatch_size }}px;
+    height: {{ block.settings.swatch_size }}px;
+    border-radius: {{ block.settings.border_radius }}px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    display: inline-block;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+{%- endstyle -%}
+
+<div class="card-swatches-wrapper card-swatches-{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- assign found_color = false -%}
+  {%- if current_product != blank -%}
+    {%- for option in current_product.options_with_values -%}
+      {%- assign option_name = option.name | downcase -%}
+      {%- if option_name contains 'color' or option_name contains 'colour' or option_name contains 'shade' or option_name contains 'warna' -%}
+        {%- assign found_color = true -%}
+        {%- for value in option.values limit: 5 -%}
+          {%- assign color_slug = value | handleize -%}
+          <span class="card-swatch-item" title="{{ value }}" style="background-color: {{ color_slug }};"></span>
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+  {%- if found_color == false -%}
+    <span class="card-swatch-item" style="background-color: #111111;"></span>
+    <span class="card-swatch-item" style="background-color: #F5F5F5;"></span>
+    <span class="card-swatch-item" style="background-color: #111111;"></span>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Swatches",
+  "settings": [
+    {
+      "type": "range",
+      "id": "swatch_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Swatch size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 50
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Swatches",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

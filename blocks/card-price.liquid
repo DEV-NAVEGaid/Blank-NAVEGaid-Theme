@@ -1,0 +1,186 @@
+{%- assign current_product = closest.product | default: product -%}
+
+{%- style -%}
+  .card-price-{{ block.id }} {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    justify-content: {% if block.settings.alignment == 'center' %}center{% elsif block.settings.alignment == 'right' %}flex-end{% else %}flex-start{% endif %};
+    line-height: 1.3;
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+  }
+
+  .card-price-{{ block.id }} .price-item--regular {
+    color: {{ block.settings.regular_price_color }};
+    font-size: {{ block.settings.font_size_mobile }}px;
+    font-weight: {{ block.settings.font_weight }};
+  }
+
+  .card-price-{{ block.id }} .price-item--sale {
+    color: {{ block.settings.sale_price_color }};
+    font-size: {{ block.settings.font_size_mobile }}px;
+    font-weight: {{ block.settings.font_weight }};
+  }
+
+  .card-price-{{ block.id }} .price-item--compare {
+    color: {{ block.settings.compare_price_color }};
+    font-size: {{ block.settings.font_size_mobile | times: 0.88 | round: 0 }}px;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  @media screen and (min-width: 750px) {
+    .card-price-{{ block.id }} .price-item--regular,
+    .card-price-{{ block.id }} .price-item--sale {
+      font-size: {{ block.settings.font_size_desktop }}px;
+    }
+    .card-price-{{ block.id }} .price-item--compare {
+      font-size: {{ block.settings.font_size_desktop | times: 0.88 | round: 0 }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="card-price card-price-{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- if current_product != blank -%}
+    {%- assign target = current_product.selected_or_first_available_variant -%}
+    {%- assign compare_at_price = target.compare_at_price -%}
+    {%- assign price = target.price | default: 1999 -%}
+    {%- assign is_on_sale = false -%}
+    {%- if compare_at_price > price -%}
+      {%- assign is_on_sale = true -%}
+    {%- endif -%}
+
+    {%- if is_on_sale -%}
+      <span class="price-item price-item--sale">{{ price | money }}</span>
+      {%- if block.settings.show_compare_at -%}
+        <span class="price-item price-item--compare">{{ compare_at_price | money }}</span>
+      {%- endif -%}
+    {%- else -%}
+      <span class="price-item price-item--regular">{{ price | money }}</span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Price",
+  "settings": [
+    {
+      "type": "range",
+      "id": "font_size_desktop",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (Desktop)",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (Mobile)",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "regular_price_color",
+      "label": "Regular price color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "sale_price_color",
+      "label": "Sale price color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "compare_price_color",
+      "label": "Compare at price color",
+      "default": "#111111"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at",
+      "label": "Show strikethrough compare price",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Price",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

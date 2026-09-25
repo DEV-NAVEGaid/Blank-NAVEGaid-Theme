@@ -1,0 +1,19 @@
+{%- capture offsets -%}
+{%- if block.settings.transform_mode == 'pixels' -%}
+  --column-offset-x: {{ block.settings.offset_x_desktop }}px;
+  --column-offset-y: {{ block.settings.offset_y_desktop }}px;
+  --column-offset-x-mobile: {{ block.settings.offset_x_mobile }}px;
+  --column-offset-y-mobile: {{ block.settings.offset_y_mobile }}px;
+{%- elsif block.settings.transform_mode == 'percent' -%}
+  --column-offset-x: {{ block.settings.transform_x_desktop | minus: 50 }}%;
+  --column-offset-y: {{ block.settings.transform_y_desktop | minus: 50 }}%;
+  --column-offset-x-mobile: {{ block.settings.transform_x_mobile | minus: 50 }}%;
+  --column-offset-y-mobile: {{ block.settings.transform_y_mobile | minus: 50 }}%;
+{%- else -%}
+  --column-offset-x: {% render 'css-length', value: block.settings.transform_x_desktop %};
+  --column-offset-y: {% render 'css-length', value: block.settings.transform_y_desktop %};
+  --column-offset-x-mobile: {% render 'css-length', value: block.settings.transform_x_mobile %};
+  --column-offset-y-mobile: {% render 'css-length', value: block.settings.transform_y_mobile %};
+{%- endif -%}
+{%- endcapture -%}
+{{- offsets | escape -}}

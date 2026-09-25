@@ -1,0 +1,145 @@
+{% comment %}
+  Renders the product rating summary (supports Judge.me & Shopify standard reviews).
+  Format matches reference design: ⭐⭐⭐⭐☆ 4.0/5
+
+  Accepts:
+  - product: {Object} Product whose review data is displayed
+  - show_rating: {Boolean} Optional override to control visibility
+  - fallback_rating: {Number} Optional fallback rating when no reviews exist yet
+{% endcomment %}
+
+{% liquid
+  assign rating_val = 0
+  assign rating_max = 5
+  assign rating_count = 0
+  assign has_rating = false
+
+  # 1. Standard Shopify Reviews metafields (synced by Judge.me, Loox, etc.)
+  if product.metafields.reviews.rating.value != blank
+    if product.metafields.reviews.rating.value.rating != blank
+      assign rating_val = product.metafields.reviews.rating.value.rating | plus: 0.0
+      assign rating_max = product.metafields.reviews.rating.value.scale_max | default: 5 | plus: 0
+    else
+      assign rating_val = product.metafields.reviews.rating.value | plus: 0.0
+    endif
+    assign rating_count = product.metafields.reviews.rating_count | default: 0 | plus: 0
+    if rating_val > 0
+      assign has_rating = true
+    endif
+  elsif product.metafields.reviews.rating != blank
+    assign rating_val = product.metafields.reviews.rating | plus: 0.0
+    assign rating_count = product.metafields.reviews.rating_count | default: 0 | plus: 0
+    if rating_val > 0
+      assign has_rating = true
+    endif
+  endif
+
+  # 2. Judge.me badge HTML metafield parsing
+  if has_rating == false and product.metafields.judgeme.badge != blank
+    assign jm_badge = product.metafields.judgeme.badge
+    if jm_badge contains "data-average-rating='"
+      assign jm_split = jm_badge | split: "data-average-rating='"
+      assign jm_val = jm_split[1] | split: "'" | first | plus: 0.0
+      if jm_val > 0
+        assign rating_val = jm_val
+        assign has_rating = true
+      endif
+    elsif jm_badge contains 'data-average-rating="'
+      assign jm_split = jm_badge | split: 'data-average-rating="'
+      assign jm_val = jm_split[1] | split: '"' | first | plus: 0.0
+      if jm_val > 0
+        assign rating_val = jm_val
+        assign has_rating = true
+      endif
+    endif
+
+    if jm_badge contains "data-number-of-reviews='"
+      assign jm_cnt_split = jm_badge | split: "data-number-of-reviews='"
+      assign rating_count = jm_cnt_split[1] | split: "'" | first | plus: 0
+    elsif jm_badge contains 'data-number-of-reviews="'
+      assign jm_cnt_split = jm_badge | split: 'data-number-of-reviews="'
+      assign rating_count = jm_cnt_split[1] | split: '"' | first | plus: 0
+    endif
+  endif
+
+  # 3. Judge.me direct rating metafield
+  if has_rating == false and product.metafields.judgeme.rating != blank
+    assign rating_val = product.metafields.judgeme.rating | plus: 0.0
+    if rating_val > 0
+      assign has_rating = true
+    endif
+  endif
+
+  # 4. Fallback rating if no reviews yet
+  if has_rating == false
+    if fallback_rating != blank and fallback_rating > 0
+      assign rating_val = fallback_rating | plus: 0.0
+      assign has_rating = true
+    elsif section.settings.fallback_rating != blank and section.settings.fallback_rating > 0
+      assign rating_val = section.settings.fallback_rating | plus: 0.0
+      assign has_rating = true
+    endif
+  endif
+
+  # Format decimal string e.g. "4.0"
+  assign rating_formatted = rating_val | round: 1
+  assign rating_string = rating_formatted | append: ''
+  unless rating_string contains '.'
+    assign rating_string = rating_string | append: '.0'
+  endunless
+
+  # Calculate stars
+  assign full_stars = rating_val | floor
+  assign decimal = rating_val | modulo: 1
+  assign has_half = false
+  assign half_star_pos = 0
+  if decimal >= 0.25 and decimal < 0.75
+    assign has_half = true
+    assign half_star_pos = full_stars | plus: 1
+  elsif decimal >= 0.75
+    assign full_stars = full_stars | plus: 1
+  endif
+%}
+
+{%- assign should_show = true -%}
+{%- if show_rating == false or section.settings.show_rating == false -%}
+  {%- assign should_show = false -%}
+{%- endif -%}
+
+{% if should_show and has_rating and rating_val > 0 %}
+  <div class="product-rating-container" data-product-id="{{ product.id }}">
+    <div class="product-rating-stars" role="img" aria-label="{{ rating_string }} out of 5 stars">
+      {% for i in (1..5) %}
+        {% if i <= full_stars %}
+          <svg class="product-rating-star product-rating-star--full" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        {% elsif has_half and i == half_star_pos %}
+          <svg class="product-rating-star product-rating-star--half" viewBox="0 0 20 20" aria-hidden="true">
+            <defs>
+              <linearGradient id="star-half-{{ product.id }}-{{ i }}">
+                <stop offset="50%" stop-color="#F5F5F5"/>
+                <stop offset="50%" stop-color="#F5F5F5"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#star-half-{{ product.id }}-{{ i }})" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        {% else %}
+          <svg class="product-rating-star product-rating-star--empty" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <span class="product-rating-score">
+      <span class="product-rating-val">{{ rating_string }}</span><span class="product-rating-slash">/</span><span class="product-rating-max">5</span>
+    </span>
+  </div>
+{% endif %}
+
+{%- comment -%} Hidden Judge.me badge hook to keep Judge.me widget app sync {%- endcomment -%}
+{% if product.metafields.judgeme.badge != blank %}
+  <div style="display:none;" class="jdgm-widget jdgm-preview-badge" data-id="{{ product.id }}">
+    {{ product.metafields.judgeme.badge }}
+  </div>
+{% endif %}

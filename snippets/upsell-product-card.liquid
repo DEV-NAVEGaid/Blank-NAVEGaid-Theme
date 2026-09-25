@@ -1,0 +1,52 @@
+{% liquid
+  assign has_sale = false
+  assign discount_amount = 0
+
+  if product.compare_at_price > product.price
+    assign has_sale = true
+    assign discount_amount = product.compare_at_price | minus: product.price
+  endif
+%}
+
+<a
+  href="{{ product.url }}"
+  class="upsell-product-card"
+  target="_blank"
+  rel="noopener noreferrer"
+  {% if block %}{{ block.shopify_attributes }}{% endif %}
+  aria-label="View {{ product.title }}"
+>
+  <div class="upsell-product-card__image-wrapper">
+    {% if product.featured_image %}
+      {{ product.featured_image | image_url: width: 600 | image_tag:
+        class: 'upsell-product-card__image',
+        loading: 'lazy',
+        alt: product.featured_image.alt | escape
+      }}
+    {% endif %}
+
+    {% if has_sale %}
+      <div class="upsell-product-card__label">
+        - {{ discount_amount | money_without_trailing_zeros }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="upsell-product-card__content">
+    <h3 class="upsell-product-card__title">
+      {{ product.title }}
+    </h3>
+
+    <div class="upsell-product-card__price-wrapper">
+      <span class="upsell-product-card__price">
+        {{ product.price | money }}
+      </span>
+
+      {% if has_sale %}
+        <span class="upsell-product-card__compare-price">
+          {{ product.compare_at_price | money }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</a>

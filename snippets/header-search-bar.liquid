@@ -1,0 +1,8 @@
+<form action="{{ routes.search_url }}" method="get" role="search" class="nvgd-search-bar">
+  <button type="submit" class="nvgd-search-bar__btn" aria-label="{{ 'general.search.search' | t }}">
+    <span class="svg-wrapper">{{ 'icon-search.svg' | inline_asset_content }}</span>
+  </button>
+  <label class="visually-hidden" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
+  <input id="{{ input_id }}" class="nvgd-search-bar__input" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.search' | t }}" autocomplete="off">
+  <input type="hidden" name="options[prefix]" value="last">
+</form>

@@ -1,0 +1,18 @@
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --editorial-width: {{ section.settings.container_width }}px;
+    --editorial-top: {{ section.settings.padding_top }}px;
+    --editorial-bottom: {{ section.settings.padding_bottom }}px;
+    --editorial-x: {{ section.settings.padding_x }}px;
+    --editorial-top-mobile: {{ section.settings.padding_top_mobile }}px;
+    --editorial-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;
+    --editorial-x-mobile: {{ section.settings.padding_x_mobile }}px;
+    --editorial-heading-size: {{ section.settings.heading_size }}px;
+    --editorial-heading-mobile: {{ section.settings.heading_size_mobile }}px;
+    --editorial-bg: {{ section.settings.background }};
+    --editorial-ink: {{ section.settings.text_color }};
+    --editorial-muted: {{ section.settings.secondary_color }};
+    --editorial-gap: {{ section.settings.gap }}px;
+    --editorial-radius: {{ section.settings.corner_radius }}px;
+  }
+{%- endstyle -%}

@@ -1,0 +1,1247 @@
+{% render 'section-corners', section: section %}
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+{% style %}
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}
+{{ section.settings.quote_font | font_face: font_display: 'swap' }}
+  /* Outer Section - Handles Padding */
+  .press-section-{{ section_id }} {
+    background-color: {{ section.settings.section_bg }};
+    {% if section.settings.enable_global_spacing %}
+      padding: {{ settings.padding_vertical }}px {{ settings.padding_horizontal }}px;
+    {% else %}
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+      padding-left: {{ section.settings.padding_left }}px;
+      padding-right: {{ section.settings.padding_right }}px;
+    {% endif %}
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-section-{{ section_id }} {
+      {% if section.settings.enable_global_spacing %}
+        padding: {{ settings.padding_vertical_mobile }}px {{ settings.padding_horizontal_mobile }}px;
+      {% else %}
+        padding-top: {{ section.settings.padding_top_mobile }}px;
+        padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+        padding-left: {{ section.settings.padding_left_mobile }}px;
+        padding-right: {{ section.settings.padding_right_mobile }}px;
+      {% endif %}
+    }
+  }
+
+  /* Inner Container - Handles Max Width */
+  .press-container-{{ section_id }} {
+    margin: 0 auto;
+    width: 100%;
+    {% if section.settings.enable_global_spacing %}
+      max-width: var(--page-width);
+    {% elsif section.settings.section_width == 'fixed' %}
+      max-width: {{ section.settings.section_fixed_width }}px;
+    {% else %}
+      max-width: 100%;
+    {% endif %}
+  }
+
+  .press-grid-{{ section_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
+    gap: {{ section.settings.grid_gap }}px;
+    {% if section.settings.enable_overlap %}
+      isolation: isolate;
+    {% endif %}
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-grid-{{ section_id }} {
+      grid-template-columns: repeat({{ section.settings.columns_tablet }}, 1fr);
+      gap: {{ section.settings.grid_gap_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-grid-{{ section_id }} {
+      grid-template-columns: 1fr;
+      {% if section.settings.enable_overlap %}
+        gap: 0;
+      {% else %}
+        gap: {{ section.settings.grid_gap_mobile }}px;
+      {% endif %}
+    }
+  }
+
+  {% if section.settings.enable_overlap %}
+    .press-card-{{ section_id }}:nth-child(1) { z-index: 1; }
+    .press-card-{{ section_id }}:nth-child(2) { z-index: 2; }
+    .press-card-{{ section_id }}:nth-child(3) { z-index: 3; }
+    .press-card-{{ section_id }}:nth-child(4) { z-index: 4; }
+    .press-card-{{ section_id }}:nth-child(5) { z-index: 5; }
+    .press-card-{{ section_id }}:nth-child(6) { z-index: 6; }
+  {% endif %}
+
+  /* Card overlap effect */
+  {% if section.settings.enable_overlap %}
+    @media screen and (max-width: 749px) {
+      .press-card-{{ section_id }}:not(:first-child) {
+        margin-top: -{{ section.settings.overlap_amount_mobile }}px;
+      }
+    }
+  {% endif %}
+
+  .press-card-{{ section_id }} {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background-color: {{ section.settings.card_bg }};
+    border-radius: {{ section.settings.card_radius }}px;
+    min-height: {{ section.settings.card_height }}px;
+    {% if section.settings.enable_overlap %}
+      overflow: visible;
+    {% else %}
+      overflow: hidden;
+    {% endif %}
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  {% if section.settings.enable_overlap and section.settings.columns_tablet == 1 %}
+    @media screen and (min-width: 750px) and (max-width: 989px) {
+      .press-card-{{ section_id }}:not(:first-child) {
+        margin-top: -{{ section.settings.overlap_amount }}px;
+      }
+    }
+  {% endif %}
+  {% if section.settings.enable_overlap and section.settings.columns_desktop == 1 %}
+    @media screen and (min-width: 990px) {
+      .press-card-{{ section_id }}:not(:first-child) {
+        margin-top: -{{ section.settings.overlap_amount }}px;
+      }
+    }
+  {% endif %}
+
+  {% if section.settings.enable_hover %}
+  .press-card-{{ section_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  {% endif %}
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-card-{{ section_id }} {
+      min-height: {{ section.settings.card_height_tablet }}px;
+      border-radius: {{ section.settings.card_radius_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card-{{ section_id }} {
+      flex-direction: row;
+      min-height: {{ section.settings.card_height_mobile }}px;
+      border-radius: {{ section.settings.card_radius_mobile }}px;
+    }
+  }
+
+  .press-card__link-{{ section_id }} {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+
+  .press-card__content-{{ section_id }} {
+    flex: 0 0 {{ section.settings.content_width }}%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: {{ section.settings.content_align }};
+    padding: {{ section.settings.content_padding_y }}px {{ section.settings.content_padding_x }}px;
+    z-index: 2;
+    min-width: 0;
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-card__content-{{ section_id }} {
+      flex: 0 0 {{ section.settings.content_width_tablet }}%;
+      padding: {{ section.settings.content_padding_y_tablet }}px {{ section.settings.content_padding_x_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__content-{{ section_id }} {
+      flex: 0 0 {{ section.settings.content_width_mobile }}%;
+      padding: {{ section.settings.content_padding_y_mobile }}px {{ section.settings.content_padding_x_mobile }}px;
+      align-items: {{ section.settings.content_align_mobile }};
+      text-align: {{ section.settings.text_align_mobile }};
+    }
+  }
+
+  .press-card__logo-{{ section_id }} {
+    max-width: {{ section.settings.logo_max_width }}px;
+    max-height: {{ section.settings.logo_max_height }}px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: {{ section.settings.logo_margin_bottom }}px;
+    display: block;
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-card__logo-{{ section_id }} {
+      max-width: {{ section.settings.logo_max_width_tablet }}px;
+      max-height: {{ section.settings.logo_max_height_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__logo-{{ section_id }} {
+      max-width: {{ section.settings.logo_max_width_mobile }}px;
+      max-height: {{ section.settings.logo_max_height_mobile }}px;
+    }
+  }
+
+  .press-card__heading-{{ section_id }} {
+    font-family: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    font-weight: {{ section.settings.heading_weight }};
+    font-size: {{ section.settings.heading_size }}px;
+    color: {{ section.settings.heading_color }};
+    margin: 0 0 {{ section.settings.logo_margin_bottom }}px 0;
+    line-height: 1.2;
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__heading-{{ section_id }} {
+      font-size: {{ section.settings.heading_size_mobile }}px;
+    }
+  }
+
+  .press-card__quote-{{ section_id }} {
+    font-family: {{ section.settings.quote_font.family }}, {{ section.settings.quote_font.fallback_families }};
+    font-size: {{ section.settings.quote_size }}px;
+    font-weight: {{ section.settings.quote_weight }};
+    font-style: italic;
+    color: {{ section.settings.quote_color }};
+    line-height: {{ section.settings.quote_line_height }};
+    margin: 0;
+    {% if section.settings.quote_max_width > 0 %}
+      max-width: {{ section.settings.quote_max_width }}px;
+    {% endif %}
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-card__quote-{{ section_id }} {
+      font-size: {{ section.settings.quote_size_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__quote-{{ section_id }} {
+      font-size: {{ section.settings.quote_size_mobile }}px;
+    }
+  }
+
+  .press-card__image-wrap-{{ section_id }} {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+    padding: 10px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__image-wrap-{{ section_id }} {
+      flex: 1 1 0;
+      min-width: 0;
+      height: auto;
+      padding: 8px;
+    }
+  }
+
+  .press-card__image-{{ section_id }} {
+    max-width: {{ section.settings.image_max_width }}px;
+    max-height: {{ section.settings.image_max_height }}px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .press-card__image-{{ section_id }} {
+      max-width: {{ section.settings.image_max_width_tablet }}px;
+      max-height: {{ section.settings.image_max_height_tablet }}px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-card__image-{{ section_id }} {
+      max-width: {{ section.settings.image_max_width_mobile }}px;
+      max-height: {{ section.settings.image_max_height_mobile }}px;
+    }
+  }
+
+  .press-card__placeholder-{{ section_id }} {
+    width: 80px;
+    height: 80px;
+    background-color: #F5F5F5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+  }
+
+  /* CTA Button */
+  .press-cta-wrapper-{{ section_id }} {
+    display: flex;
+    justify-content: center;
+    margin-top: {{ section.settings.cta_margin_top }}px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .press-cta-wrapper-{{ section_id }} {
+      display: {% if section.settings.show_cta_mobile %}flex{% else %}none{% endif %};
+    }
+  }
+
+  .press-cta-button-{{ section_id }} {
+    display: inline-block;
+    background-color: {{ section.settings.cta_bg_color }};
+    color: {{ section.settings.cta_text_color }};
+    font-size: {{ section.settings.cta_font_size }}px;
+    font-weight: {{ section.settings.cta_font_weight }};
+    padding: {{ section.settings.cta_padding_y }}px {{ section.settings.cta_padding_x }}px;
+    border-radius: {{ section.settings.cta_border_radius }}px;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s ease;
+    width: {% if section.settings.cta_full_width %}100%{% else %}auto{% endif %};
+  }
+
+  .press-cta-button-{{ section_id }}:hover {
+    opacity: 0.9;
+  }
+{% endstyle %}
+
+<section class="press-section-{{ section_id }} nvgd-section-surface">
+  <div class="press-container-{{ section_id }}">
+    <div class="press-grid-{{ section_id }}">
+      {% content_for 'blocks' %}
+    </div>
+
+    {% if section.settings.cta_text != blank and section.settings.cta_link != blank %}
+      <div class="press-cta-wrapper-{{ section_id }}">
+        <a href="{{ section.settings.cta_link }}" class="press-cta-button-{{ section_id }}">
+          {{ section.settings.cta_text }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Press cards",
+  "tag": "section",
+  "class": "press-cards-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_overlap",
+      "label": "Enable image overlap",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlap_amount",
+      "min": 10,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Overlap amount (desktop)",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_overlap and section.settings.columns_desktop == 1 }}",
+      "info": "Applies when the desktop grid is a single stacked column"
+    },
+    {
+      "type": "range",
+      "id": "overlap_amount_mobile",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Overlap amount (mobile)",
+      "default": 30,
+      "visible_if": "{{ section.settings.enable_overlap }}"
+    },
+    {
+      "type": "color",
+      "id": "card_bg",
+      "label": "Card background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "card_height",
+      "min": 100,
+      "max": 400,
+      "step": 5,
+      "unit": "px",
+      "label": "Card height (desktop)",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "card_height_tablet",
+      "min": 80,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Card height (tablet)",
+      "default": 180
+    },
+    {
+      "type": "range",
+      "id": "card_height_mobile",
+      "min": 100,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Card min height (mobile)",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius (desktop)",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_radius_tablet",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius (tablet)",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "card_radius_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius (mobile)",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hover",
+      "label": "Enable hover effect",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Content area"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 30,
+      "max": 80,
+      "step": 1,
+      "unit": "%",
+      "label": "Content width (desktop)",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "content_width_tablet",
+      "min": 30,
+      "max": 80,
+      "step": 1,
+      "unit": "%",
+      "label": "Content width (tablet)",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "content_width_mobile",
+      "min": 40,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "label": "Content width (mobile)",
+      "default": 55
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "Content align (desktop)",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Right"
+        }
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "select",
+      "id": "content_align_mobile",
+      "label": "Content align (mobile)",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Right"
+        }
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "select",
+      "id": "text_align_mobile",
+      "label": "Text align (mobile)",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_x",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding X (desktop)",
+      "default": 25
+    },
+    {
+      "type": "range",
+      "id": "content_padding_y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding Y (desktop)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "content_padding_x_tablet",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding X (tablet)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "content_padding_y_tablet",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding Y (tablet)",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "content_padding_x_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding X (mobile)",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "content_padding_y_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Content padding Y (mobile)",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Product image"
+    },
+    {
+      "type": "range",
+      "id": "image_max_width",
+      "min": 50,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max width (desktop)",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "image_max_height",
+      "min": 50,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max height (desktop)",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "image_max_width_tablet",
+      "min": 40,
+      "max": 250,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max width (tablet)",
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "image_max_height_tablet",
+      "min": 40,
+      "max": 250,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max height (tablet)",
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "image_max_width_mobile",
+      "min": 30,
+      "max": 200,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max width (mobile)",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "image_max_height_mobile",
+      "min": 30,
+      "max": 200,
+      "step": 5,
+      "unit": "px",
+      "label": "Image max height (mobile)",
+      "default": 100
+    },
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width",
+      "min": 40,
+      "max": 400,
+      "step": 4,
+      "unit": "px",
+      "label": "Logo max width (desktop)",
+      "default": 132
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height",
+      "min": 10,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "Logo max height (desktop)",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width_tablet",
+      "min": 40,
+      "max": 300,
+      "step": 4,
+      "unit": "px",
+      "label": "Logo max width (tablet)",
+      "default": 112
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height_tablet",
+      "min": 10,
+      "max": 150,
+      "step": 2,
+      "unit": "px",
+      "label": "Logo max height (tablet)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width_mobile",
+      "min": 30,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "Logo max width (mobile)",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "logo_max_height_mobile",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Logo max height (mobile)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "logo_margin_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Logo margin bottom",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Heading fallback"
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 14,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (desktop)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (mobile)",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Quote typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "quote_font",
+      "label": "Quote font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "quote_size",
+      "min": 11,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Quote size (desktop)",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "quote_size_tablet",
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Quote size (tablet)",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "quote_size_mobile",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Quote size (mobile)",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "quote_weight",
+      "label": "Quote weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "quote_color",
+      "label": "Quote color",
+      "default": "#111111"
+    },
+    {
+      "type": "text",
+      "id": "quote_line_height",
+      "label": "Quote line height",
+      "default": "Quote"
+    },
+    {
+      "type": "range",
+      "id": "quote_max_width",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Quote max width",
+      "default": 0,
+      "info": "0 = no limit"
+    },
+    {
+      "type": "header",
+      "content": "Button (mobile)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta_mobile",
+      "label": "Show CTA button on mobile",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA text",
+      "default": "Button"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "color",
+      "id": "cta_bg_color",
+      "label": "CTA background color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "cta_text_color",
+      "label": "CTA text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "cta_font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "CTA font size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "cta_font_weight",
+      "label": "CTA font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_x",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "CTA padding X",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_y",
+      "min": 8,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "CTA padding Y",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "cta_border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "CTA border radius",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "cta_margin_top",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "CTA margin top",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "cta_full_width",
+      "label": "Full width button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width (Edge to Edge)"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed Width (Boxed)"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "range",
+      "id": "section_fixed_width",
+      "min": 800,
+      "max": 2000,
+      "step": 50,
+      "unit": "px",
+      "label": "Boxed max width (desktop)",
+      "default": 1400
+    },
+    {
+      "type": "header",
+      "content": "Grid layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Columns (desktop)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Columns (tablet)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Gap (desktop)",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_tablet",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Gap (tablet)",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "grid_gap_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Gap (mobile)",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding top (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding bottom (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 200,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding left (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 200,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding right (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Padding top (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Padding bottom (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Padding left (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Padding right (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Press cards",
+      "blocks": [
+        {
+          "type": "press-card",
+          "settings": {
+            "heading": "Heading",
+            "quote": "Quote"
+          }
+        },
+        {
+          "type": "press-card",
+          "settings": {
+            "heading": "Heading",
+            "quote": "Quote"
+          }
+        },
+        {
+          "type": "press-card",
+          "settings": {
+            "heading": "Heading",
+            "quote": "Quote"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

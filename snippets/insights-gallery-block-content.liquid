@@ -1,0 +1,31 @@
+{% comment %}
+  Renders a single content display panel for the Insights Gallery section.
+
+  Accepts:
+  - block: {Object} Section block containing insight settings
+  - is_first: {Boolean} Whether this is the first content panel (receives active-content class)
+
+  Usage:
+  {% render 'insights-gallery-block-content', block: block, is_first: forloop.first %}
+{% endcomment %}
+
+<div class="insight-content {% if is_first %}active-content{% endif %}"
+     data-insight-content="{{ block.id }}">
+  {% if block.settings.image != blank %}
+    <img src="{{ block.settings.image | image_url: width: 1400 }}"
+         alt="{{ block.settings.title | strip_html }}"
+         class="insight-image"
+         loading="lazy"
+         width="{{ block.settings.image.width }}"
+         height="{{ block.settings.image.height }}" />
+  {% endif %}
+
+  {% if block.settings.mobile_image != blank %}
+    <img src="{{ block.settings.mobile_image | image_url: width: 900 }}"
+         alt="{{ block.settings.title | strip_html }}"
+         class="insight-image mobile-only"
+         loading="lazy"
+         width="{{ block.settings.mobile_image.width }}"
+         height="{{ block.settings.mobile_image.height }}" />
+  {% endif %}
+</div>

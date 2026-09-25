@@ -1,0 +1,6 @@
+.gitignore
+.theme-check.yml
+*.md
+scripts/**
+package.json
+*.zip

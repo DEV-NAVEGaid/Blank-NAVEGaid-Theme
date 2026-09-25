@@ -1,0 +1,63 @@
+{% capture total_price_vars %}--nvgd-tp-margin-top: {{ block.settings.margin_top | default: 12 }}px; --nvgd-tp-margin-bottom: {{ block.settings.margin_bottom | default: 12 }}px; --nvgd-tp-pad-v: {{ block.settings.padding_vertical | default: 14 }}px; --nvgd-tp-pad-h: {{ block.settings.padding_horizontal | default: 20 }}px; --nvgd-tp-border-w: {{ block.settings.border_width | default: 1 }}px; --nvgd-tp-border-color: {{ block.settings.border_color | default: '#E5E5E5' }}; --nvgd-tp-radius: {{ block.settings.border_radius | default: 8 }}px; --nvgd-tp-bg: {{ block.settings.bg_color | default: '#E5E5E5' }}; --nvgd-tp-label-size: {{ block.settings.label_font_size | default: 15 }}px; --nvgd-tp-label-weight: {{ block.settings.label_font_weight | default: '400' }}; --nvgd-tp-label-color: {{ block.settings.label_color | default: '#E5E5E5' }}; --nvgd-tp-value-size: {{ block.settings.price_font_size | default: 18 }}px; --nvgd-tp-value-weight: {{ block.settings.price_font_weight | default: '700' }}; --nvgd-tp-value-color: {{ block.settings.price_color | default: '#E5E5E5' }}; --nvgd-tp-pad-v-m: {{ block.settings.padding_vertical_mobile | default: 12 }}px; --nvgd-tp-pad-h-m: {{ block.settings.padding_horizontal_mobile | default: 16 }}px; --nvgd-tp-label-size-m: {{ block.settings.label_font_size_mobile | default: 14 }}px; --nvgd-tp-value-size-m: {{ block.settings.price_font_size_mobile | default: 16 }}px;{% endcapture %}
+
+<div class="nvgd-total-price-wrapper" {{ block.shopify_attributes }}
+  data-base-price="{{ product.selected_or_first_available_variant.price }}"
+  data-variant-prices="{% for v in product.variants %}{{ v.id }}:{{ v.price }}{% unless forloop.last %},{% endunless %}{% endfor %}"
+  data-currency-symbol="{{ block.settings.currency_symbol | default: '€' }}"
+  data-currency-position="{{ block.settings.currency_position | default: 'after' }}"
+  data-sticky-price-id="sticky-atc-price-{{ section.id }}"
+  id="nvgd-total-price-wrapper"
+  style="{{ total_price_vars }}"
+>
+  <div class="nvgd-total-price-box">
+    <span class="nvgd-total-price-label">{{ block.settings.label | default: 'Total price:' }}</span>
+    <span class="nvgd-total-price-value" id="nvgd-total-price-value">
+      {%- assign price_in_money = product.selected_or_first_available_variant.price | money -%}
+      {{ price_in_money }}
+    </span>
+  </div>
+</div>
+
+{% stylesheet %}
+  .nvgd-total-price-wrapper {
+    margin: var(--nvgd-tp-margin-top) 0 var(--nvgd-tp-margin-bottom) 0;
+  }
+
+  .nvgd-total-price-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--nvgd-tp-pad-v) var(--nvgd-tp-pad-h);
+    border: var(--nvgd-tp-border-w) solid var(--nvgd-tp-border-color);
+    border-radius: var(--nvgd-tp-radius);
+    background-color: var(--nvgd-tp-bg);
+  }
+
+  .nvgd-total-price-label {
+    font-size: var(--nvgd-tp-label-size);
+    font-weight: var(--nvgd-tp-label-weight);
+    color: var(--nvgd-tp-label-color);
+  }
+
+  .nvgd-total-price-value {
+    font-size: var(--nvgd-tp-value-size);
+    font-weight: var(--nvgd-tp-value-weight);
+    color: var(--nvgd-tp-value-color);
+  }
+
+  @media (max-width: 768px) {
+    .nvgd-total-price-box {
+      padding: var(--nvgd-tp-pad-v-m, var(--nvgd-tp-pad-v)) var(--nvgd-tp-pad-h-m, var(--nvgd-tp-pad-h));
+    }
+
+    .nvgd-total-price-label {
+      font-size: var(--nvgd-tp-label-size-m, var(--nvgd-tp-label-size));
+    }
+
+    .nvgd-total-price-value {
+      font-size: var(--nvgd-tp-value-size-m, var(--nvgd-tp-value-size));
+    }
+  }
+{% endstylesheet %}
+
+<script src="{{ 'product-block-total-price.js' | asset_url }}" defer="defer"></script>

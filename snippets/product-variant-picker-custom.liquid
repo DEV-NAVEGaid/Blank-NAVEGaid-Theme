@@ -1,0 +1,581 @@
+{% comment %}
+  Renders hybrid product variant-picker with per-option picker types:
+  - "card"     → visual card layout with images
+  - "dropdown" → select dropdown
+  - "button"   → pills / button swatches (default)
+
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} Id of the product form to which the variant picker is associated.
+
+  Block settings used:
+  - block.settings.card_options:     comma-separated option names rendered as cards  (e.g. "Color, Farbe")
+  - block.settings.dropdown_options: comma-separated option names rendered as dropdowns (e.g. "Material")
+  - Everything else renders as pills/buttons.
+
+  Usage:
+  {% render 'product-variant-picker-custom', product: product, block: block, product_form_id: product_form_id %}
+{% endcomment %}
+
+{%- unless product.has_only_default_variant -%}
+  {%- liquid
+    # Build lowercase lists for matching
+    assign card_options_raw = block.settings.card_options | default: '' | downcase | split: ','
+    assign dropdown_options_raw = block.settings.dropdown_options | default: '' | downcase | split: ','
+
+    assign card_options_clean = ''
+    for item in card_options_raw
+      assign stripped = item | strip
+      if stripped != ''
+        if card_options_clean != ''
+          assign card_options_clean = card_options_clean | append: ',' | append: stripped
+        else
+          assign card_options_clean = stripped
+        endif
+      endif
+    endfor
+
+    assign dropdown_options_clean = ''
+    for item in dropdown_options_raw
+      assign stripped = item | strip
+      if stripped != ''
+        if dropdown_options_clean != ''
+          assign dropdown_options_clean = dropdown_options_clean | append: ',' | append: stripped
+        else
+          assign dropdown_options_clean = stripped
+        endif
+      endif
+    endfor
+
+    assign card_list = card_options_clean | split: ','
+    assign dropdown_list = dropdown_options_clean | split: ','
+    assign use_swatches = false
+    if block.settings.picker_style == 'swatches'
+      assign use_swatches = true
+    endif
+  -%}
+
+  <nvgd-variant-picker
+    id="variant-selects-{{ section.id }}"
+    class="nvgd-variant-selects"
+    data-section="{{ section.id }}"
+    data-url="{{ product.url }}"
+    data-update-url="true"
+    {{ block.shopify_attributes }}
+  >
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign option_index = forloop.index0
+        assign option_name_lower = option.name | downcase | strip
+
+        # Determine picker type for this option
+        assign picker_type = 'button'
+        for card_name in card_list
+          if option_name_lower == card_name
+            assign picker_type = 'card'
+            break
+          endif
+        endfor
+        if picker_type == 'button'
+          for dd_name in dropdown_list
+            if option_name_lower == dd_name
+              assign picker_type = 'dropdown'
+              break
+            endif
+          endfor
+        endif
+      -%}
+
+      <div class="nvgd-variant-option-wrapper" data-picker-type="{{ picker_type }}">
+
+        {%- comment -%}--- HEADER (shown for all types) ---{%- endcomment -%}
+        <div class="nvgd-variant-option-header">
+          <span class="nvgd-option-label">{{ option.name }}:</span>
+          <span class="nvgd-option-selected" data-selected-value>{{ option.selected_value }}</span>
+        </div>
+
+        {%- case picker_type -%}
+          {%- comment -%}
+            ═══════════════════════════════════════
+            CARD PICKER
+            ═══════════════════════════════════════
+          {%- endcomment -%}
+          {%- when 'card' -%}
+            <fieldset class="nvgd-variant-cards-container" style="border:none;margin:0;padding:0;">
+              {%- for value in option.values -%}
+                {%- liquid
+                  assign value_name = value.name | default: value
+                  assign option_disabled = true
+                  assign variant_for_value = false
+
+                  for variant in product.variants
+                    if variant.options[option_index] == value_name
+                      if variant_for_value == false
+                        assign variant_for_value = variant
+                      endif
+                      if variant.available
+                        assign option_disabled = false
+                      endif
+                    endif
+                  endfor
+
+                  if value.available == true
+                    assign option_disabled = false
+                  elsif value.available == false
+                    assign option_disabled = true
+                  endif
+
+                  assign is_selected = false
+                  if value.selected or option.selected_value == value_name
+                    assign is_selected = true
+                  endif
+                -%}
+                {% assign variant_label_id = 'nvgd-card-' | append: section.id | append: '-' | append: option.name | handleize | append: '-' | append: forloop.index0 %}
+
+                <label for="{{ variant_label_id }}" class="nvgd-variant-card {% if is_selected %}nvgd-variant-card--selected{% endif %} {% if option_disabled %}nvgd-variant-card--disabled{% endif %}">
+                  <input
+                    type="radio"
+                    id="{{ variant_label_id }}"
+                    name="options[{{ option.name | escape }}]"
+                    value="{{ value_name | escape }}"
+                    form="{{ product_form_id }}"
+                    {% if is_selected %}checked{% endif %}
+                    {% if option_disabled %}disabled{% endif %}
+                    class="nvgd-variant-input"
+                    data-variant-option
+                    data-option-position="{{ option.position }}"
+                    data-picker-type="card"
+                    data-product-url="{{ value.product_url }}"
+                    data-option-value-id="{{ value.id }}"
+                  >
+                  <div class="nvgd-card-content">
+                    {%- if variant_for_value and variant_for_value.featured_image -%}
+                      <div class="nvgd-card-image">
+                        <img
+                          src="{{ variant_for_value.featured_image | image_url: width: 300 }}"
+                          alt="{{ variant_for_value.featured_image.alt | escape }}"
+                          loading="lazy"
+                          width="300"
+                          height="300"
+                        >
+                      </div>
+                    {%- elsif product.featured_image -%}
+                      <div class="nvgd-card-image">
+                        <img
+                          src="{{ product.featured_image | image_url: width: 300 }}"
+                          alt="{{ product.featured_image.alt | escape }}"
+                          loading="lazy"
+                          width="300"
+                          height="300"
+                        >
+                      </div>
+                    {%- endif -%}
+                    <div class="nvgd-card-text">
+                      <span class="nvgd-card-title">{{ value_name | escape }}</span>
+                      {% if option_disabled %}
+                        <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </label>
+              {%- endfor -%}
+            </fieldset>
+
+          {%- comment -%}
+            ═══════════════════════════════════════
+            DROPDOWN PICKER
+            ═══════════════════════════════════════
+          {%- endcomment -%}
+          {%- when 'dropdown' -%}
+            <div class="nvgd-variant-dropdown-wrapper product-form__input">
+              <select
+                id="Option-{{ section.id }}-{{ option_index }}"
+                name="options[{{ option.name | escape }}]"
+                form="{{ product_form_id }}"
+                class="nvgd-variant-select select__select"
+                data-variant-option
+                data-option-position="{{ option.position }}"
+                data-picker-type="dropdown"
+              >
+                {%- for value in option.values -%}
+                  {%- liquid
+                    assign value_name = value.name | default: value
+                    assign option_disabled = true
+                    for variant in product.variants
+                      if variant.options[option_index] == value_name and variant.available
+                        assign option_disabled = false
+                      endif
+                    endfor
+                    if value.available == true
+                      assign option_disabled = false
+                    elsif value.available == false
+                      assign option_disabled = true
+                    endif
+
+                    assign is_selected = false
+                    if value.selected or option.selected_value == value_name
+                      assign is_selected = true
+                    endif
+                  -%}
+                  <option
+                    id="nvgd-option-{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+                    data-product-url="{{ value.product_url }}"
+                    data-option-value-id="{{ value.id }}"
+                    value="{{ value_name | escape }}"
+                    {% if is_selected %}selected{% endif %}
+                    {% if option_disabled %}disabled{% endif %}
+                  >
+                    {%- if option_disabled -%}{{ value_name }} - {{ 'products.product.variant_sold_out_or_unavailable' | t }}{%- else -%}{{ value_name }}{%- endif -%}
+                  </option>
+                {%- endfor -%}
+              </select>
+              <span class="svg-wrapper">
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </span>
+            </div>
+
+          {%- comment -%}
+            ═══════════════════════════════════════
+            PILLS / BUTTON PICKER (default)
+            ═══════════════════════════════════════
+          {%- endcomment -%}
+          {%- when 'button' -%}
+            <fieldset class="nvgd-variant-pills-container js product-form__input" style="border:none;margin:0;padding:0;">
+              {%- for value in option.values -%}
+                {%- liquid
+                  assign value_name = value.name | default: value
+                  assign option_disabled = true
+                  for variant in product.variants
+                    if variant.options[option_index] == value_name and variant.available
+                      assign option_disabled = false
+                    endif
+                  endfor
+                  if value.available == true
+                    assign option_disabled = false
+                  elsif value.available == false
+                    assign option_disabled = true
+                  endif
+
+                  assign is_selected = false
+                  if value.selected or option.selected_value == value_name
+                    assign is_selected = true
+                  endif
+
+                  assign variant_label_id = 'nvgd-pill-' | append: section.id | append: '-' | append: option.name | handleize | append: '-' | append: forloop.index0
+                  assign swatch_name = value_name | downcase | strip
+                  assign swatch_color = '#F5F5F5'
+                  assign swatch_image = ''
+                  if value.swatch
+                    if value.swatch.image
+                      assign swatch_image = value.swatch.image | image_url: width: 80
+                    elsif value.swatch.color
+                      assign swatch_color = 'rgb(' | append: value.swatch.color.rgb | append: ')'
+                    endif
+                  endif
+                  if swatch_image == blank and swatch_color == '#F5F5F5'
+                    case swatch_name
+                      when 'black'
+                        assign swatch_color = '#111111'
+                      when 'white'
+                        assign swatch_color = '#FFFFFF'
+                      when 'red'
+                        assign swatch_color = '#111111'
+                      when 'orange'
+                        assign swatch_color = '#111111'
+                      when 'yellow'
+                        assign swatch_color = '#F5F5F5'
+                      when 'green'
+                        assign swatch_color = '#111111'
+                      when 'blue'
+                        assign swatch_color = '#111111'
+                      when 'purple'
+                        assign swatch_color = '#111111'
+                      when 'pink'
+                        assign swatch_color = '#111111'
+                      when 'brown'
+                        assign swatch_color = '#111111'
+                      when 'gray', 'grey'
+                        assign swatch_color = '#F5F5F5'
+                      when 'beige'
+                        assign swatch_color = '#F5F5F5'
+                      when 'navy'
+                        assign swatch_color = '#111111'
+                    endcase
+                  endif
+                -%}
+
+                <input
+                  type="radio"
+                  name="options[{{ option.name | escape }}]"
+                  value="{{ value_name | escape }}"
+                  form="{{ product_form_id }}"
+                  id="{{ variant_label_id }}"
+                  {% if is_selected %}checked{% endif %}
+                  {% if option_disabled %}disabled{% endif %}
+                  class="nvgd-variant-input nvgd-pill-input"
+                  data-variant-option
+                  data-option-position="{{ option.position }}"
+                  data-picker-type="button"
+                  data-product-url="{{ value.product_url }}"
+                  data-option-value-id="{{ value.id }}"
+                >
+                <label
+                  for="{{ variant_label_id }}"
+                  class="nvgd-pill-label {% if use_swatches %}nvgd-swatch-label{% endif %} {% if option_disabled %}nvgd-pill-label--disabled{% endif %}"
+                  {% if use_swatches %}
+                    title="{{ value_name | escape }}"
+                    style="--swatch-color: {{ swatch_color }};{% if swatch_image != blank %} --swatch-image: url('{{ swatch_image }}');{% endif %}"
+                  {% endif %}
+                >
+                  {% if use_swatches %}
+                    <span class="nvgd-swatch-dot" aria-hidden="true"></span>
+                    <span class="visually-hidden">{{ value_name | escape }}</span>
+                  {% else %}
+                    {{ value_name | escape }}
+                  {% endif %}
+                  {% if option_disabled %}
+                    <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+                  {% endif %}
+                </label>
+              {%- endfor -%}
+            </fieldset>
+
+        {%- endcase -%}
+      </div>
+    {%- endfor -%}
+
+    <script type="application/json" data-variant-data>
+      {{ product.variants | json }}
+    </script>
+    <script type="application/json" data-selected-variant>
+      {{ product.selected_or_first_available_variant | json }}
+    </script>
+  </nvgd-variant-picker>
+
+  {%- comment -%}
+    ═══════════════════════════════════════
+    STYLES
+    ═══════════════════════════════════════
+  {%- endcomment -%}
+{%- endunless -%}
+{% stylesheet %}
+/* ── Shared ────────────────────────────── */
+.nvgd-variant-selects {
+  display: block;
+}
+
+.nvgd-variant-selects .nvgd-variant-option-wrapper {
+  margin-bottom: 1.2rem;
+}
+
+.nvgd-variant-selects .nvgd-variant-option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.nvgd-variant-selects .nvgd-option-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nvgd-variant-selects .nvgd-option-selected {
+  /*font-size: 14px;
+  color: #666;*/
+  display: none;
+}
+
+/* ── Card picker ──────────────────────── */
+.nvgd-variant-selects .nvgd-variant-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.nvgd-variant-selects .nvgd-variant-card {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.nvgd-variant-selects .nvgd-variant-card:hover {
+  border-color: #ccc;
+}
+
+.nvgd-variant-selects .nvgd-variant-card--selected {
+  border-color: #000;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.nvgd-variant-selects .nvgd-variant-card--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nvgd-variant-selects .nvgd-variant-card .nvgd-variant-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.nvgd-variant-selects .nvgd-variant-card .nvgd-variant-input:focus-visible + .nvgd-card-content {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.nvgd-variant-selects .nvgd-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+}
+
+.nvgd-variant-selects .nvgd-card-image {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.nvgd-variant-selects .nvgd-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.nvgd-variant-selects .nvgd-card-text {
+  text-align: center;
+}
+
+.nvgd-variant-selects .nvgd-card-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* ── Pill / Button picker ─────────────── */
+.nvgd-variant-selects .nvgd-variant-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nvgd-variant-selects .nvgd-pill-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.nvgd-variant-selects .nvgd-pill-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #E5E5E5;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+  user-select: none;
+  min-width: 48px;
+}
+
+.nvgd-variant-selects .nvgd-pill-label:hover {
+  border-color: #aaa;
+}
+
+.nvgd-variant-selects .nvgd-pill-input:checked + .nvgd-pill-label {
+  border-color: #000;
+  background-color: #000;
+  color: #fff;
+}
+.nvgd-variant-selects .nvgd-swatch-label {
+  width: 2.8rem;
+  min-width: 2.8rem;
+  height: 2.8rem;
+  padding: 0;
+  border-radius: 50%;
+  border-color: transparent;
+  background-color: var(--swatch-color, #F5F5F5);
+  background-image: var(--swatch-image, none);
+  background-size: cover;
+  background-position: center;
+}
+
+.nvgd-variant-selects .nvgd-swatch-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.nvgd-variant-selects .nvgd-pill-input:checked + .nvgd-swatch-label {
+  background-color: var(--swatch-color, #F5F5F5);
+  background-image: var(--swatch-image, none);
+  color: inherit;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor;
+}
+
+.nvgd-variant-selects .nvgd-pill-input:focus-visible + .nvgd-pill-label {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.nvgd-variant-selects .nvgd-pill-label--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.nvgd-variant-selects .nvgd-pill-input:disabled + .nvgd-pill-label {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* ── Dropdown picker ──────────────────── */
+.nvgd-variant-selects .nvgd-variant-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.nvgd-variant-selects .nvgd-variant-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.nvgd-variant-selects .nvgd-variant-select:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.nvgd-variant-selects .nvgd-variant-dropdown-wrapper > .svg-wrapper {
+  position: absolute;
+  right: 1rem;
+  pointer-events: none;
+  width: 12px;
+  height: 12px;
+}
+{% endstylesheet %}

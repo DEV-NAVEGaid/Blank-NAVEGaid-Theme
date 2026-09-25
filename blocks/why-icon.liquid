@@ -1,0 +1,238 @@
+{%- style -%}
+  .why-icon-{{ block.id }} {
+    display: flex;
+    justify-content: {% if block.settings.align == 'center' %}center{% elsif block.settings.align == 'right' %}flex-end{% else %}flex-start{% endif %};
+    color: {{ block.settings.color }};
+    margin-bottom: {{ block.settings.margin_bottom }}px;
+  }
+
+  .why-icon-{{ block.id }} svg {
+    width: {{ block.settings.size }}px;
+    height: {{ block.settings.size }}px;
+    display: block;
+    object-fit: contain;
+  }
+
+  .why-icon-{{ block.id }} img {
+    width: {{ block.settings.size }}px;
+    height: {{ block.settings.size }}px;
+    display: block;
+    object-fit: contain;
+  }
+
+  @media screen and (max-width: 749px) {
+    .why-icon-{{ block.id }} svg,
+    .why-icon-{{ block.id }} img {
+      width: {{ block.settings.size_mobile }}px;
+      height: {{ block.settings.size_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="why-choose__block why-icon-{{ block.id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.custom_image != blank %}
+    <img
+      src="{{ block.settings.custom_image | image_url: width: 240 }}"
+      srcset="
+        {{ block.settings.custom_image | image_url: width: 80 }} 80w,
+        {{ block.settings.custom_image | image_url: width: 160 }} 160w,
+        {{ block.settings.custom_image | image_url: width: 240 }} 240w
+      "
+      sizes="{{ block.settings.size }}px"
+      alt="{{ block.settings.custom_image.alt | default: 'Icon' | escape }}"
+      loading="lazy"
+      width="{{ block.settings.custom_image.width }}"
+      height="{{ block.settings.custom_image.height }}"
+    >
+  {% else %}
+    {% case block.settings.icon %}
+      {% when 'radiance' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3c3.5 4.5 6 7.2 6 10.2a6 6 0 1 1-12 0C6 10.2 8.5 7.5 12 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 1.5v2M6 4.2 7.4 6M18 4.2 16.6 6M3.5 9h2M18.5 9h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      {% when 'botanical' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3.5c3.2 4.2 5.5 6.7 5.5 9.5a5.5 5.5 0 1 1-11 0c0-2.8 2.3-5.3 5.5-9.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9.5 11c0-2.5 2.5-4.2 5-4.2-.3 2.6-2.2 4.4-5 4.2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9.2 14.6a3 3 0 0 0 5.6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      {% when 'cruelty-free' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="7.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 1.5v2.5M12 20v2.5M1.5 12H4M20 12h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="m8.8 12 2.2 2.2 4.2-4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      {% when 'ethical' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="m12 2.5 2.6 5.4 5.9.9-4.3 4.2 1 5.9L12 16.4l-5.2 2.5 1-5.9-4.3-4.2 5.9-.9L12 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4 21.5h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      {% when 'sparkle' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 3l2 7 7 2-7 2-2 7-2-7-7-2 7-2 2-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      {% when 'shield' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 2.5l7.5 3V11c0 5-3.2 8.5-7.5 10.5C7.7 19.5 4.5 16 4.5 11V5.5l7.5-3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="m8.8 11.5 2.2 2.2 4.2-4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      {% when 'heart' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 20.5C6 16 3.5 12.8 3.5 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8.5 2.5c0 3.3-2.5 6.5-8.5 11z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      {% when 'plant' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 21.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 11c-3 0-5-2.2-5-5 3 0 5 2.2 5 5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 15c3 0 5-2.2 5-5-3 0-5 2.2-5 5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4.5 21.5h15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      {% when 'award' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="9" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M9 13.5 7 22l5-2.5L17 22l-2-8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      {% when 'sun' %}
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    {% endcase %}
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Why icon",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Custom image icon"
+    },
+    {
+      "type": "image_picker",
+      "id": "custom_image",
+      "label": "Custom icon image",
+      "info": "Upload an image/icon (PNG, SVG, JPG, WebP). Overrides preset icon below."
+    },
+    {
+      "type": "header",
+      "content": "Preset icon"
+    },
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "Preset icon",
+      "options": [
+        {
+          "value": "radiance",
+          "label": "Droplet with rays"
+        },
+        {
+          "value": "botanical",
+          "label": "Droplet with leaf"
+        },
+        {
+          "value": "cruelty-free",
+          "label": "Cruelty Free (checked circle)"
+        },
+        {
+          "value": "ethical",
+          "label": "Ethical (star)"
+        },
+        {
+          "value": "sparkle",
+          "label": "Sparkle"
+        },
+        {
+          "value": "shield",
+          "label": "Shield"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        },
+        {
+          "value": "plant",
+          "label": "Plant"
+        },
+        {
+          "value": "award",
+          "label": "Award"
+        },
+        {
+          "value": "sun",
+          "label": "Sun"
+        }
+      ],
+      "default": "shield"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Icon color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "size",
+      "min": 20,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Size",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "size_mobile",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Size (mobile)",
+      "default": 32
+    },
+    {
+      "type": "select",
+      "id": "align",
+      "label": "Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Space below icon",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why icon"
+    }
+  ]
+}
+{% endschema %}

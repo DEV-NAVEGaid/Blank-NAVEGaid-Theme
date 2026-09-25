@@ -1,0 +1,61 @@
+{%- assign addon_product = block.settings.product -%}
+
+{%- if addon_product -%}
+  {%- if block.settings.help_text != blank -%}
+    {%- assign addon_help_text = block.settings.help_text -%}
+  {%- elsif addon_product.description != blank -%}
+    {%- assign addon_help_text = addon_product.description | strip_html | truncate: 200 -%}
+  {%- else -%}
+    {%- assign addon_help_text = '' -%}
+  {%- endif -%}
+
+  <div class="nvgd-addon-content-container" {{ block.shopify_attributes }}>
+    <div class="nvgd-addon-content">
+
+      <div class="nvgd-addon-checkbox">
+        <input
+          type="checkbox"
+          id="addon-{{ block.id }}"
+          name="addon-{{ addon_product.id }}"
+          value="{{ addon_product.selected_or_first_available_variant.id }}"
+          data-price="{{ addon_product.selected_or_first_available_variant.price | money_without_currency }}"
+          {% if block.settings.default_checked %}checked{% endif %}
+        >
+      </div>
+
+      <div class="nvgd-addon-image">
+        {%- if addon_product.featured_image -%}
+          <img src="{{ addon_product.featured_image | image_url: width: 160 }}" alt="{{ addon_product.title | escape }}" width="160" height="160" loading="lazy">
+        {%- else -%}
+          {% if request.design_mode %}{{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+        {%- endif -%}
+      </div>
+
+      <div class="nvgd-addon-details">
+        <div class="nvgd-addon-info">
+          <h3 class="nvgd-addon-product-title">{{ addon_product.title }}</h3>
+        </div>
+
+        <div class="nvgd-addon-price-section">
+          <span class="nvgd-addon-divider"></span>
+          <span class="nvgd-addon-price">{{ addon_product.selected_or_first_available_variant.price | money }}</span>
+          {%- if addon_help_text != blank -%}
+            <span class="nvgd-addon-help-wrapper">
+              <button
+                type="button"
+                class="nvgd-addon-help-btn"
+                aria-label="More information about {{ addon_product.title | escape }}"
+                aria-expanded="false"
+                onclick="this.parentElement.classList.toggle('is-active'); this.setAttribute('aria-expanded', this.parentElement.classList.contains('is-active'))"
+              >?</button>
+              <span class="nvgd-addon-help-tooltip" role="tooltip">
+                {{ addon_help_text | escape }}
+              </span>
+            </span>
+          {%- endif -%}
+        </div>
+      </div>
+
+    </div>
+  </div>
+{%- endif -%}

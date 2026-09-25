@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "blank": {
+      "type": "custom-liquid",
+      "settings": {},
+      "disabled": true
+    }
+  },
+  "order": [
+    "blank"
+  ]
+}

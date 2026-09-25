@@ -1,0 +1,797 @@
+{% comment %}
+  Card Alt Section
+  
+  A flexible two-column card layout with:
+  - Left side: Optional image + heading + text with highlight support
+  - Divider: Optional vertical divider between columns
+  - Right side: Image display
+  
+  Features:
+  - Configurable column widths and alignment
+  - Text highlighting with custom colors
+  - Responsive mobile layout
+  - Full padding and spacing controls
+{% endcomment %}
+
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+{% liquid
+  if section.settings.enable_global_spacing
+    assign ca_pt = settings.padding_vertical
+    assign ca_pb = settings.padding_vertical
+    assign ca_pl = settings.padding_horizontal
+    assign ca_pr = settings.padding_horizontal
+    assign ca_pt_m = ca_pt
+    assign ca_pb_m = ca_pb
+    assign ca_pl_m = ca_pl
+    assign ca_pr_m = ca_pr
+    assign ca_mv = settings.margin_vertical
+    assign ca_mh = settings.margin_horizontal
+  else
+    assign ca_pt = section.settings.section_padding_top
+    assign ca_pb = section.settings.section_padding_bottom
+    assign ca_pl = section.settings.section_padding_left
+    assign ca_pr = section.settings.section_padding_right
+    assign ca_pt_m = section.settings.section_padding_top_mobile
+    assign ca_pb_m = section.settings.section_padding_bottom_mobile
+    assign ca_pl_m = section.settings.section_padding_left_mobile
+    assign ca_pr_m = section.settings.section_padding_right_mobile
+    assign ca_mv = 0
+    assign ca_mh = 0
+  endif
+
+  if section.settings.left_text_align == 'center'
+    assign ca_limg_ml = 'auto'
+    assign ca_limg_mr = 'auto'
+  elsif section.settings.left_text_align == 'right'
+    assign ca_limg_ml = 'auto'
+    assign ca_limg_mr = '0'
+  else
+    assign ca_limg_ml = '0'
+    assign ca_limg_mr = '0'
+  endif
+
+  if section.settings.show_divider
+    assign ca_grid_cols = section.settings.left_column_width | append: '% minmax(20px, 60px) 1fr'
+  else
+    assign ca_grid_cols = section.settings.left_column_width | append: '% 1fr'
+  endif
+%}
+
+{{ 'section-card-alt.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --ca-pt: {{ ca_pt }}px;
+    --ca-pb: {{ ca_pb }}px;
+    --ca-pl: {{ ca_pl }}px;
+    --ca-pr: {{ ca_pr }}px;
+    --ca-pt-m: {{ ca_pt_m }}px;
+    --ca-pb-m: {{ ca_pb_m }}px;
+    --ca-pl-m: {{ ca_pl_m }}px;
+    --ca-pr-m: {{ ca_pr_m }}px;
+    --ca-mv: {{ ca_mv }}px;
+    --ca-mh: {{ ca_mh }}px;
+    --ca-wp-y: {{ section.settings.wrapper_padding_y }}px;
+    --ca-wp-x: {{ section.settings.wrapper_padding_x }}px;
+    --ca-wp-y-m: {{ section.settings.wrapper_padding_y_mobile }}px;
+    --ca-wp-x-m: {{ section.settings.wrapper_padding_x_mobile }}px;
+    --ca-bg: {{ section.settings.bg_color }};
+    --ca-radius: {{ section.settings.border_radius }}px;
+    --ca-radius-m: {{ section.settings.border_radius_mobile }}px;
+    --ca-pad-y: {{ section.settings.padding_y }}px;
+    --ca-pad-x: {{ section.settings.padding_x }}px;
+    --ca-pad-y-m: {{ section.settings.padding_y_mobile }}px;
+    --ca-pad-x-m: {{ section.settings.padding_x_mobile }}px;
+    --ca-width: {{ section.settings.card_width }}%;
+    --ca-width-m: {{ section.settings.card_width_mobile }}%;
+    --ca-cols: {{ ca_grid_cols }};
+    --ca-gap: {{ section.settings.gap }}px;
+    --ca-gap-m: {{ section.settings.gap_mobile }}px;
+    --ca-div-align: {{ section.settings.divider_align }};
+    --ca-div-w: {{ section.settings.divider_width }}px;
+    --ca-div-color: {{ section.settings.divider_color }};
+    --ca-left-align: {{ section.settings.left_text_align }};
+    --ca-limg-w: {{ section.settings.left_image_width }}%;
+    --ca-limg-radius: {{ section.settings.left_image_radius }}px;
+    --ca-limg-mb: {{ section.settings.left_image_spacing }}px;
+    --ca-limg-ml: {{ ca_limg_ml }};
+    --ca-limg-mr: {{ ca_limg_mr }};
+    --ca-h-weight: {{ section.settings.left_heading_weight }};
+    --ca-h-color: {{ section.settings.left_heading_color }};
+    --ca-h-mb: {{ section.settings.left_heading_margin }}px;
+    --ca-h-hl: {{ section.settings.heading_highlight_color }};
+    --ca-t-weight: {{ section.settings.left_text_weight }};
+    --ca-t-color: {{ section.settings.left_text_color }};
+    --ca-t-hl: {{ section.settings.text_highlight_color }};
+    --ca-r-justify: {{ section.settings.right_image_align }};
+    --ca-rimg-w: {{ section.settings.right_image_width }}%;
+    --ca-rimg-radius: {{ section.settings.right_image_radius }}px;
+  }
+{% endstyle %}
+
+<div
+  id="card-alt-{{ section.id }}"
+  class="card-alt-section-{{ section_id }} ca-section"
+  data-section-id="{{ section.id }}"
+>
+  <div class="card-alt-wrapper-{{ section_id }} ca-wrapper">
+    <div class="card-alt-container-{{ section_id }} ca-container">
+      
+      <!-- LEFT SIDE: Image + Text -->
+      <div class="card-alt-left-{{ section_id }} ca-left">
+        {% if section.settings.left_image != blank %}
+          <div class="card-alt-left-image-{{ section_id }} ca-left-image">
+            <img 
+              src="{{ section.settings.left_image | image_url: width: 600 }}" 
+              alt="{{ section.settings.left_heading | escape }}" 
+              loading="lazy"
+              width="{{ section.settings.left_image.width }}"
+              height="{{ section.settings.left_image.height }}"
+            >
+          </div>
+        {% endif %}
+
+        {% if section.settings.left_heading != blank %}
+          {% assign heading_text = section.settings.left_heading %}
+          {% if section.settings.heading_highlight_text != blank %}
+            {% assign highlight = section.settings.heading_highlight_text %}
+            {% assign replacement = '<span class="highlight-text">' | append: highlight | append: '</span>' %}
+            {% assign heading_text = heading_text | replace_first: highlight, replacement %}
+          {% endif %}
+          <{{ section.settings.left_heading_tag }} class="card-alt-left-heading-{{ section_id }} ca-left-heading">
+            {{ heading_text }}
+          </{{ section.settings.left_heading_tag }}>
+        {% endif %}
+
+        {% if section.settings.left_text != blank %}
+          {% assign text_content = section.settings.left_text %}
+          {% if section.settings.text_highlight_text != blank %}
+            {% assign text_highlight = section.settings.text_highlight_text %}
+            {% assign replacement = '<span class="highlight-text">' | append: text_highlight | append: '</span>' %}
+            {% assign text_content = text_content | replace_first: text_highlight, replacement %}
+          {% endif %}
+          <{{ section.settings.left_text_tag }} class="card-alt-left-text-{{ section_id }} ca-left-text">
+            {{ text_content | newline_to_br }}
+          </{{ section.settings.left_text_tag }}>
+        {% endif %}
+      </div>
+
+      <!-- DIVIDER -->
+      {% if section.settings.show_divider %}
+        <div class="card-alt-divider-container-{{ section_id }} ca-divider-container">
+          <div class="card-alt-divider-{{ section_id }} ca-divider"></div>
+        </div>
+      {% endif %}
+
+      <!-- RIGHT SIDE: Image Only -->
+      <div class="card-alt-right-{{ section_id }} ca-right">
+        {% if section.settings.right_image != blank %}
+          <div class="card-alt-right-image-{{ section_id }} ca-right-image">
+            <img 
+              src="{{ section.settings.right_image | image_url: width: 1000 }}" 
+              alt="{{ section.settings.right_image.alt | default: '' | escape }}" 
+              loading="lazy"
+              width="{{ section.settings.right_image.width }}"
+              height="{{ section.settings.right_image.height }}"
+            >
+          </div>
+        {% else %}
+          <div class="card-alt-right-image-{{ section_id }} card-alt-placeholder">
+            {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+{% schema %}
+{
+  "name": "Alternate card",
+  "tag": "section",
+  "class": "card-alt-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Left column image"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image",
+      "label": "Left image"
+    },
+    {
+      "type": "range",
+      "id": "left_image_width",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%",
+      "label": "Left image width"
+    },
+    {
+      "type": "range",
+      "id": "left_image_radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "default": 0,
+      "unit": "px",
+      "label": "Left image border radius"
+    },
+    {
+      "type": "range",
+      "id": "left_image_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Space below left image"
+    },
+    {
+      "type": "header",
+      "content": "Left column heading"
+    },
+    {
+      "type": "text",
+      "id": "left_heading",
+      "label": "Heading text",
+      "default": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "left_heading_tag",
+      "label": "Heading tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "p",
+          "label": "Paragraph"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "left_heading_weight",
+      "label": "Heading font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "left_heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "left_heading_margin",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Heading margin bottom"
+    },
+    {
+      "type": "text",
+      "id": "heading_highlight_text",
+      "label": "Heading highlight text",
+      "info": "Enter text from heading to highlight with a different color"
+    },
+    {
+      "type": "color",
+      "id": "heading_highlight_color",
+      "label": "Heading highlight color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "header",
+      "content": "Left column text"
+    },
+    {
+      "type": "textarea",
+      "id": "left_text",
+      "label": "Text content",
+      "default": "Text"
+    },
+    {
+      "type": "select",
+      "id": "left_text_tag",
+      "label": "Text tag",
+      "options": [
+        {
+          "value": "p",
+          "label": "Paragraph"
+        },
+        {
+          "value": "span",
+          "label": "Span"
+        },
+        {
+          "value": "div",
+          "label": "Div"
+        }
+      ],
+      "default": "p"
+    },
+    {
+      "type": "select",
+      "id": "left_text_weight",
+      "label": "Text font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "left_text_color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "text",
+      "id": "text_highlight_text",
+      "label": "Text highlight text",
+      "info": "Enter text to highlight with a different color"
+    },
+    {
+      "type": "color",
+      "id": "text_highlight_color",
+      "label": "Text highlight color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "select",
+      "id": "left_text_align",
+      "label": "Left column text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Divider"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show divider",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 2,
+      "unit": "px",
+      "label": "Divider width"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "select",
+      "id": "divider_align",
+      "label": "Divider alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Right column image"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Right image"
+    },
+    {
+      "type": "range",
+      "id": "right_image_width",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%",
+      "label": "Right image width"
+    },
+    {
+      "type": "range",
+      "id": "right_image_radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "default": 0,
+      "unit": "px",
+      "label": "Right image border radius"
+    },
+    {
+      "type": "select",
+      "id": "right_image_align",
+      "label": "Right image alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Card layout"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%",
+      "label": "Card width (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "card_width_mobile",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "unit": "%",
+      "label": "Card width (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "left_column_width",
+      "min": 20,
+      "max": 70,
+      "step": 5,
+      "default": 40,
+      "unit": "%",
+      "label": "Left column width"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Column gap (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Column gap (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "default": 0,
+      "unit": "px",
+      "label": "Border radius (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "border_radius_mobile",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "default": 0,
+      "unit": "px",
+      "label": "Border radius (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Card padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_y",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Padding vertical (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Padding horizontal (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding vertical (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Padding horizontal (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Wrapper padding"
+    },
+    {
+      "type": "range",
+      "id": "wrapper_padding_y",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Wrapper padding vertical (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "wrapper_padding_x",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Wrapper padding horizontal (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "wrapper_padding_y_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Wrapper padding vertical (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "wrapper_padding_x_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Wrapper padding horizontal (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "label": "Use global spacing",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Section padding top (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Section padding bottom (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_left",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Section padding left (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_right",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Section padding right (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Section padding top (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Section padding bottom (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_left_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Section padding left (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_right_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Section padding right (mobile)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Alternate card",
+      "settings": {
+        "left_heading": "Heading",
+        "left_text": "Text",
+        "show_divider": true,
+        "bg_color": "#FFFFFF",
+        "border_radius": 12
+      }
+    }
+  ]
+}
+{% endschema %}

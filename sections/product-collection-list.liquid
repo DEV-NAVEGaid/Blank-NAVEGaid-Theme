@@ -1,0 +1,1401 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Product Collection List Section
+  
+  TWO DISTINCT MODES:
+  1. SERVER-SIDE MODE: On collection template pages
+     - Uses Shopify Search & Discovery filters (collection.filters)
+     - Form-based filtering with page reload
+     - URL parameters reflect active filters
+     - No JavaScript filtering logic
+     
+  2. CLIENT-SIDE MODE: On non-collection pages with selected collection
+     - Uses JavaScript to hide/show products
+     - No page reload
+     - Filters via data attributes
+     
+  BLOCKS:
+  - Heading: Configurable H1-H6 or paragraph styles
+  - Text: Rich text content with configurable styles
+  - FAQ: Collapsible accordion rows
+{% endcomment %}
+
+{% liquid
+  # Determine mode based on template type
+  if template.name == 'collection' and collection
+    assign col = collection
+    assign filtering_mode = 'server'
+  elsif section.settings.collection != blank
+    assign col = collections[section.settings.collection]
+    assign filtering_mode = 'client'
+  else
+    assign col = null
+    assign filtering_mode = 'none'
+  endif
+  
+  assign filter_type = section.settings.filter_type
+  assign side_by_side = false
+  if filter_type == 'side_by_side'
+    assign side_by_side = true
+    assign filter_type = 'horizontal'
+  endif
+%}
+
+{% liquid
+  # ONE pass over the collection products accumulating filter counts (replaces
+  # the O(N) availability loop and O(N x types)/O(N x vendors) counting loops)
+  assign pcl_in_stock = 0
+  assign pcl_out_stock = 0
+  assign pcl_type_parts = ''
+  assign pcl_vendor_parts = ''
+  if filtering_mode == 'client' and col
+    for product in col.products
+      if product.available
+        assign pcl_in_stock = pcl_in_stock | plus: 1
+      else
+        assign pcl_out_stock = pcl_out_stock | plus: 1
+      endif
+      assign pcl_type_parts = pcl_type_parts | append: product.type | append: '||'
+      assign pcl_vendor_parts = pcl_vendor_parts | append: product.vendor | append: '||'
+    endfor
+  endif
+%}
+
+{{ 'section-product-collection-list.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --pcl-mv: {{ settings.margin_vertical }}px;
+    --pcl-mh: {{ settings.margin_horizontal }}px;
+    --pcl-pt: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px{% else %}{{ section.settings.padding_top }}px{% endif %};
+    --pcl-pb: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}px{% else %}{{ section.settings.padding_bottom }}px{% endif %};
+    --pcl-pl: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_left }}px{% endif %};
+    --pcl-pr: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal }}px{% else %}{{ section.settings.padding_right }}px{% endif %};
+    --pcl-pt-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px{% else %}{{ section.settings.padding_top_mobile }}px{% endif %};
+    --pcl-pb-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}px{% else %}{{ section.settings.padding_bottom_mobile }}px{% endif %};
+    --pcl-pl-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_left_mobile }}px{% endif %};
+    --pcl-pr-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal_mobile }}px{% else %}{{ section.settings.padding_right_mobile }}px{% endif %};
+    --pcl-outer-max: {% if section.settings.section_width == 'full' %}100%{% else %}var(--page-width, 1200px){% endif %};
+    --pcl-outer-margin: {% if section.settings.section_width == 'full' %}0{% else %}0 auto{% endif %};
+    --pcl-outer-px: {% if section.settings.section_width == 'full' %}0px{% else %}var(--page-gutter, 20px){% endif %};
+    --pcl-inner-max: {% if section.settings.content_width == 'full' %}100%{% else %}var(--page-width, 1200px){% endif %};
+    --pcl-inner-margin: {% if section.settings.content_width == 'full' %}0{% else %}0 auto{% endif %};
+    --cb-faq-border-color: {{ section.settings.faq_border_color }};
+    --cb-faq-pad-y: {{ section.settings.faq_padding_vertical }}px;
+    --cb-faq-pad-y-m: {{ section.settings.faq_padding_vertical_mobile }}px;
+    --cb-faq-q-size: {{ section.settings.faq_question_font_size_desktop }}px;
+    --cb-faq-q-size-m: {{ section.settings.faq_question_font_size_mobile }}px;
+    --cb-faq-q-weight: {{ section.settings.faq_question_font_weight }};
+    --cb-faq-q-color: {{ section.settings.faq_question_color }};
+    --cb-faq-a-size: {{ section.settings.faq_answer_font_size_desktop }}px;
+    --cb-faq-a-size-m: {{ section.settings.faq_answer_font_size_mobile }}px;
+    --cb-faq-a-weight: {{ section.settings.faq_answer_font_weight }};
+    --cb-faq-a-color: {{ section.settings.faq_answer_color }};
+    --cb-faq-arrow-size: {{ section.settings.faq_arrow_size }}px;
+    --cb-faq-arrow-size-m: {{ section.settings.faq_arrow_size_mobile }}px;
+    --cb-faq-arrow-color: {{ section.settings.faq_arrow_color }};
+    --cb-arrow-color: {{ section.settings.faq_arrow_color }};
+  }
+{% endstyle %}
+
+
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
+{{ 'component-rating.css' | asset_url | stylesheet_tag }}
+
+<div
+  id="product-collection-{{ section.id }}"
+  class="product-collection-{{ section.id }} section-{{ section.id }}-spacing nvgd-section-surface collection-navigation pcl-section pcl-spacing{% if side_by_side %} collection-navigation--side-by-side{% endif %}{% if section.settings.show_collection_images == false %} collection-navigation--text{% endif %}"
+  data-section-id="{{ section.id }}"
+  data-filter-type="{{ filter_type }}"
+  data-filtering-mode="{{ filtering_mode }}"
+  data-faq-behavior="{{ section.settings.faq_collapse_behavior }}"
+  style="--collection-card-corner-radius: {{ section.settings.card_image_border_radius }}px;"
+>
+  <div class="product-collection-{{ section.id }}__outer pcl-outer">
+    <div class="product-collection-{{ section.id }}__inner pcl-inner">
+      
+      {% if col %}
+        
+        <div class="collection-layout collection-layout--{{ filter_type }}">
+          
+          {% capture collection_filters %}
+          {% if section.settings.enable_filtering %}
+            <!-- ============================================== -->
+            <!-- FILTER SIDEBAR                                 -->
+            <!-- ============================================== -->
+            <aside class="collection-sidebar {% if filter_type == 'vertical' or filter_type == 'horizontal' %}always-visible{% endif %}" id="collectionSidebar-{{ section.id }}">
+              
+              <div class="filter-header">
+                <div class="filter-header-left">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                  <span class="filter-header-title">Filter</span>
+                  <span class="filter-results-count"><span id="resultsCount-{{ section.id }}">{{ col.products_count }}</span> Results</span>
+                </div>
+                <button type="button" class="filter-close-btn" id="filterCloseBtn-{{ section.id }}" aria-label="Close filters">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+
+              {% comment %} ============================== {% endcomment %}
+              {% comment %} SERVER-SIDE FILTERING (FORM)   {% endcomment %}
+              {% comment %} ============================== {% endcomment %}
+              {% if filtering_mode == 'server' %}
+                <form id="filterForm-{{ section.id }}" class="filter-form" action="{{ col.url }}" method="get">
+                  
+                  {% comment %} Preserve sort parameter {% endcomment %}
+                  {% if col.sort_by != col.default_sort_by %}
+                    <input type="hidden" name="sort_by" value="{{ col.sort_by }}">
+                  {% endif %}
+                  
+                  <div class="filter-content">
+                    {% for filter in col.filters %}
+                      <div class="filter-group">
+                        <button type="button" class="filter-group-toggle {% if filter.active_values.size > 0 %}active{% endif %}" data-target="filter-{{ filter.param_name | handleize }}-{{ section.id }}" aria-expanded="{% if filter.active_values.size > 0 %}true{% else %}false{% endif %}" aria-controls="filter-{{ filter.param_name | handleize }}-{{ section.id }}">
+                          <span>{{ filter.label }}</span>
+                          <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </button>
+                        
+                        <div class="filter-group-content {% if filter.active_values.size > 0 %}open{% endif %}" id="filter-{{ filter.param_name | handleize }}-{{ section.id }}">
+                          {% case filter.type %}
+                            
+                            {% when 'list', 'boolean' %}
+                              <ul class="filter-list">
+                                {% for value in filter.values %}
+                                  <li class="filter-list-item">
+                                    <label class="filter-checkbox {% if value.count == 0 and value.active == false %}filter-checkbox--disabled{% endif %}">
+                                      <input 
+                                        type="checkbox"
+                                        name="{{ value.param_name }}"
+                                        value="{{ value.value }}"
+                                        {% if value.active %}checked{% endif %}
+                                        {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                                        class="filter-checkbox-input"
+                                        onchange="this.form.submit()"
+                                      >
+                                      <span class="checkbox-custom"></span>
+                                      <span class="checkbox-label">
+                                        {{ value.label }}
+                                        <span class="filter-value-count">({{ value.count }})</span>
+                                      </span>
+                                    </label>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+
+                            {% when 'price_range' %}
+                              <div class="price-range-filter">
+                                {% liquid
+                                  assign min_value = filter.min_value.value | default: 0 | divided_by: 100.0
+                                  assign max_value = filter.max_value.value | default: filter.range_max | divided_by: 100.0
+                                  assign range_max = filter.range_max | divided_by: 100.0
+                                %}
+                                <div class="price-inputs">
+                                  <div class="price-input-group">
+                                    <span class="price-currency">{{ cart.currency.symbol }}</span>
+                                    <input 
+                                      type="number"
+                                      name="{{ filter.min_value.param_name }}"
+                                      id="priceMin-{{ section.id }}"
+                                      placeholder="Von"
+                                      {% if filter.min_value.value %}value="{{ min_value | ceil }}"{% endif %}
+                                      min="0"
+                                      max="{{ range_max | ceil }}"
+                                      class="price-input"
+                                    >
+                                  </div>
+                                  <span class="price-separator">-</span>
+                                  <div class="price-input-group">
+                                    <span class="price-currency">{{ cart.currency.symbol }}</span>
+                                    <input 
+                                      type="number"
+                                      name="{{ filter.max_value.param_name }}"
+                                      id="priceMax-{{ section.id }}"
+                                      placeholder="Bis"
+                                      {% if filter.max_value.value %}value="{{ max_value | floor }}"{% endif %}
+                                      min="0"
+                                      max="{{ range_max | ceil }}"
+                                      class="price-input"
+                                    >
+                                  </div>
+                                </div>
+                                <button type="submit" class="price-apply-btn">Anwenden</button>
+                              </div>
+                          {% endcase %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  {% comment %} Clear All button at bottom of drawer {% endcomment %}
+                  <div class="filter-actions-drawer">
+                    <a href="{{ col.url }}{% if col.sort_by != col.default_sort_by %}?sort_by={{ col.sort_by }}{% endif %}" class="filter-clear-all-btn">
+                      Clear All
+                    </a>
+                  </div>
+                </form>
+
+              {% comment %} ============================== {% endcomment %}
+              {% comment %} CLIENT-SIDE FILTERING (JS)     {% endcomment %}
+              {% comment %} ============================== {% endcomment %}
+              {% elsif filtering_mode == 'client' %}
+                <div class="filter-content" id="clientFilterContent-{{ section.id }}">
+                  
+                  {% comment %} Availability Filter {% endcomment %}
+                  <div class="filter-group">
+                    <button type="button" class="filter-group-toggle active" data-target="availabilityFilter-{{ section.id }}" aria-expanded="true" aria-controls="availabilityFilter-{{ section.id }}">
+                      <span>Availability</span>
+                      <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="filter-group-content open" id="availabilityFilter-{{ section.id }}">
+                      {% assign in_stock_count = pcl_in_stock %}
+                      {% assign out_of_stock_count = pcl_out_stock %}
+                      <ul class="filter-list">
+                        <li class="filter-list-item">
+                          <label class="filter-checkbox">
+                            <input type="checkbox" class="js-client-filter" data-filter-type="availability" data-filter-value="true">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-label">In stock <span class="filter-value-count">({{ in_stock_count }})</span></span>
+                          </label>
+                        </li>
+                        {% if out_of_stock_count > 0 %}
+                          <li class="filter-list-item">
+                            <label class="filter-checkbox">
+                              <input type="checkbox" class="js-client-filter" data-filter-type="availability" data-filter-value="false">
+                              <span class="checkbox-custom"></span>
+                              <span class="checkbox-label">Sold out <span class="filter-value-count">({{ out_of_stock_count }})</span></span>
+                            </label>
+                          </li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {% comment %} Product Type Filter {% endcomment %}
+                  {% assign product_types = col.products | map: 'type' | uniq | compact %}
+                  {% if product_types.size > 0 %}
+                    <div class="filter-group">
+                      <button type="button" class="filter-group-toggle active" data-target="typeFilter-{{ section.id }}" aria-expanded="true" aria-controls="typeFilter-{{ section.id }}">
+                        <span>Produktart</span>
+                        <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </button>
+                      <div class="filter-group-content open" id="typeFilter-{{ section.id }}">
+                        <ul class="filter-list">
+                          {% for type in product_types %}
+                            {% if type != blank %}
+                              {% assign type_needle = type | append: '||' %}
+                              {% assign type_count = pcl_type_parts | split: type_needle | size | minus: 1 %}
+                              <li class="filter-list-item">
+                                <label class="filter-checkbox">
+                                  <input type="checkbox" class="js-client-filter" data-filter-type="type" data-filter-value="{{ type | handleize }}">
+                                  <span class="checkbox-custom"></span>
+                                  <span class="checkbox-label">{{ type }} <span class="filter-value-count">({{ type_count }})</span></span>
+                                </label>
+                              </li>
+                            {% endif %}
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  {% comment %} Vendor Filter {% endcomment %}
+                  {% assign vendors = col.products | map: 'vendor' | uniq | compact %}
+                  {% if vendors.size > 0 %}
+                    <div class="filter-group">
+                      <button type="button" class="filter-group-toggle" data-target="vendorFilter-{{ section.id }}" aria-expanded="false" aria-controls="vendorFilter-{{ section.id }}">
+                        <span>Marke</span>
+                        <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </button>
+                      <div class="filter-group-content" id="vendorFilter-{{ section.id }}">
+                        <ul class="filter-list">
+                          {% for vendor in vendors %}
+                            {% if vendor != blank %}
+                              {% assign vendor_needle = vendor | append: '||' %}
+                              {% assign vendor_count = pcl_vendor_parts | split: vendor_needle | size | minus: 1 %}
+                              <li class="filter-list-item">
+                                <label class="filter-checkbox">
+                                  <input type="checkbox" class="js-client-filter" data-filter-type="vendor" data-filter-value="{{ vendor | handleize }}">
+                                  <span class="checkbox-custom"></span>
+                                  <span class="checkbox-label">{{ vendor }} <span class="filter-value-count">({{ vendor_count }})</span></span>
+                                </label>
+                              </li>
+                            {% endif %}
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  {% comment %} Price Filter {% endcomment %}
+                  <div class="filter-group">
+                    <button type="button" class="filter-group-toggle" data-target="priceFilter-{{ section.id }}" aria-expanded="false" aria-controls="priceFilter-{{ section.id }}">
+                      <span>Price</span>
+                      <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="filter-group-content" id="priceFilter-{{ section.id }}">
+                      <div class="price-range-filter">
+                        <div class="price-inputs">
+                          <div class="price-input-group">
+                            <span class="price-currency">€</span>
+                            <input type="number" class="price-input js-client-price-min" id="clientPriceMin-{{ section.id }}" placeholder="Von" min="0">
+                          </div>
+                          <span class="price-separator">-</span>
+                          <div class="price-input-group">
+                            <span class="price-currency">€</span>
+                            <input type="number" class="price-input js-client-price-max" id="clientPriceMax-{{ section.id }}" placeholder="Bis" min="0">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {% comment %} Tags Filter {% endcomment %}
+                  {% assign all_tags = col.all_tags %}
+                  {% if all_tags.size > 0 %}
+                    <div class="filter-group">
+                      <button type="button" class="filter-group-toggle" data-target="tagsFilter-{{ section.id }}" aria-expanded="false" aria-controls="tagsFilter-{{ section.id }}">
+                        <span>Tags</span>
+                        <svg class="filter-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </button>
+                      <div class="filter-group-content" id="tagsFilter-{{ section.id }}">
+                        <ul class="filter-list">
+                          {% for tag in all_tags limit: 15 %}
+                            <li class="filter-list-item">
+                              <label class="filter-checkbox">
+                                <input type="checkbox" class="js-client-filter" data-filter-type="tag" data-filter-value="{{ tag | handleize }}">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">{{ tag }}</span>
+                              </label>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="filter-actions-drawer">
+                  <button type="button" class="filter-clear-all-btn js-client-reset" id="clientResetBtn-{{ section.id }}">
+                    Clear All
+                  </button>
+                </div>
+              {% endif %}
+              
+            </aside>
+
+            {% comment %} Overlay for drawer mode {% endcomment %}
+            <div class="filter-overlay" id="filterOverlay-{{ section.id }}"></div>
+          {% endif %}
+
+          {% endcapture %}
+          {% unless side_by_side %}{{ collection_filters }}{% endunless %}
+          <!-- ============================================== -->
+          <!-- MAIN CONTENT                                   -->
+          <!-- ============================================== -->
+          <div class="collection-main {% if section.settings.enable_filtering and filter_type == 'vertical' %}has-sidebar{% endif %}">
+            
+            {% if side_by_side %}<div class="collection-navigation-bar">{% endif %}
+            {% comment %} Collection navigation {% endcomment %}
+            <nav class="collections-display-container" aria-label="Collections">
+              <ul class="collections-display-list">
+                {% if side_by_side %}
+                  <li class="collection-display-wrapper">
+                    <a class="collection-display collection-display--all" href="{{ routes.all_products_collection_url }}"{% if col.handle == 'all' %} aria-current="page"{% endif %}>
+                      <span class="collection-title">{{ section.settings.all_products_label | escape }}</span>
+                    </a>
+                  </li>
+                {% endif %}
+                {% for collection in collections %}
+                  {% if collection.handle != 'all' and collection.handle != 'pakete-copy' %}
+                    <li class="collection-display-wrapper">
+                      <a class="collection-display" href="{{ collection.url }}"{% if collection.handle == col.handle %} aria-current="page"{% endif %}>
+                        {% if section.settings.show_collection_images != false and collection.featured_image != blank %}
+                          {{ collection.featured_image | image_url: width: 240 | image_tag: class: 'collection-display-image', widths: '120, 240', sizes: '120px', width: 120, height: 100, loading: 'lazy', alt: '' }}
+                        {% endif %}
+                        <div class="collection-title">{{ collection.title | escape }}</div>
+                      </a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </nav>
+            {% if side_by_side %}{{ collection_filters }}{% endif %}
+
+            <!-- Toolbar with Active Filters inline -->
+            <div class="collection-toolbar">
+              <div class="toolbar-left">
+                {% if section.settings.enable_filtering %}
+                  <button type="button" class="filter-toggle-btn" id="filterToggleBtn-{{ section.id }}" data-filter-type="{{ filter_type }}" aria-expanded="false" aria-controls="collectionSidebar-{{ section.id }}">
+                    <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span>Filter</span>
+                    <svg class="filter-chevron-btn" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                {% endif %}
+
+                {% comment %} Active Filters - inline with toolbar {% endcomment %}
+                {% if section.settings.enable_filtering %}
+                  {% if filtering_mode == 'server' %}
+                    {% assign has_active_filters = false %}
+                    {% for filter in col.filters %}
+                      {% if filter.active_values.size > 0 or filter.min_value.value or filter.max_value.value %}
+                        {% assign has_active_filters = true %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+
+                    {% if has_active_filters %}
+                      <div class="active-filters-inline">
+                        {% for filter in col.filters %}
+                          {% for value in filter.active_values %}
+                            <button type="button" class="active-filter-tag js-remove-filter" data-param-name="{{ value.param_name }}" data-param-value="{{ value.value }}">
+                              <span>{{ value.label }}</span>
+                              <span class="active-filter-x">×</span>
+                            </button>
+                          {% endfor %}
+                          {% if filter.type == 'price_range' %}
+                            {% if filter.min_value.value or filter.max_value.value %}
+                              <button type="button" class="active-filter-tag js-remove-filter" data-param-name="{{ filter.min_value.param_name }}" data-remove-price="true">
+                                <span>{{ filter.min_value.value | default: 0 | money }} - {{ filter.max_value.value | default: filter.range_max | money }}</span>
+                                <span class="active-filter-x">×</span>
+                              </button>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                        <a href="{{ col.url }}{% if col.sort_by != col.default_sort_by %}?sort_by={{ col.sort_by }}{% endif %}" class="filter-clear-link">Clear filters</a>
+                      </div>
+                    {% endif %}
+                  {% else %}
+                    <div class="active-filters-inline" id="clientActiveFilters-{{ section.id }}" style="display: none;">
+                      <span class="active-filters-list" id="clientActiveFiltersList-{{ section.id }}"></span>
+                      <button type="button" class="filter-clear-link js-client-clear-all" id="clientClearAll-{{ section.id }}">Clear filters</button>
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              {% if section.settings.enable_sorting %}
+                <div class="collection-sort">
+                  <button type="button" class="sort-button" id="sortToggle-{{ section.id }}">
+                    <span>{% if side_by_side %}{{ 'products.facets.sort_by_label' | t }}{% if filtering_mode == 'server' %}{% assign current_sort = col.sort_by | default: col.default_sort_by %}{% for option in col.sort_options %}{% if option.value == current_sort %} {{ option.name | escape }}{% endif %}{% endfor %}{% endif %}{% else %}{{ 'products.facets.sort_button' | t }}{% endif %}</span>
+                    <svg class="sort-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <div class="sort-dropdown" id="sortDropdown-{{ section.id }}">
+                    <p class="sort-title">{{ 'products.facets.sort_button' | t }}</p>
+                    {% if filtering_mode == 'server' %}
+                      {% assign current_sort = col.sort_by | default: col.default_sort_by %}
+                      {% for option in col.sort_options %}
+                        <a href="{{ col.url }}?sort_by={{ option.value }}" class="sort-option {% if option.value == current_sort %}active{% endif %}">
+                          {{ option.name }}
+                        </a>
+                      {% endfor %}
+                    {% else %}
+                      <button type="button" class="sort-option js-client-sort active" data-sort="default">Featured</button>
+                      <button type="button" class="sort-option js-client-sort" data-sort="title-asc">Alphabetically, A-Z</button>
+                      <button type="button" class="sort-option js-client-sort" data-sort="title-desc">Alphabetically, Z-A</button>
+                      <button type="button" class="sort-option js-client-sort" data-sort="price-asc">Price, low to high</button>
+                      <button type="button" class="sort-option js-client-sort" data-sort="price-desc">Price, high to low</button>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if side_by_side %}</div>{% endif %}
+            {% if filtering_mode == 'server' %}
+              {% paginate col.products by section.settings.products_per_page %}
+                {% render 'product-collection-grid', products: col.products, product_limit: section.settings.products_per_page %}
+                {% if paginate.pages > 1 %}
+                  <div class="pagination">
+                    {{ paginate | default_pagination }}
+                  </div>
+                {% endif %}
+              {% endpaginate %}
+            {% else %}
+              {% render 'product-collection-grid', products: col.products, product_limit: section.settings.products_per_page %}
+            {% endif %}
+
+            <!-- No Results -->
+            <div class="no-results-message" id="noResults-{{ section.id }}" {% unless col.products.size == 0 %}style="display: none;"{% endunless %}>
+              <p>No products found. Please adjust your filters.</p>
+              {% if filtering_mode == 'server' %}
+                <a href="{{ col.url }}" class="filter-reset-link">{{ 'products.facets.clear_all' | t }}</a>
+              {% else %}
+                <button type="button" class="filter-reset-link js-client-reset">{{ 'products.facets.clear_all' | t }}</button>
+              {% endif %}
+            </div>
+
+            {% comment %} ============================================== {% endcomment %}
+            {% comment %} BLOCKS CONTENT (Heading, Text, FAQ)            {% endcomment %}
+            {% comment %} ============================================== {% endcomment %}
+            {% if section.blocks.size > 0 %}
+              <div class="section-blocks-{{ section.id }} pcl-section-blocks">
+                {% for block in section.blocks %}
+                  {% case block.type %}
+                    
+                    {% comment %} HEADING BLOCK {% endcomment %}
+                    {% when 'heading' %}
+                      <div class="block-heading-{{ section.id }} cb-block-heading" {{ block.shopify_attributes }}>
+                        {% assign heading_tag = block.settings.heading_style %}
+                        <{{ heading_tag }} class="heading-block heading-style-{{ heading_tag }}" style="
+                          color: {{ block.settings.text_color }};
+                          text-align: {{ block.settings.text_alignment }};
+                          margin-bottom: {{ block.settings.margin_bottom }}px;
+                        ">{{ block.settings.heading_text }}</{{ heading_tag }}>
+                      </div>
+
+                    {% comment %} SUBHEADING BLOCK {% endcomment %}
+                    {% when 'subheading' %}
+                      <div class="block-subheading-{{ section.id }} cb-block-subheading" {{ block.shopify_attributes }}>
+                        {% assign subheading_tag = block.settings.subheading_style %}
+                        <{{ subheading_tag }} class="subheading-block subheading-style-{{ subheading_tag }}" style="
+                          color: {{ block.settings.text_color }};
+                          text-align: {{ block.settings.text_alignment }};
+                          margin-bottom: {{ block.settings.margin_bottom }}px;
+                          {% if block.settings.uppercase %}text-transform: uppercase; letter-spacing: 0.1em;{% endif %}
+                        ">{{ block.settings.subheading_text }}</{{ subheading_tag }}>
+                      </div>
+
+                    {% comment %} TEXT BLOCK {% endcomment %}
+                    {% when 'text' %}
+                      <div class="block-text-{{ section.id }} cb-block-text" {{ block.shopify_attributes }} style="
+                        --text-block-link-color: {{ block.settings.link_color }};
+                      ">
+                        {% assign text_tag = block.settings.text_style %}
+                        <div class="text-block text-style-{{ text_tag }}" style="
+                          color: {{ block.settings.text_color }};
+                          text-align: {{ block.settings.text_alignment }};
+                          margin-bottom: {{ block.settings.margin_bottom }}px;
+                          max-width: {{ block.settings.max_width }}px;
+                          {% if block.settings.text_alignment == 'center' %}margin-left: auto; margin-right: auto;{% endif %}
+                        ">
+                          {{ block.settings.text_content }}
+                        </div>
+                      </div>
+
+                    {% comment %} FAQ BLOCK {% endcomment %}
+                    {% when 'faq' %}
+                      <div class="block-faq-{{ section.id }} faq-item cb-faq-item" {{ block.shopify_attributes }} data-faq-behavior="{{ section.settings.faq_collapse_behavior }}">
+                        <div class="faq-row-{{ section.id }} cb-faq-row">
+                          <button 
+                            type="button"
+                            class="faq-row-toggle-{{ section.id }} cb-faq-toggle"
+                            aria-expanded="false"
+                          >
+                            <span class="faq-row-title-{{ section.id }} cb-faq-title">{{ block.settings.faq_question }}</span>
+                            <span class="faq-arrow-{{ section.id }} cb-faq-arrow" data-arrow-type="{{ section.settings.faq_arrow_type }}">
+                              {% case section.settings.faq_arrow_type %}
+                                {% when 'chevron' %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                  </svg>
+
+                                {% when 'light_chevron' %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                  </svg>
+
+                                {% when 'arrow' %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <polyline points="19 12 12 19 5 12"></polyline>
+                                  </svg>
+
+                                {% when 'plus' %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="plus-icon-{{ section.id }} cb-plus-icon">
+                                    <line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
+                                  </svg>
+
+                                {% when 'caret' %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7 10l5 5 5-5z"/>
+                                  </svg>
+
+                                {% else %}
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                  </svg>
+                              {% endcase %}
+                            </span>
+                          </button>
+                          <div class="faq-row-content-{{ section.id }} cb-faq-content">
+                            <div class="faq-row-description-{{ section.id }} cb-faq-desc">
+                              {{ block.settings.faq_answer }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                  {% endcase %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        
+      {% else %}
+        <p>No collection selected</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+
+<script src="{{ 'section-product-collection-list.js' | asset_url }}" defer="defer"></script>
+
+{{ 'section-collection-navigation.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Product collection list",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "range",
+      "id": "card_image_border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 15,
+      "label": "Card image border radius"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": true,
+      "label": "Show product rating"
+    },
+    {
+      "type": "range",
+      "id": "fallback_rating",
+      "min": 0,
+      "max": 5,
+      "step": 0.5,
+      "default": 4,
+      "label": "Fallback rating",
+      "info": "Used if product doesn't have Judge.me reviews yet. Set to 0 to hide when no reviews."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_discount_badge",
+      "default": true,
+      "label": "Show discount badge next to price"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_flag",
+      "default": false,
+      "label": "Show corner discount flag on image"
+    },
+    {
+      "type": "header",
+      "content": "Filters"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "default": true,
+      "label": "Enable filtering",
+      "info": "On collection pages: uses [Search & Discovery filters](https://help.shopify.com/manual/online-store/search-and-discovery/filters) with page reload. On other pages: uses client-side JavaScript filtering."
+    },
+    {
+      "type": "select",
+      "id": "filter_type",
+      "options": [
+        {
+          "value": "vertical",
+          "label": "Vertical (Sidebar - Always visible)"
+        },
+        {
+          "value": "horizontal",
+          "label": "Horizontal (Above products - Always visible)"
+        },
+        {
+          "value": "side_by_side",
+          "label": "Side by side (Collections and filters)"
+        },
+        {
+          "value": "drawer",
+          "label": "Drawer (Click to open)"
+        }
+      ],
+      "default": "vertical",
+      "label": "Desktop filter layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_images",
+      "default": true,
+      "label": "Show collection images"
+    },
+    {
+      "type": "text",
+      "id": "all_products_label",
+      "default": "All Products",
+      "label": "All products link label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "default": true,
+      "label": "Enable sorting"
+    },
+    {
+      "type": "header",
+      "content": "FAQ block"
+    },
+    {
+      "type": "select",
+      "id": "faq_collapse_behavior",
+      "label": "FAQ collapse behavior",
+      "options": [
+        {
+          "value": "single",
+          "label": "Only allow one open"
+        },
+        {
+          "value": "multiple",
+          "label": "Allow multiple open"
+        }
+      ],
+      "default": "single"
+    },
+    {
+      "type": "select",
+      "id": "faq_arrow_type",
+      "label": "FAQ arrow type",
+      "options": [
+        {
+          "value": "chevron",
+          "label": "Chevron"
+        },
+        {
+          "value": "light_chevron",
+          "label": "Light Chevron"
+        },
+        {
+          "value": "arrow",
+          "label": "Arrow"
+        },
+        {
+          "value": "plus",
+          "label": "Plus/Minus"
+        },
+        {
+          "value": "caret",
+          "label": "Caret"
+        }
+      ],
+      "default": "chevron"
+    },
+    {
+      "type": "color",
+      "id": "faq_arrow_color",
+      "label": "FAQ arrow color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "faq_arrow_size",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "default": 24,
+      "unit": "px",
+      "label": "FAQ arrow size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_arrow_size_mobile",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "FAQ arrow size (mobile)"
+    },
+    {
+      "type": "color",
+      "id": "faq_border_color",
+      "label": "FAQ border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "faq_padding_vertical",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "FAQ padding vertical (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_padding_vertical_mobile",
+      "min": 10,
+      "max": 30,
+      "step": 2,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ padding vertical (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "faq_question_font_size_desktop",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "default": 18,
+      "unit": "px",
+      "label": "FAQ question font size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_question_font_size_mobile",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ question font size (mobile)"
+    },
+    {
+      "type": "select",
+      "id": "faq_question_font_weight",
+      "label": "FAQ question font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "faq_question_color",
+      "label": "FAQ question color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "faq_answer_font_size_desktop",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ answer font size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_answer_font_size_mobile",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "unit": "px",
+      "label": "FAQ answer font size (mobile)"
+    },
+    {
+      "type": "select",
+      "id": "faq_answer_font_weight",
+      "label": "FAQ answer font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "faq_answer_color",
+      "label": "FAQ answer color",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "default": "page",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "default": "page",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding top (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding bottom (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding left (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding right (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding top (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding bottom (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding left (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding right (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Choose collection",
+      "info": "Only used when section is NOT on a collection template page."
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 4,
+      "max": 50,
+      "step": 2,
+      "default": 12,
+      "label": "Products per page"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading_text",
+          "label": "Heading text",
+          "default": "Heading"
+        },
+        {
+          "type": "select",
+          "id": "heading_style",
+          "label": "Heading style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    },
+    {
+      "type": "subheading",
+      "name": "Subheading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "subheading_text",
+          "label": "Subheading text",
+          "default": "Text"
+        },
+        {
+          "type": "select",
+          "id": "subheading_style",
+          "label": "Subheading style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            },
+            {
+              "value": "p",
+              "label": "Paragraph"
+            },
+            {
+              "value": "span",
+              "label": "Span"
+            }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "checkbox",
+          "id": "uppercase",
+          "label": "Uppercase",
+          "default": false
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text_content",
+          "label": "Text content",
+          "default": "<p>Text</p>"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "p",
+              "label": "Paragraph (Body)"
+            },
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "p"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "link_color",
+          "label": "Link color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    },
+    {
+      "type": "faq",
+      "name": "FAQ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "faq_question",
+          "label": "Question",
+          "default": "What is your question?"
+        },
+        {
+          "type": "richtext",
+          "id": "faq_answer",
+          "label": "Answer",
+          "default": "<p>This is the answer to your frequently asked question. You can include <strong>formatting</strong>, <a href=\"#\">links</a>, and other rich content.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product collection list",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

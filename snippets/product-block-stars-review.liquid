@@ -1,0 +1,150 @@
+{% liquid
+  # Determine rating source
+  assign use_metafields = block.settings.use_metafields
+  assign rating_value = block.settings.rating
+  assign review_count = block.settings.review_count
+  assign scale_max = 5.0
+  
+  # If using metafields and they exist, override with metafield values
+  if use_metafields and product.metafields.reviews.rating.value != blank
+    assign rating_value = product.metafields.reviews.rating.value.rating
+    assign scale_max = product.metafields.reviews.rating.value.scale_max | default: 5.0
+  endif
+  
+  if use_metafields and product.metafields.reviews.rating_count != blank
+    assign review_count = product.metafields.reviews.rating_count
+  endif
+  
+  # Calculate star display
+  assign full_stars = rating_value | floor
+  assign decimal = rating_value | modulo: 1
+  assign has_half = false
+  assign half_star_position = 0
+  
+  if decimal >= 0.25 and decimal < 0.75
+    assign has_half = true
+    assign half_star_position = full_stars | plus: 1
+  elsif decimal >= 0.75
+    assign full_stars = full_stars | plus: 1
+  endif
+%}
+
+{% capture stars_block_vars %}--nvgd-stars-pad-v: {{ block.settings.padding_vertical }}px; --nvgd-stars-pad-h: {{ block.settings.padding_horizontal }}px; --nvgd-stars-align: {{ block.settings.alignment }}; --nvgd-stars-size: {{ block.settings.star_size }}px; --nvgd-stars-color: {{ block.settings.star_color }}; --nvgd-stars-empty-color: {{ block.settings.star_empty_color }}; --nvgd-stars-text-size: {{ block.settings.text_size }}px; --nvgd-stars-text-color: {{ block.settings.text_color }}; --nvgd-stars-text-weight: {{ block.settings.text_weight }}; --nvgd-stars-rating-color: {{ block.settings.rating_color }}; --nvgd-stars-pad-v-m: {{ block.settings.padding_vertical_mobile }}px; --nvgd-stars-pad-h-m: {{ block.settings.padding_horizontal_mobile }}px; --nvgd-stars-size-m: {{ block.settings.star_size_mobile }}px; --nvgd-stars-text-size-m: {{ block.settings.text_size_mobile }}px;{% endcapture %}
+
+{% if rating_value != blank and rating_value > 0 %}
+  <div class="nvgd-stars-container-{{ block.id }} nvgd-stars-block" style="{{ stars_block_vars }}" {{ block.shopify_attributes }}>
+    <div class="nvgd-stars-wrapper-{{ block.id }} nvgd-stars-block__wrapper">
+
+      <div
+        class="nvgd-stars-icons-{{ block.id }} nvgd-stars-block__icons"
+        role="img"
+        aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: rating_value, rating_max: scale_max }}"
+      >
+        {% for i in (1..5) %}
+          {% if i <= full_stars %}
+            <svg class="nvgd-stars-icon-{{ block.id }} nvgd-stars-block__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          {% elsif has_half and i == half_star_position %}
+            <svg class="nvgd-stars-icon-{{ block.id }} nvgd-stars-block__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <defs>
+                <linearGradient id="nvgd-halfStar-{{ block.id }}-{{ i }}">
+                  <stop offset="50%" stop-color="{{ block.settings.star_color }}"/>
+                  <stop offset="50%" stop-color="{{ block.settings.star_empty_color }}"/>
+                </linearGradient>
+              </defs>
+              <path fill="url(#nvgd-halfStar-{{ block.id }}-{{ i }})" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          {% else %}
+            <svg class="nvgd-stars-icon-{{ block.id }} nvgd-stars-icon-{{ block.id }}--empty nvgd-stars-block__icon nvgd-stars-block__icon--empty" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <span class="nvgd-stars-text-{{ block.id }} nvgd-stars-block__text">
+        {% if block.settings.show_rating %}
+          <span class="nvgd-stars-rating-{{ block.id }} nvgd-stars-block__rating">({{ rating_value }}/{{ scale_max }})</span>
+        {% endif %}
+        {% if block.settings.show_count and review_count != blank %}
+          {{ review_count }} {{ block.settings.review_label }}
+        {% endif %}
+      </span>
+
+    </div>
+  </div>
+
+{% elsif use_metafields == false %}
+  <div class="nvgd-stars-container-{{ block.id }} nvgd-stars-block" style="{{ stars_block_vars }}" {{ block.shopify_attributes }}>
+    <div class="nvgd-stars-wrapper-{{ block.id }} nvgd-stars-block__wrapper">
+      <div class="nvgd-stars-icons-{{ block.id }} nvgd-stars-block__icons">
+        {% for i in (1..5) %}
+          <svg class="nvgd-stars-icon-{{ block.id }} nvgd-stars-icon-{{ block.id }}--empty nvgd-stars-block__icon nvgd-stars-block__icon--empty" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        {% endfor %}
+      </div>
+      <span class="nvgd-stars-text-{{ block.id }} nvgd-stars-block__text">
+        <span class="nvgd-stars-rating-{{ block.id }} nvgd-stars-block__rating">(0/5.0)</span>
+        0 {{ block.settings.review_label }}
+      </span>
+    </div>
+  </div>
+
+{% endif %}
+
+{% stylesheet %}
+  .nvgd-stars-block {
+    padding: var(--nvgd-stars-pad-v) var(--nvgd-stars-pad-h);
+  }
+
+  .nvgd-stars-block__wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: var(--nvgd-stars-align);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nvgd-stars-block__icons {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .nvgd-stars-block__icon {
+    width: var(--nvgd-stars-size);
+    height: var(--nvgd-stars-size);
+    fill: var(--nvgd-stars-color);
+  }
+
+  .nvgd-stars-block__icon--empty {
+    fill: var(--nvgd-stars-empty-color);
+  }
+
+  .nvgd-stars-block__text {
+    font-size: var(--nvgd-stars-text-size);
+    color: var(--nvgd-stars-text-color);
+    font-weight: var(--nvgd-stars-text-weight);
+  }
+
+  .nvgd-stars-block__rating {
+    color: var(--nvgd-stars-rating-color);
+  }
+
+  @media (max-width: 768px) {
+    .nvgd-stars-block {
+      padding: var(--nvgd-stars-pad-v-m, var(--nvgd-stars-pad-v)) var(--nvgd-stars-pad-h-m, var(--nvgd-stars-pad-h));
+    }
+
+    .nvgd-stars-block__icon {
+      width: var(--nvgd-stars-size-m, var(--nvgd-stars-size));
+      height: var(--nvgd-stars-size-m, var(--nvgd-stars-size));
+    }
+
+    .nvgd-stars-block__text {
+      font-size: var(--nvgd-stars-text-size-m, var(--nvgd-stars-text-size));
+    }
+  }
+{% endstylesheet %}

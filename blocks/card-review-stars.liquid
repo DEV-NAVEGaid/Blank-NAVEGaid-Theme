@@ -1,0 +1,137 @@
+{%- assign current_product = closest.product | default: product -%}
+
+{%- style -%}
+  .card-review-stars-{{ block.id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+    justify-content: {% if block.settings.alignment == 'center' %}center{% elsif block.settings.alignment == 'right' %}flex-end{% else %}flex-start{% endif %};
+    width: 100%;
+  }
+
+  .card-review-stars-{{ block.id }} .stars-icon-wrap {
+    display: flex;
+    gap: 2px;
+    color: {{ block.settings.star_color }};
+  }
+
+  .card-review-stars-{{ block.id }} .stars-count {
+    font-size: {{ block.settings.font_size }}px;
+    color: {{ block.settings.text_color }};
+    margin-left: 4px;
+    line-height: 1;
+  }
+{%- endstyle -%}
+
+<div class="card-review-stars-wrapper card-review-stars-{{ block.id }}" {{ block.shopify_attributes }}>
+  <div class="stars-icon-wrap">
+    {%- for i in (1..5) -%}
+      <svg width="{{ block.settings.star_size }}" height="{{ block.settings.star_size }}" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    {%- endfor -%}
+  </div>
+  {%- if block.settings.show_count -%}
+    <span class="stars-count">{{ block.settings.count_text }}</span>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Review stars",
+  "settings": [
+    {
+      "type": "range",
+      "id": "star_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Star size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Show review count",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "count_text",
+      "label": "Review count text",
+      "default": "Text"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Text font size",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Review stars",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

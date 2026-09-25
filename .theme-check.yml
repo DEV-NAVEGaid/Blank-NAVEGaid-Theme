@@ -1,0 +1,17 @@
+# Runs the full check set, not the default subset — the extra checks are the ones
+# a marketplace reviewer's tooling will run. Anything switched off below is off
+# for a stated reason, not because it was noisy.
+extends: theme-check:all
+
+ignore:
+  - .dev/**
+
+VariableName:
+  # 440 warnings, all snake_case Liquid variables in inherited custom sections.
+  # Renaming them touches 77k lines for a style preference and buys no
+  # correctness. Fixed opportunistically in files being rewritten anyway.
+  enabled: false
+
+# AssetSizeJavaScript runs at its default threshold. The Ruby-era `threshold`
+# key is rejected by the Node CLI ("Unexpected setting: threshold") and is a
+# silent no-op; JS size movement is gated by .dev/check-gate.mjs instead.

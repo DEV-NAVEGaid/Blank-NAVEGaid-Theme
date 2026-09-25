@@ -1,0 +1,1022 @@
+<div class="faq-section-{{ section.id }} nvgd-faq{% if section.settings.show_image %} nvgd-faq--image{% endif %}{% if section.settings.layout_reverse %} nvgd-faq--reverse{% endif %}{% unless section.settings.divider_bottom %} nvgd-faq--divider-no-bottom{% endunless %}{% if section.settings.mobile_image_first %} nvgd-faq--mobile-image-first{% endif %}"
+  data-section-id="{{ section.id }}"
+  data-behavior="{{ section.settings.collapse_behavior }}"
+  style="
+    --faq-outer-bg: {{ section.settings.outer_background | default: '#111111' }};
+    --faq-section-bg: {{ section.settings.section_background | default: '#FFFFFF' }};
+    --faq-section-radius: {{ section.settings.section_border_radius | default: 0 }}px;
+    --faq-pad-top: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}{% else %}{{ section.settings.section_padding_top }}{% endif %}px;
+    --faq-pad-x: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal }}{% else %}{{ section.settings.padding_x }}{% endif %}px;
+    --faq-pad-bottom: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical }}{% else %}{{ section.settings.section_padding_bottom }}{% endif %}px;
+    --faq-pad-top-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}{% else %}{{ section.settings.section_padding_top_mobile }}{% endif %}px;
+    --faq-pad-x-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_horizontal_mobile }}{% else %}{{ section.settings.padding_x_mobile }}{% endif %}px;
+    --faq-pad-bottom-m: {% if section.settings.enable_global_spacing %}{{ settings.padding_vertical_mobile }}{% else %}{{ section.settings.section_padding_bottom_mobile }}{% endif %}px;
+    --faq-container-max: {% if section.settings.enable_global_spacing %}var(--page-width){% else %}{{ section.settings.container_width }}px{% endif %};
+    --faq-col-1: {% if section.settings.layout_reverse %}{{ section.settings.image_width }}fr{% else %}{{ section.settings.faq_width }}fr{% endif %};
+    --faq-col-2: {% if section.settings.layout_reverse %}{{ section.settings.faq_width }}fr{% else %}{{ section.settings.image_width }}fr{% endif %};
+    --faq-gap: {{ section.settings.column_gap }}px;
+    --faq-gap-m: {{ section.settings.column_gap_mobile }}px;
+    --faq-image-top: {{ section.settings.image_sticky_offset }}px;
+    --faq-image-radius: {{ section.settings.image_border_radius }}px;
+    --faq-image-bg: {{ section.settings.image_background }};
+    --faq-img-fit: {{ section.settings.image_fit }};
+    --faq-header-align: {{ section.settings.header_alignment }};
+    --faq-header-spacing: {{ section.settings.header_spacing | default: 40 }}px;
+    --faq-heading-size: {{ section.settings.heading_font_size_desktop }}px;
+    --faq-heading-size-m: {{ section.settings.heading_font_size_mobile }}px;
+    --faq-heading-weight: {{ section.settings.heading_font_weight }};
+    --faq-desc-size: {{ section.settings.description_font_size_desktop }}px;
+    --faq-desc-size-m: {{ section.settings.description_font_size_mobile }}px;
+    --faq-desc-weight: {{ section.settings.description_font_weight }};
+    --faq-divider: {{ section.settings.divider_color | default: '#E5E5E5' }};
+    --faq-row-pad: {{ section.settings.row_padding_desktop | default: 24 }}px;
+    --faq-row-pad-m: {{ section.settings.row_padding_mobile | default: 20 }}px;
+    --faq-row-title-size: {{ section.settings.row_title_font_size_desktop }}px;
+    --faq-row-title-size-m: {{ section.settings.row_title_font_size_mobile }}px;
+    --faq-row-title-weight: {{ section.settings.row_title_font_weight }};
+    --faq-row-desc-size: {{ section.settings.row_description_font_size_desktop }}px;
+    --faq-row-desc-size-m: {{ section.settings.row_description_font_size_mobile }}px;
+    --faq-row-desc-weight: {{ section.settings.row_description_font_weight }};
+    --faq-arrow-size: {{ section.settings.arrow_size_desktop }}px;
+    --faq-arrow-size-m: {{ section.settings.arrow_size_mobile }}px;
+    --faq-arrow-color: {{ section.settings.arrow_color }};
+  ">
+
+  <div class="faq-section-inner-{{ section.id }} nvgd-faq__inner">
+    <div class="faq-container-{{ section.id }} nvgd-faq__container">
+      <div class="faq-layout-{{ section.id }} nvgd-faq__layout">
+
+        <!-- FAQ Content -->
+        <div class="faq-content-{{ section.id }} nvgd-faq__content">
+          {% content_for 'blocks' %}
+        </div>
+
+        <!-- Image Display -->
+        {% if section.settings.show_image %}
+          <div class="faq-image-wrapper-{{ section.id }} nvgd-faq__image-wrapper">
+            <div class="faq-image-container-{{ section.id }} nvgd-faq__image-container">
+              {% if section.settings.image != blank %}
+                {%- liquid
+                  assign faq_alt = section.settings.image.alt | default: 'FAQ Image'
+                  assign faq_loading = 'eager'
+                  assign faq_priority = 'auto'
+                  if section.index == 1
+                    assign faq_priority = 'high'
+                  elsif section.index > 3
+                    assign faq_loading = 'lazy'
+                  endif
+                -%}
+                {{
+                  section.settings.image
+                  | image_url: width: 1000
+                  | image_tag:
+                    widths: '375, 550, 750, 1000',
+                    sizes: '(min-width: 750px) 40vw, 100vw',
+                    loading: faq_loading,
+                    fetchpriority: faq_priority,
+                    alt: faq_alt
+                }}
+              {% else %}
+                {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+/* moved from inline <style> for bundling */
+.nvgd-faq {
+  width: 100%;
+  background: var(--faq-outer-bg);
+}
+
+.nvgd-faq__inner {
+  width: 100%;
+  border-radius: var(--faq-section-radius) var(--faq-section-radius) 0 0;
+  background: var(--faq-section-bg);
+  padding: var(--faq-pad-top) var(--faq-pad-x) var(--faq-pad-bottom);
+}
+
+.nvgd-faq__container {
+  width: 100%;
+  margin: 0 auto;
+  max-width: var(--faq-container-max);
+}
+
+/* Two Column Layout */
+.nvgd-faq__layout {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  flex-direction: column;
+  gap: var(--faq-gap);
+  min-width: 0;
+}
+
+.nvgd-faq--image .nvgd-faq__layout {
+  display: grid;
+  grid-template-columns: var(--faq-col-1) var(--faq-col-2);
+  align-items: start;
+}
+
+.nvgd-faq__content {
+  min-width: 0;
+  order: 1;
+}
+
+.nvgd-faq--no-image .nvgd-faq__content {
+  max-width: 100%;
+  width: 100%;
+}
+
+.nvgd-faq--reverse .nvgd-faq__content {
+  order: 2;
+}
+
+.nvgd-faq__image-wrapper {
+  order: 2;
+  position: sticky;
+  top: var(--faq-image-top);
+}
+
+.nvgd-faq--reverse .nvgd-faq__image-wrapper {
+  order: 1;
+}
+
+.nvgd-faq__image-container {
+  border-radius: var(--faq-image-radius);
+  overflow: hidden;
+  background: var(--faq-image-bg);
+}
+
+.nvgd-faq__image-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: var(--faq-img-fit);
+}
+
+/* Header Styles */
+.nvgd-faq__header {
+  text-align: var(--faq-header-align);
+  margin-bottom: var(--faq-header-spacing);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nvgd-faq__heading {
+  line-height: 1.2;
+  font-size: var(--faq-heading-size);
+  font-weight: var(--faq-heading-weight);
+  margin: 0;
+  padding: 0;
+}
+
+.nvgd-faq__description {
+  margin: 0;
+  line-height: 1.5;
+  color: #111111;
+  font-size: var(--faq-desc-size);
+  font-weight: var(--faq-desc-weight);
+}
+
+.nvgd-faq__description :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font: inherit;
+}
+
+.nvgd-faq__description p {
+  padding: 0;
+  margin: 0;
+}
+
+/* Row Styles */
+.nvgd-faq__row {
+  border-bottom: 1px solid var(--faq-divider);
+  margin-bottom: 0;
+}
+
+.nvgd-faq__row:first-of-type {
+  border-top: 1px solid var(--faq-divider);
+}
+
+.nvgd-faq--divider-no-bottom .nvgd-faq__row:last-of-type {
+  border-bottom: none;
+}
+
+.nvgd-faq__toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--faq-row-pad) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 15px;
+  list-style: none;
+  font-size: var(--faq-row-title-size);
+  font-weight: var(--faq-row-title-weight);
+}
+
+.nvgd-faq__toggle:hover {
+  opacity: 0.7;
+}
+
+.nvgd-faq__row-title {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.nvgd-faq__arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+  line-height: 1;
+  width: var(--faq-arrow-size);
+  height: var(--faq-arrow-size);
+  color: var(--faq-arrow-color);
+}
+
+.nvgd-faq__row[open] .nvgd-faq__arrow {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+.nvgd-faq__row[open] .nvgd-faq__arrow[data-arrow-type="plus"] {
+  transform: rotate(0deg);
+}
+
+.nvgd-faq__toggle::-webkit-details-marker { display: none; }
+
+/* Content Styles */
+.nvgd-faq__row-content {
+  overflow: hidden;
+}
+
+.nvgd-faq__row-description {
+  padding: 0 0 var(--faq-row-pad) 0;
+  line-height: 1.6;
+  color: #111111;
+  font-size: var(--faq-row-desc-size);
+  font-weight: var(--faq-row-desc-weight);
+}
+
+.nvgd-faq__row-description p {
+  margin: 0 0 10px 0;
+}
+
+.nvgd-faq__row-description p:last-child {
+  margin-bottom: 0;
+}
+
+.nvgd-faq__arrow svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.nvgd-faq__row[open] .nvgd-faq__plus-icon .vertical-line {
+  opacity: 0;
+}
+
+.nvgd-faq__plus-icon line {
+  transition: opacity 0.3s ease;
+}
+
+.nvgd-faq__row-description a {
+  color: var(--faq-arrow-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.nvgd-faq__row-description a:hover {
+  opacity: 0.75;
+}
+
+.nvgd-faq__row[open] .nvgd-faq__row-description a {
+  text-decoration-thickness: 2px;
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 749px) {
+  .nvgd-faq__inner {
+    padding: var(--faq-pad-top-m) var(--faq-pad-x-m) var(--faq-pad-bottom-m);
+  }
+
+  .nvgd-faq .nvgd-faq__layout {
+    grid-template-columns: 1fr;
+    gap: var(--faq-gap-m);
+  }
+
+  .nvgd-faq .nvgd-faq__content {
+    order: 1;
+  }
+
+  .nvgd-faq .nvgd-faq__image-wrapper {
+    order: 2;
+    position: relative;
+    top: 0;
+  }
+
+  .nvgd-faq--mobile-image-first .nvgd-faq__content {
+    order: 2;
+  }
+
+  .nvgd-faq--mobile-image-first .nvgd-faq__image-wrapper {
+    order: 1;
+  }
+
+  .nvgd-faq__header {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .nvgd-faq__heading {
+    font-size: var(--faq-heading-size-m) !important;
+  }
+
+  .nvgd-faq__description {
+    font-size: var(--faq-desc-size-m) !important;
+  }
+
+  .nvgd-faq__toggle {
+    padding: var(--faq-row-pad-m) 0;
+    font-size: var(--faq-row-title-size-m) !important;
+  }
+
+  .nvgd-faq__row-description {
+    padding: 0 0 var(--faq-row-pad-m) 0;
+    font-size: var(--faq-row-desc-size-m) !important;
+  }
+
+  .nvgd-faq__arrow {
+    width: var(--faq-arrow-size-m) !important;
+    height: var(--faq-arrow-size-m) !important;
+  }
+}
+
+/* Accessibility */
+.nvgd-faq__toggle:focus {
+  outline: 2px solid #E5E5E5;
+  outline-offset: 2px;
+}
+
+.nvgd-faq__toggle:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animation improvements */
+@media (prefers-reduced-motion: reduce) {
+  .nvgd-faq__row-content,
+  .nvgd-faq__arrow,
+  .nvgd-faq__toggle {
+    transition: none;
+  }
+}
+{% endstylesheet %}
+{% schema %}
+{
+  "name": "FAQ with image",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "color",
+      "id": "outer_background",
+      "label": "Outer background",
+      "default": "#111111",
+      "info": "Background visible behind the section"
+    },
+    {
+      "type": "color",
+      "id": "section_background",
+      "label": "Section background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "section_border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Section top border radius",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "image_background",
+      "label": "Image background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "fill",
+          "label": "Fill"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "range",
+      "id": "image_sticky_offset",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "label": "Sticky offset from top",
+      "default": 100,
+      "info": "Distance from top when image becomes sticky"
+    },
+    {
+      "type": "header",
+      "content": "Collapse behavior"
+    },
+    {
+      "type": "select",
+      "id": "collapse_behavior",
+      "label": "Collapse behavior",
+      "options": [
+        {
+          "value": "single",
+          "label": "Only allow one open collapsible row"
+        },
+        {
+          "value": "multiple",
+          "label": "Allow multiple open collapsible rows"
+        }
+      ],
+      "default": "single"
+    },
+    {
+      "type": "header",
+      "content": "Arrows"
+    },
+    {
+      "type": "select",
+      "id": "arrow_type",
+      "label": "Arrow type",
+      "options": [
+        {
+          "value": "chevron",
+          "label": "Chevron"
+        },
+        {
+          "value": "light_chevron",
+          "label": "Light Chevron"
+        },
+        {
+          "value": "arrow",
+          "label": "Arrow"
+        },
+        {
+          "value": "plus",
+          "label": "Plus/Minus"
+        },
+        {
+          "value": "caret",
+          "label": "Caret"
+        }
+      ],
+      "default": "chevron"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "Arrow color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "arrow_size_desktop",
+      "min": 12,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow size (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "arrow_size_mobile",
+      "min": 12,
+      "max": 46,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow size (mobile)",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Row divider color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "row_padding_desktop",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Row vertical padding (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "row_padding_mobile",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Row vertical padding (mobile)",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "divider_bottom",
+      "label": "Divider below last row",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "header_spacing",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "label": "Space between header and accordion",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Heading typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_desktop",
+      "min": 16,
+      "max": 82,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading font size (desktop)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_mobile",
+      "min": 16,
+      "max": 46,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading font size (mobile)",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "heading_font_weight",
+      "label": "Heading font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        },
+        {
+          "value": "800",
+          "label": "Extra Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "header",
+      "content": "Description typography"
+    },
+    {
+      "type": "range",
+      "id": "description_font_size_desktop",
+      "min": 12,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "label": "Description font size (desktop)",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "description_font_size_mobile",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Description font size (mobile)",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "description_font_weight",
+      "label": "Description font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "header",
+      "content": "Row title typography"
+    },
+    {
+      "type": "range",
+      "id": "row_title_font_size_desktop",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Row title font size (desktop)",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "row_title_font_size_mobile",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Row title font size (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "row_title_font_weight",
+      "label": "Row title font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "header",
+      "content": "Row description typography"
+    },
+    {
+      "type": "range",
+      "id": "row_description_font_size_desktop",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Row description font size (desktop)",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "row_description_font_size_mobile",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Row description font size (mobile)",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "row_description_font_weight",
+      "label": "Row description font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container width",
+      "min": 500,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1000,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "layout_reverse",
+      "label": "Reverse layout (image left)",
+      "default": false,
+      "info": "When unchecked: FAQ left, Image right"
+    },
+    {
+      "type": "range",
+      "id": "faq_width",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "label": "FAQ width",
+      "default": 1.5,
+      "info": "Relative width compared to image"
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "label": "Image width",
+      "default": 1,
+      "info": "Relative width compared to FAQ"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between columns (desktop)",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "column_gap_mobile",
+      "min": 20,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between columns (mobile)",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Header alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_image_first",
+      "label": "Show image first on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Global spacing"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing",
+      "info": "Uses theme padding and page width settings"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding sides",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Padding sides (mobile)",
+      "default": 20,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 60,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 60,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding (mobile)",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding (mobile)",
+      "default": 40,
+      "visible_if": "{{ section.settings.enable_global_spacing != true }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ with image",
+      "blocks": [
+        {
+          "type": "faq-title",
+          "settings": {
+            "heading": "Heading",
+            "description": "Text"
+          }
+        },
+        {
+          "type": "faq-row",
+          "settings": {
+            "row_title": "Heading",
+            "row_description": "<p>Text</p>"
+          }
+        },
+        {
+          "type": "faq-row",
+          "settings": {
+            "row_title": "Heading",
+            "row_description": "<p>Text</p>"
+          }
+        },
+        {
+          "type": "faq-row",
+          "settings": {
+            "row_title": "Heading",
+            "row_description": "<p>Text</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

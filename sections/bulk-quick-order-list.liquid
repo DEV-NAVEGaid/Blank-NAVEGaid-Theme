@@ -1,0 +1,49 @@
+{% render 'section-corners', section: section %}
+{{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
+
+<script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
+
+{% render 'quick-order-list', product: product, show_image: true, show_sku: true, is_modal: true %}
+
+{% schema %}
+{
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "name": "t:sections.quick-order-list.name",
+  "limit": 1,
+  "enabled_on": {
+    "templates": [
+      "product"
+    ]
+  }
+}
+{% endschema %}

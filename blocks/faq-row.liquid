@@ -1,0 +1,74 @@
+{%- assign title_id = 'FaqTitle-' | append: section.id | append: '-' | append: block.id -%}
+{%- assign panel_id = 'FaqPanel-' | append: section.id | append: '-' | append: block.id -%}
+
+<details class="faq-row-{{ section.id }} nvgd-faq__row" {% if section.settings.collapse_behavior == 'single' %}name="Faq-{{ section.id }}"{% endif %} {{ block.shopify_attributes }}>
+  <summary
+    class="faq-row-toggle-{{ section.id }} nvgd-faq__toggle"
+    aria-controls="{{ panel_id }}"
+  >
+    <span id="{{ title_id }}" class="faq-row-title-{{ section.id }} nvgd-faq__row-title">{{ block.settings.row_title }}</span>
+    <span class="faq-arrow-{{ section.id }} nvgd-faq__arrow" data-arrow-type="{{ section.settings.arrow_type }}">
+      {% case section.settings.arrow_type %}
+        {% when 'chevron' %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        {% when 'light_chevron' %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        {% when 'arrow' %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        {% when 'plus' %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="plus-icon-{{ section.id }} nvgd-faq__plus-icon">
+            <line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
+            <line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
+          </svg>
+        {% when 'caret' %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+      {% endcase %}
+    </span>
+  </summary>
+  <div
+    id="{{ panel_id }}"
+    class="faq-row-content-{{ section.id }} nvgd-faq__row-content"
+    role="region"
+    aria-labelledby="{{ title_id }}"
+  >
+    <div class="faq-row-description-{{ section.id }} nvgd-faq__row-description">{{ block.settings.row_description }}</div>
+  </div>
+</details>
+
+{% schema %}
+{
+  "name": "FAQ row",
+  "settings": [
+    {
+      "type": "text",
+      "id": "row_title",
+      "label": "Row title",
+      "default": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "row_description",
+      "label": "Row description",
+      "default": "<p>Text</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ row"
+    }
+  ]
+}
+{% endschema %}

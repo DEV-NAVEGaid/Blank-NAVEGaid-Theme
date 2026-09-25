@@ -1,0 +1,68 @@
+{% comment %}
+  Renders a single location panel for the Household Gallery section.
+
+  Accepts:
+  - block: {Object} Section block containing location settings
+  - section_id: {String} Scoped section id used in class names
+  - is_first: {Boolean} Whether this is the first location (receives active-location class)
+
+  Usage:
+  {% render 'household-gallery-block-location', block: block, section_id: section_id, is_first: forloop.first %}
+{% endcomment %}
+
+{% assign layout = block.settings.grid_layout %}
+
+{% assign left_stacked = false %}
+{% assign right_stacked = false %}
+
+{% if layout == 'left_stacked_right_large' or layout == 'all_stacked' %}
+  {% assign left_stacked = true %}
+{% endif %}
+
+{% if layout == 'left_large_right_stacked' or layout == 'all_stacked' %}
+  {% assign right_stacked = true %}
+{% endif %}
+
+<div class="location-{{ section_id }} {% if is_first %}active-location{% endif %}"
+    data-location-content="{{ block.id }}"
+    {{ block.shopify_attributes }}>
+
+  <div class="grid-column-{{ section_id }} {% if left_stacked %}is-stacked{% endif %}">
+    <div class="hg-image-container">
+      {% if block.settings.image_left_top != blank %}
+        <img src="{{ block.settings.image_left_top | image_url: width: 1400 }}" alt="" loading="lazy" width="1400" height="{{ 1400 | divided_by: block.settings.image_left_top.aspect_ratio | ceil }}">
+      {% else %}
+        {% if request.design_mode %}{{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+      {% endif %}
+    </div>
+    {% if left_stacked %}
+    <div class="hg-image-container">
+      {% if block.settings.image_left_bottom != blank %}
+        <img src="{{ block.settings.image_left_bottom | image_url: width: 1400 }}" alt="" loading="lazy" width="1400" height="{{ 1400 | divided_by: block.settings.image_left_bottom.aspect_ratio | ceil }}">
+      {% else %}
+        <div style="background:#F5F5F5;height:100%;"></div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="grid-column-{{ section_id }} {% if right_stacked %}is-stacked{% endif %}">
+    <div class="hg-image-container">
+      {% if block.settings.image_right_top != blank %}
+        <img src="{{ block.settings.image_right_top | image_url: width: 1400 }}" alt="" loading="lazy" width="1400" height="{{ 1400 | divided_by: block.settings.image_right_top.aspect_ratio | ceil }}">
+      {% else %}
+        {% if request.design_mode %}{{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+      {% endif %}
+    </div>
+    {% if right_stacked %}
+    <div class="hg-image-container">
+      {% if block.settings.image_right_bottom != blank %}
+        <img src="{{ block.settings.image_right_bottom | image_url: width: 1400 }}" alt="" loading="lazy" width="1400" height="{{ 1400 | divided_by: block.settings.image_right_bottom.aspect_ratio | ceil }}">
+      {% else %}
+        {% if request.design_mode %}{{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>

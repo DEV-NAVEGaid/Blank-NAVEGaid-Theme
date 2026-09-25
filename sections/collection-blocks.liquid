@@ -1,0 +1,1821 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Collection Blocks Section
+  
+  A standalone section for content blocks (Heading, Subheading, Text, FAQ)
+  that can be used alongside the Product Collection List Alt section.
+  
+  Features:
+  - Optional border-left styling on the blocks wrapper
+  - Configurable border color, width, and padding
+  - FAQ accordion with single/multiple open behavior
+  - Responsive design
+  
+  BLOCKS:
+  - Heading: Configurable H1-H6 styles
+  - Subheading: Configurable styles with optional uppercase
+  - Text: Rich text content with configurable styles
+  - FAQ: Collapsible accordion rows
+{% endcomment %}
+
+{% liquid
+  if section.settings.enable_global_spacing
+    assign cb_pt = settings.padding_vertical
+    assign cb_pb = settings.padding_vertical
+    assign cb_pl = settings.padding_horizontal
+    assign cb_pr = settings.padding_horizontal
+    assign cb_pt_m = settings.padding_vertical_mobile
+    assign cb_pb_m = settings.padding_vertical_mobile
+    assign cb_pl_m = settings.padding_horizontal_mobile
+    assign cb_pr_m = settings.padding_horizontal_mobile
+  else
+    assign cb_pt = section.settings.padding_top
+    assign cb_pb = section.settings.padding_bottom
+    assign cb_pl = section.settings.padding_left
+    assign cb_pr = section.settings.padding_right
+    assign cb_pt_m = section.settings.padding_top_mobile
+    assign cb_pb_m = section.settings.padding_bottom_mobile
+    assign cb_pl_m = section.settings.padding_left_mobile
+    assign cb_pr_m = section.settings.padding_right_mobile
+  endif
+  assign cb_mv = settings.margin_vertical
+  assign cb_mh = settings.margin_horizontal
+
+  if section.settings.section_width == 'full'
+    assign cb_outer_max = '100%'
+    assign cb_outer_margin = '0'
+    assign cb_outer_px = '0px'
+  else
+    assign cb_outer_max = 'var(--page-width, 1200px)'
+    assign cb_outer_margin = '0 auto'
+    assign cb_outer_px = 'var(--page-gutter, 20px)'
+  endif
+
+  if section.settings.content_width == 'full'
+    assign cb_inner_max = '100%'
+    assign cb_inner_margin = '0'
+  else
+    assign cb_inner_max = 'var(--page-width, 1200px)'
+    assign cb_inner_margin = '0 auto'
+  endif
+
+  if section.settings.hide_border_mobile
+    assign cb_bl_w_m = '0px'
+    assign cb_bl_pad_m = '0px'
+  else
+    assign cb_bl_w_m = section.settings.border_width_mobile | append: 'px'
+    assign cb_bl_pad_m = section.settings.border_padding_mobile | append: 'px'
+  endif
+%}
+
+{{ 'section-collection-blocks.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --cb-pt: {{ cb_pt }}px;
+    --cb-pb: {{ cb_pb }}px;
+    --cb-pl: {{ cb_pl }}px;
+    --cb-pr: {{ cb_pr }}px;
+    --cb-pt-m: {{ cb_pt_m }}px;
+    --cb-pb-m: {{ cb_pb_m }}px;
+    --cb-pl-m: {{ cb_pl_m }}px;
+    --cb-pr-m: {{ cb_pr_m }}px;
+    --cb-mv: {{ cb_mv }}px;
+    --cb-mh: {{ cb_mh }}px;
+    --cb-outer-max: {{ cb_outer_max }};
+    --cb-outer-margin: {{ cb_outer_margin }};
+    --cb-outer-px: {{ cb_outer_px }};
+    --cb-inner-max: {{ cb_inner_max }};
+    --cb-inner-margin: {{ cb_inner_margin }};
+    --cb-bl-w: {{ section.settings.border_width }}px;
+    --cb-bl-color: {{ section.settings.border_color }};
+    --cb-bl-pad: {{ section.settings.border_padding }}px;
+    --cb-bl-w-m: {{ cb_bl_w_m }};
+    --cb-bl-pad-m: {{ cb_bl_pad_m }};
+    --cb-faq-border-color: {{ section.settings.faq_border_color }};
+    --cb-faq-pad-y: {{ section.settings.faq_padding_vertical }}px;
+    --cb-faq-pad-y-m: {{ section.settings.faq_padding_vertical_mobile }}px;
+    --cb-faq-q-size: {{ section.settings.faq_question_font_size_desktop }}px;
+    --cb-faq-q-size-m: {{ section.settings.faq_question_font_size_mobile }}px;
+    --cb-faq-q-weight: {{ section.settings.faq_question_font_weight }};
+    --cb-faq-q-color: {{ section.settings.faq_question_color }};
+    --cb-faq-a-size: {{ section.settings.faq_answer_font_size_desktop }}px;
+    --cb-faq-a-size-m: {{ section.settings.faq_answer_font_size_mobile }}px;
+    --cb-faq-a-weight: {{ section.settings.faq_answer_font_weight }};
+    --cb-faq-a-color: {{ section.settings.faq_answer_color }};
+    --cb-faq-arrow-size: {{ section.settings.faq_arrow_size }}px;
+    --cb-faq-arrow-size-m: {{ section.settings.faq_arrow_size_mobile }}px;
+    --cb-faq-arrow-color: {{ section.settings.faq_arrow_color }};
+    --cb-arrow-color: {{ section.settings.faq_arrow_color }};
+    --cb-tbl-mb: {{ section.settings.table_margin_bottom }}px;
+    --cb-tbl-weight: {{ section.settings.table_font_weight }};
+    --cb-tbl-cell-pad: {{ section.settings.table_cell_padding }}px;
+    --cb-tbl-cell-pad-m: {{ section.settings.table_cell_padding_mobile }}px;
+    --cb-tbl-border: {{ section.settings.table_border_color }};
+    --cb-tbl-header-bg: {{ section.settings.table_header_bg }};
+    --cb-tbl-header-color: {{ section.settings.table_header_color }};
+    --cb-tbl-feature-color: {{ section.settings.table_feature_color }};
+    --cb-tbl-row-bg: {{ section.settings.table_row_bg }};
+    --cb-tbl-check-color: {{ section.settings.table_checkmark_color }};
+    --cb-tbl-footer-mt: {{ section.settings.table_footer_margin_top }}px;
+    --cb-tbl-footer-color: {{ section.settings.table_footer_color }};
+    --cb-tbl-footer-link-color: {{ section.settings.table_footer_link_color }};
+  }
+{% endstyle %}
+
+<div
+  id="collection-blocks-{{ section.id }}"
+  class="collection-blocks-{{ section.id }} section-{{ section.id }}-spacing cb-section"
+  data-section-id="{{ section.id }}"
+  data-faq-behavior="{{ section.settings.faq_collapse_behavior }}"
+>
+  <div class="collection-blocks-{{ section.id }}__outer cb-outer">
+    <div class="collection-blocks-{{ section.id }}__inner cb-inner">
+      
+      {% if section.blocks.size > 0 %}
+        <!-- Wrapper with optional border-left -->
+        <div class="blocks-wrapper-{{ section.id }} cb-blocks-wrapper {% if section.settings.enable_border_left %}has-border-left{% endif %}">
+          <div class="blocks-content-{{ section.id }} cb-blocks-content">
+            {% for block in section.blocks %}
+              {% case block.type %}
+                
+                {% comment %} HEADING BLOCK {% endcomment %}
+                {% when 'heading' %}
+                  <div class="block-heading-{{ section.id }} cb-block-heading" {{ block.shopify_attributes }}>
+                    {% assign heading_tag = block.settings.heading_style %}
+                    <{{ heading_tag }} class="heading-block heading-style-{{ heading_tag }}" style="
+                      color: {{ block.settings.text_color }};
+                      text-align: {{ block.settings.text_alignment }};
+                      margin-bottom: {{ block.settings.margin_bottom }}px;
+                    ">{{ block.settings.heading_text }}</{{ heading_tag }}>
+                  </div>
+
+                {% comment %} SUBHEADING BLOCK {% endcomment %}
+                {% when 'subheading' %}
+                  <div class="block-subheading-{{ section.id }} cb-block-subheading" {{ block.shopify_attributes }}>
+                    {% assign subheading_tag = block.settings.subheading_style %}
+                    <{{ subheading_tag }} class="subheading-block subheading-style-{{ subheading_tag }}" style="
+                      color: {{ block.settings.text_color }};
+                      text-align: {{ block.settings.text_alignment }};
+                      margin-bottom: {{ block.settings.margin_bottom }}px;
+                      {% if block.settings.uppercase %}text-transform: uppercase; letter-spacing: 0.1em;{% endif %}
+                    ">{{ block.settings.subheading_text }}</{{ subheading_tag }}>
+                  </div>
+
+                {% comment %} TEXT BLOCK {% endcomment %}
+                {% when 'text' %}
+                  <div class="block-text-{{ section.id }} cb-block-text" {{ block.shopify_attributes }} style="
+                    --text-block-link-color: {{ block.settings.link_color }};
+                  ">
+                    {% assign text_tag = block.settings.text_style %}
+                    <div class="text-block text-style-{{ text_tag }}" style="
+                      color: {{ block.settings.text_color }};
+                      text-align: {{ block.settings.text_alignment }};
+                      margin-bottom: {{ block.settings.margin_bottom }}px;
+                      max-width: 100%;
+                      {% if block.settings.text_alignment == 'center' %}margin-left: auto; margin-right: auto;{% endif %}
+                    ">
+                      {{ block.settings.text_content }}
+                    </div>
+                  </div>
+
+                {% comment %} TABLE BLOCK {% endcomment %}
+                {% when 'table' %}
+                  <div class="block-table-{{ section.id }} cb-block-table" {{ block.shopify_attributes }}>
+                    <div class="comparison-table-wrapper">
+                      <table class="comparison-table-{{ section.id }} cb-comparison-table table-text-style-{{ block.settings.header_font_style }} table-footer-style-{{ block.settings.footer_font_style }}">
+                        <thead>
+                          <tr>
+                            <th class="feature-column"></th>
+                            {% if block.settings.header_col2 != blank %}
+                              <th>
+                                {% if block.settings.header_col2_link != blank %}
+                                  <a href="{{ block.settings.header_col2_link }}">{{ block.settings.header_col2 }}</a>
+                                {% else %}
+                                  {{ block.settings.header_col2 }}
+                                {% endif %}
+                              </th>
+                            {% endif %}
+                            {% if block.settings.header_col3 != blank %}
+                              <th>
+                                {% if block.settings.header_col3_link != blank %}
+                                  <a href="{{ block.settings.header_col3_link }}">{{ block.settings.header_col3 }}</a>
+                                {% else %}
+                                  {{ block.settings.header_col3 }}
+                                {% endif %}
+                              </th>
+                            {% endif %}
+                            {% if block.settings.header_col4 != blank %}
+                              <th>
+                                {% if block.settings.header_col4_link != blank %}
+                                  <a href="{{ block.settings.header_col4_link }}">{{ block.settings.header_col4 }}</a>
+                                {% else %}
+                                  {{ block.settings.header_col4 }}
+                                {% endif %}
+                              </th>
+                            {% endif %}
+                            {% if block.settings.header_col5 != blank %}
+                              <th>
+                                {% if block.settings.header_col5_link != blank %}
+                                  <a href="{{ block.settings.header_col5_link }}">{{ block.settings.header_col5 }}</a>
+                                {% else %}
+                                  {{ block.settings.header_col5 }}
+                                {% endif %}
+                              </th>
+                            {% endif %}
+                            {% if block.settings.header_col6 != blank %}
+                              <th>
+                                {% if block.settings.header_col6_link != blank %}
+                                  <a href="{{ block.settings.header_col6_link }}">{{ block.settings.header_col6 }}</a>
+                                {% else %}
+                                  {{ block.settings.header_col6 }}
+                                {% endif %}
+                              </th>
+                            {% endif %}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% comment %} Row 1 {% endcomment %}
+                          {% if block.settings.row1_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row1_link != blank %}
+                                <a href="{{ block.settings.row1_link }}">{{ block.settings.row1_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row1_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row1_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row1_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row1_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row1_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row1_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 2 {% endcomment %}
+                          {% if block.settings.row2_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row2_link != blank %}
+                                <a href="{{ block.settings.row2_link }}">{{ block.settings.row2_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row2_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row2_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row2_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row2_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row2_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row2_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 3 {% endcomment %}
+                          {% if block.settings.row3_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row3_link != blank %}
+                                <a href="{{ block.settings.row3_link }}">{{ block.settings.row3_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row3_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row3_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row3_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row3_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row3_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row3_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 4 {% endcomment %}
+                          {% if block.settings.row4_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row4_link != blank %}
+                                <a href="{{ block.settings.row4_link }}">{{ block.settings.row4_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row4_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row4_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row4_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row4_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row4_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row4_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 5 {% endcomment %}
+                          {% if block.settings.row5_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row5_link != blank %}
+                                <a href="{{ block.settings.row5_link }}">{{ block.settings.row5_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row5_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row5_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row5_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row5_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row5_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row5_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 6 {% endcomment %}
+                          {% if block.settings.row6_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row6_link != blank %}
+                                <a href="{{ block.settings.row6_link }}">{{ block.settings.row6_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row6_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row6_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row6_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row6_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row6_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row6_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 7 {% endcomment %}
+                          {% if block.settings.row7_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row7_link != blank %}
+                                <a href="{{ block.settings.row7_link }}">{{ block.settings.row7_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row7_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row7_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row7_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row7_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row7_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row7_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                          
+                          {% comment %} Row 8 {% endcomment %}
+                          {% if block.settings.row8_feature != blank %}
+                          <tr>
+                            <td class="feature-column">
+                              {% if block.settings.row8_link != blank %}
+                                <a href="{{ block.settings.row8_link }}">{{ block.settings.row8_feature }}</a>
+                              {% else %}
+                                {{ block.settings.row8_feature }}
+                              {% endif %}
+                            </td>
+                            {% if block.settings.header_col2 != blank %}<td>{% if block.settings.row8_col2 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col3 != blank %}<td>{% if block.settings.row8_col3 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col4 != blank %}<td>{% if block.settings.row8_col4 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col5 != blank %}<td>{% if block.settings.row8_col5 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                            {% if block.settings.header_col6 != blank %}<td>{% if block.settings.row8_col6 %}<span class="table-checkmark">✓</span>{% endif %}</td>{% endif %}
+                          </tr>
+                          {% endif %}
+                        </tbody>
+                      </table>
+                    </div>
+                    {% if block.settings.table_footer != blank %}
+                      <div class="table-footer-{{ section.id }} cb-table-footer table-footer-style-{{ block.settings.footer_font_style }}">{{ block.settings.table_footer }}</div>
+                    {% endif %}
+                  </div>
+
+                {% comment %} FAQ BLOCK {% endcomment %}
+                {% when 'faq' %}
+                  <div class="block-faq-{{ section.id }} faq-item cb-faq-item" {{ block.shopify_attributes }} data-faq-behavior="{{ section.settings.faq_collapse_behavior }}">
+                    <div class="faq-row-{{ section.id }} cb-faq-row">
+                      <button 
+                        type="button"
+                        class="faq-row-toggle-{{ section.id }} cb-faq-toggle"
+                        aria-expanded="false"
+                      >
+                        <span class="faq-row-title-{{ section.id }} cb-faq-title">{{ block.settings.faq_question }}</span>
+                        <span class="faq-arrow-{{ section.id }} cb-faq-arrow" data-arrow-type="{{ section.settings.faq_arrow_type }}">
+                          {% case section.settings.faq_arrow_type %}
+                            {% when 'chevron' %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                              </svg>
+
+                            {% when 'light_chevron' %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                              </svg>
+
+                            {% when 'arrow' %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <polyline points="19 12 12 19 5 12"></polyline>
+                              </svg>
+
+                            {% when 'plus' %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="plus-icon-{{ section.id }} cb-plus-icon">
+                                <line x1="12" y1="5" x2="12" y2="19" class="vertical-line"></line>
+                                <line x1="5" y1="12" x2="19" y2="12" class="horizontal-line"></line>
+                              </svg>
+
+                            {% when 'caret' %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 10l5 5 5-5z"/>
+                              </svg>
+
+                            {% else %}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                              </svg>
+                          {% endcase %}
+                        </span>
+                      </button>
+                      <div class="faq-row-content-{{ section.id }} cb-faq-content">
+                        <div class="faq-row-description-{{ section.id }} cb-faq-desc">
+                          {{ block.settings.faq_answer }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+              {% endcase %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="no-blocks-message">Add blocks to this section using the theme editor.</p>
+      {% endif %}
+      
+    </div>
+  </div>
+</div>
+
+
+<script src="{{ 'section-collection-blocks.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Collection Blocks",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Border Left Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_border_left",
+      "default": true,
+      "label": "Enable border left"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1,
+      "unit": "px",
+      "label": "Border width (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "border_padding",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding from border (Desktop)"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_border_mobile",
+      "default": true,
+      "label": "Hide border on mobile"
+    },
+    {
+      "type": "range",
+      "id": "border_width_mobile",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1,
+      "unit": "px",
+      "label": "Border width (Mobile)",
+      "info": "Only applies if 'Hide border on mobile' is unchecked"
+    },
+    {
+      "type": "range",
+      "id": "border_padding_mobile",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding from border (Mobile)",
+      "info": "Only applies if 'Hide border on mobile' is unchecked"
+    },
+    {
+      "type": "header",
+      "content": "FAQ Block Settings"
+    },
+    {
+      "type": "select",
+      "id": "faq_collapse_behavior",
+      "label": "FAQ collapse behavior",
+      "options": [
+        {
+          "value": "single",
+          "label": "Only allow one open"
+        },
+        {
+          "value": "multiple",
+          "label": "Allow multiple open"
+        }
+      ],
+      "default": "single"
+    },
+    {
+      "type": "select",
+      "id": "faq_arrow_type",
+      "label": "FAQ arrow type",
+      "options": [
+        {
+          "value": "chevron",
+          "label": "Chevron"
+        },
+        {
+          "value": "light_chevron",
+          "label": "Light Chevron"
+        },
+        {
+          "value": "arrow",
+          "label": "Arrow"
+        },
+        {
+          "value": "plus",
+          "label": "Plus/Minus"
+        },
+        {
+          "value": "caret",
+          "label": "Caret"
+        }
+      ],
+      "default": "chevron"
+    },
+    {
+      "type": "color",
+      "id": "faq_arrow_color",
+      "label": "FAQ arrow color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "faq_arrow_size",
+      "min": 12,
+      "max": 40,
+      "step": 2,
+      "default": 24,
+      "unit": "px",
+      "label": "FAQ arrow size (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_arrow_size_mobile",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "FAQ arrow size (Mobile)"
+    },
+    {
+      "type": "color",
+      "id": "faq_border_color",
+      "label": "FAQ border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "faq_padding_vertical",
+      "min": 10,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "unit": "px",
+      "label": "FAQ padding vertical (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_padding_vertical_mobile",
+      "min": 10,
+      "max": 30,
+      "step": 2,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ padding vertical (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "faq_question_font_size_desktop",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "default": 18,
+      "unit": "px",
+      "label": "FAQ question font size (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_question_font_size_mobile",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ question font size (Mobile)"
+    },
+    {
+      "type": "select",
+      "id": "faq_question_font_weight",
+      "label": "FAQ question font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "faq_question_color",
+      "label": "FAQ question color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "faq_answer_font_size_desktop",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "default": 16,
+      "unit": "px",
+      "label": "FAQ answer font size (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "faq_answer_font_size_mobile",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "unit": "px",
+      "label": "FAQ answer font size (Mobile)"
+    },
+    {
+      "type": "select",
+      "id": "faq_answer_font_weight",
+      "label": "FAQ answer font weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "faq_answer_color",
+      "label": "FAQ answer color",
+      "default": "#111111"
+    },
+    {
+      "type": "header",
+      "content": "Table Block Settings"
+    },
+    {
+      "type": "select",
+      "id": "table_font_weight",
+      "label": "Table font weight",
+      "info": "Applies to all text in the table (headers, features, cells)",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "table_cell_padding",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "default": 14,
+      "unit": "px",
+      "label": "Cell padding (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "table_cell_padding_mobile",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px",
+      "label": "Cell padding (Mobile)"
+    },
+    {
+      "type": "color",
+      "id": "table_border_color",
+      "label": "Table border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "color",
+      "id": "table_header_bg",
+      "label": "Header background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "table_header_color",
+      "label": "Header text color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "table_feature_color",
+      "label": "Feature column color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "table_row_bg",
+      "label": "Row background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "table_checkmark_color",
+      "label": "Checkmark color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "table_margin_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Table margin bottom"
+    },
+    {
+      "type": "color",
+      "id": "table_footer_color",
+      "label": "Footer text color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "table_footer_link_color",
+      "label": "Footer link color",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "table_footer_margin_top",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Footer margin top"
+    },
+    {
+      "type": "header",
+      "content": "Section Width"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section Width",
+      "default": "page",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding Top (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding Bottom (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding Left (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding Right (Desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding Top (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Padding Bottom (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding Left (Mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Padding Right (Mobile)"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content Width",
+      "default": "page",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "Heading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading_text",
+          "label": "Heading text",
+          "default": "Heading"
+        },
+        {
+          "type": "select",
+          "id": "heading_style",
+          "label": "Heading style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "h2"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "margin_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Margin bottom"
+        }
+      ]
+    },
+    {
+      "type": "subheading",
+      "name": "Subheading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "subheading_text",
+          "label": "Subheading text",
+          "default": "Text"
+        },
+        {
+          "type": "select",
+          "id": "subheading_style",
+          "label": "Subheading style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            },
+            {
+              "value": "p",
+              "label": "Paragraph"
+            },
+            {
+              "value": "span",
+              "label": "Span"
+            }
+          ],
+          "default": "h4"
+        },
+        {
+          "type": "checkbox",
+          "id": "uppercase",
+          "label": "Uppercase",
+          "default": false
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "margin_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 15,
+          "unit": "px",
+          "label": "Margin bottom"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text_content",
+          "label": "Text content",
+          "default": "<p>Text</p>"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "p",
+              "label": "Paragraph (Body)"
+            },
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "p"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#111111"
+        },
+        {
+          "type": "color",
+          "id": "link_color",
+          "label": "Link color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "max_width",
+          "min": 200,
+          "max": 1200,
+          "step": 50,
+          "default": 800,
+          "unit": "px",
+          "label": "Max width"
+        },
+        {
+          "type": "range",
+          "id": "margin_bottom",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 20,
+          "unit": "px",
+          "label": "Margin bottom"
+        }
+      ]
+    },
+    {
+      "type": "faq",
+      "name": "FAQ",
+      "settings": [
+        {
+          "type": "text",
+          "id": "faq_question",
+          "label": "Question",
+          "default": "What is your question?"
+        },
+        {
+          "type": "richtext",
+          "id": "faq_answer",
+          "label": "Answer",
+          "default": "<p>This is the answer to your frequently asked question. You can include <strong>formatting</strong>, <a href=\"#\">links</a>, and other rich content.</p>"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "name": "Comparison Table",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Typography Settings"
+        },
+        {
+          "type": "select",
+          "id": "header_font_style",
+          "label": "Header & Feature font style",
+          "info": "Font size follows your theme's typography settings. Applies to column headers and feature column.",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            },
+            {
+              "value": "p",
+              "label": "Paragraph"
+            }
+          ],
+          "default": "p"
+        },
+        {
+          "type": "select",
+          "id": "footer_font_style",
+          "label": "Footer font style",
+          "info": "Font size follows your theme's typography settings",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            },
+            {
+              "value": "p",
+              "label": "Paragraph"
+            }
+          ],
+          "default": "p"
+        },
+        {
+          "type": "header",
+          "content": "Column Headers"
+        },
+        {
+          "type": "text",
+          "id": "header_col2",
+          "label": "Column 2 Header",
+          "default": "Package 1"
+        },
+        {
+          "type": "url",
+          "id": "header_col2_link",
+          "label": "Column 2 Link (optional)"
+        },
+        {
+          "type": "text",
+          "id": "header_col3",
+          "label": "Column 3 Header",
+          "default": "Package 2"
+        },
+        {
+          "type": "url",
+          "id": "header_col3_link",
+          "label": "Column 3 Link (optional)"
+        },
+        {
+          "type": "text",
+          "id": "header_col4",
+          "label": "Column 4 Header",
+          "default": "Package 3"
+        },
+        {
+          "type": "url",
+          "id": "header_col4_link",
+          "label": "Column 4 Link (optional)"
+        },
+        {
+          "type": "text",
+          "id": "header_col5",
+          "label": "Column 5 Header",
+          "default": "Package 4"
+        },
+        {
+          "type": "url",
+          "id": "header_col5_link",
+          "label": "Column 5 Link (optional)"
+        },
+        {
+          "type": "text",
+          "id": "header_col6",
+          "label": "Column 6 Header",
+          "default": "Package 5"
+        },
+        {
+          "type": "url",
+          "id": "header_col6_link",
+          "label": "Column 6 Link (optional)"
+        },
+        {
+          "type": "header",
+          "content": "Row 1"
+        },
+        {
+          "type": "text",
+          "id": "row1_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row1_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row1_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row1_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row1_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row1_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row1_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 2"
+        },
+        {
+          "type": "text",
+          "id": "row2_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row2_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row2_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row2_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row2_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row2_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row2_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 3"
+        },
+        {
+          "type": "text",
+          "id": "row3_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row3_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row3_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row3_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row3_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row3_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row3_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 4"
+        },
+        {
+          "type": "text",
+          "id": "row4_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row4_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row4_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row4_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row4_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row4_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row4_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 5"
+        },
+        {
+          "type": "text",
+          "id": "row5_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row5_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row5_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row5_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row5_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row5_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row5_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 6"
+        },
+        {
+          "type": "text",
+          "id": "row6_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row6_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row6_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row6_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row6_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row6_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row6_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 7"
+        },
+        {
+          "type": "text",
+          "id": "row7_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row7_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row7_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row7_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row7_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row7_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row7_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Row 8"
+        },
+        {
+          "type": "text",
+          "id": "row8_feature",
+          "label": "Feature Name"
+        },
+        {
+          "type": "url",
+          "id": "row8_link",
+          "label": "Feature Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "row8_col2",
+          "label": "Column 2 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row8_col3",
+          "label": "Column 3 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row8_col4",
+          "label": "Column 4 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row8_col5",
+          "label": "Column 5 ✓",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "row8_col6",
+          "label": "Column 6 ✓",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Table Footer"
+        },
+        {
+          "type": "richtext",
+          "id": "table_footer",
+          "label": "Footer Text (optional)",
+          "info": "Add disclaimer or additional info below the table"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Blocks",
+      "blocks": [
+        {
+          "type": "heading",
+          "settings": {
+            "heading_text": "Heading"
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "faq_question": "What is your return policy?",
+            "faq_answer": "<p>We offer a 30-day return policy on all items. Items must be in original condition with tags attached.</p>"
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "faq_question": "How long does shipping take?",
+            "faq_answer": "<p>Standard shipping typically takes 3-5 business days. Express shipping is available for 1-2 business day delivery.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

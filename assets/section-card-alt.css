@@ -1,0 +1,178 @@
+/* moved from sections/card-alt.liquid inline <style> for bundling.
+   Per-instance values are rendered as custom properties on the section
+   wrapper via a Liquid style block in sections/card-alt.liquid */
+
+/* Section Spacing (base rules carry the original mobile values) */
+.ca-section {
+  padding-top: var(--ca-pt-m);
+  padding-bottom: var(--ca-pb-m);
+  padding-left: var(--ca-pl-m);
+  padding-right: var(--ca-pr-m);
+  margin: var(--ca-mv) var(--ca-mh);
+}
+
+/* Wrapper */
+.ca-wrapper {
+  padding-top: var(--ca-wp-y-m);
+  padding-bottom: var(--ca-wp-y-m);
+  padding-left: var(--ca-wp-x-m);
+  padding-right: var(--ca-wp-x-m);
+  max-width: var(--page-width, 1200px);
+  margin: 0 auto;
+}
+
+/* Main Container */
+.ca-container {
+  background-color: var(--ca-bg);
+  border-radius: var(--ca-radius-m);
+  padding-top: var(--ca-pad-y-m);
+  padding-bottom: var(--ca-pad-y-m);
+  padding-left: var(--ca-pad-x-m);
+  padding-right: var(--ca-pad-x-m);
+  width: var(--ca-width-m);
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ca-gap-m);
+  align-items: center;
+}
+
+/* Divider Container */
+.ca-divider-container {
+  display: flex;
+  align-items: center;
+  justify-content: var(--ca-div-align);
+  height: 100%;
+}
+
+/* Left Column */
+.ca-left {
+  text-align: center;
+}
+
+/* Left Image */
+.ca-left-image {
+  max-width: var(--ca-limg-w);
+  border-radius: var(--ca-limg-radius);
+  margin-bottom: var(--ca-limg-mb);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ca-left-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--ca-limg-radius);
+}
+
+/* Left Heading */
+.ca-left-heading {
+  font-weight: var(--ca-h-weight);
+  color: var(--ca-h-color);
+  margin: 0 0 var(--ca-h-mb) 0;
+  line-height: 1.2;
+  font-family: var(--font-heading-family, inherit);
+}
+
+.ca-left-heading .highlight-text {
+  color: var(--ca-h-hl);
+}
+
+/* Left Text */
+.ca-left-text {
+  font-weight: var(--ca-t-weight);
+  color: var(--ca-t-color);
+  margin: 0;
+  line-height: 1.5;
+  font-family: var(--font-body-family, inherit);
+}
+
+.ca-left-text .highlight-text {
+  color: var(--ca-t-hl);
+}
+
+/* Divider */
+.ca-divider {
+  display: block !important;
+  width: var(--ca-div-w);
+  min-width: var(--ca-div-w);
+  height: 100%;
+  background-color: var(--ca-div-color);
+}
+
+/* Right Column */
+.ca-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right Image */
+.ca-right-image {
+  max-width: var(--ca-rimg-w);
+  width: 100%;
+}
+
+.ca-right-image img,
+.ca-right-image svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--ca-rimg-radius);
+}
+
+/* Placeholder styling */
+.card-alt-placeholder .placeholder-svg {
+  background-color: #F5F5F5;
+}
+
+/* Desktop overrides (base rules above carry the original mobile values) */
+@media screen and (min-width: 750px) {
+  .ca-section {
+    padding-top: var(--ca-pt);
+    padding-bottom: var(--ca-pb);
+    padding-left: var(--ca-pl);
+    padding-right: var(--ca-pr);
+  }
+
+  .ca-wrapper {
+    padding-top: var(--ca-wp-y);
+    padding-bottom: var(--ca-wp-y);
+    padding-left: var(--ca-wp-x);
+    padding-right: var(--ca-wp-x);
+  }
+
+  .ca-container {
+    padding-top: var(--ca-pad-y);
+    padding-bottom: var(--ca-pad-y);
+    padding-left: var(--ca-pad-x);
+    padding-right: var(--ca-pad-x);
+    width: var(--ca-width);
+    grid-template-columns: var(--ca-cols);
+    gap: var(--ca-gap);
+    border-radius: var(--ca-radius);
+  }
+
+  .ca-left {
+    text-align: var(--ca-left-align);
+  }
+
+  .ca-left-image {
+    margin-left: var(--ca-limg-ml);
+    margin-right: var(--ca-limg-mr);
+  }
+
+  .ca-right {
+    justify-content: var(--ca-r-justify);
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .ca-divider-container,
+  .ca-divider {
+    display: none !important;
+  }
+}

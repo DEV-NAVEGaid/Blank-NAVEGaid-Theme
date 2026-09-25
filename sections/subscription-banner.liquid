@@ -1,0 +1,2092 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Subscription Product Banner Section
+  Two column section with icon, title, clickable cards, and image
+  Now includes Promo Card 2-Column blocks
+{% endcomment %}
+
+{%- comment -%}
+  font_picker settings return a font object, and its family only renders once the
+  @font-face declaration is emitted, so declare every font this section renders.
+  The filter returns nothing for system fonts, so no guard is needed.
+  https://shopify.dev/docs/storefronts/themes/architecture/settings/fonts
+{%- endcomment -%}
+{%- style -%}
+  {{ section.settings.icon_text_font | font_face: font_display: 'swap' }}
+  {{ section.settings.title_font | font_face: font_display: 'swap' }}
+  {{ section.settings.card_text_font | font_face: font_display: 'swap' }}
+{%- endstyle -%}
+
+{% style %}
+  /* Custom properties for the subscription banner (converted from the inline <style>).
+     Only values consumed by LIVE rules are emitted: the original stylesheet also
+     emitted several invalid declarations (`padding: XpxYpx` glued without a space,
+     `border: N<newline>px solid...`, `box-shadow: XpxYpxZpxrgba(...)`) that the
+     browser dropped, and many rule selectors were accidentally broken across lines
+     (newline inside a selector = descendant combinator matching no element); those
+     are intentionally not reproduced. */
+  #shopify-section-{{ section.id }} {
+    {% unless section.settings.enable_global_spacing %}
+    --sb-padding-top: {{ section.settings.padding_top }}px;
+    --sb-padding-right: {{ section.settings.padding_right }}px;
+    --sb-padding-bottom: {{ section.settings.padding_bottom }}px;
+    --sb-padding-left: {{ section.settings.padding_left }}px;
+    --sb-padding-top-mobile: {{ section.settings.padding_top_mobile }}px;
+    --sb-padding-right-mobile: {{ section.settings.padding_right_mobile }}px;
+    --sb-padding-bottom-mobile: {{ section.settings.padding_bottom_mobile }}px;
+    --sb-padding-left-mobile: {{ section.settings.padding_left_mobile }}px;
+    {% endunless %}
+
+    /* ::before background layer */
+    --sb-bg-width: {{ section.settings.section_bg_width }}%;
+    {% if section.settings.section_bg_image != blank %}
+    --sb-bg-image: url('{{ section.settings.section_bg_image | image_url: width: 1600 }}');
+    {% endif %}
+    --sb-bg-size: {% if section.settings.section_bg_size == 'cover' %}cover{% else %}contain{% endif %};
+    --sb-bg-position: {{ section.settings.section_bg_position }};
+    {% if section.settings.section_bg_align == 'left' %}
+    --sb-bg-left: 0px;
+    {% elsif section.settings.section_bg_align == 'right' %}
+    --sb-bg-right: 0px;
+    {% else %}
+    --sb-bg-left: 50%;
+    --sb-bg-transform: translateX(-50%);
+    {% endif %}
+    {% if section.settings.section_bg_type == 'color' %}
+    --sb-bg-color: {{ section.settings.section_bg_color }};
+    {% endif %}
+
+    /* Icon row */
+    --sb-icon-gap: {{ section.settings.icon_text_gap }}px;
+    --sb-icon-margin-bottom: {{ section.settings.icon_bottom_spacing }}px;
+    --sb-icon-transform: translate({{ section.settings.icon_transform_x }}px, {{ section.settings.icon_transform_y }}px);
+
+    /* Cards row */
+    --sb-cards-gap: {{ section.settings.card_gap }}px;
+    --sb-cards-transform: translate({{ section.settings.cards_transform_x }}px, {{ section.settings.cards_transform_y }}px);
+
+    /* Right image */
+    --sb-image-radius: {{ section.settings.image_border_radius }}px;
+  }
+
+  /* Font wiring restored: moving this section's CSS into the bundled stylesheet
+     dropped these declarations, which left the three font_picker settings inert. */
+  .subscription-banner-{{ section.id }}__icon-text {
+    font-family: {{ section.settings.icon_text_font.family }}, {{ section.settings.icon_text_font.fallback_families }};
+    font-weight: {{ section.settings.icon_text_weight }};
+  }
+
+  .subscription-banner-{{ section.id }}__title {
+    font-family: {{ section.settings.title_font.family }}, {{ section.settings.title_font.fallback_families }};
+    font-weight: {{ section.settings.title_weight }};
+  }
+
+  .subscription-banner-{{ section.id }}__card-text {
+    font-family: {{ section.settings.card_text_font.family }}, {{ section.settings.card_text_font.fallback_families }};
+    font-weight: {{ section.settings.card_text_weight }};
+  }
+{% endstyle %}
+
+<div id="{{ section.id }}" class="subscription-banner subscription-banner-{{ section.id }} nvgd-section-surface{% unless section.settings.enable_global_spacing %} subscription-banner--custom-spacing{% endunless %}{% if section.settings.section_bg_type == 'color' %} subscription-banner--bg-color{% endif %}" data-scroll-offset="{{ section.settings.scroll_offset }}">
+  <div class="subscription-banner-{{ section.id }}__outer-container">
+    <div class="subscription-banner-{{ section.id }}__inner-container">
+      <div class="subscription-banner-{{ section.id }}__grid">
+
+        {%- comment -%} LEFT COLUMN {%- endcomment -%}
+        <div class="subscription-banner-{{ section.id }}__column subscription-banner-{{ section.id }}__column--left">
+
+          {%- comment -%} Icon with Text {%- endcomment -%}
+          {% if section.settings.show_icon_text and section.settings.icon_text != blank %}
+            <div class="subscription-banner-{{ section.id }}__icon-wrapper subscription-banner__icon-wrapper">
+              {% if section.settings.icon != blank %}
+                <div class="subscription-banner-{{ section.id }}__icon">
+                  <img
+                    src="{{ section.settings.icon | image_url: width: 200 }}"
+                    alt="{{ section.settings.icon_text | escape }}"
+                    loading="lazy"
+                    width="200"
+                    height="{{ 200 | divided_by: section.settings.icon.aspect_ratio | ceil }}">
+                </div>
+              {% endif %}
+              <{{ section.settings.icon_text_tag }} class="subscription-banner-{{ section.id }}__icon-text">
+                {{ section.settings.icon_text }}
+                </{{ section.settings.icon_text_tag }}>
+              </div>
+            {% endif %}
+
+            {%- comment -%} Title {%- endcomment -%}
+            {% if section.settings.title != blank %}
+              <{{ section.settings.title_tag }} class="subscription-banner-{{ section.id }}__title">
+                {{ section.settings.title }}
+                </{{ section.settings.title_tag }}>
+              {% endif %}
+
+              {%- comment -%} Cards {%- endcomment -%}
+              <div class="subscription-banner-{{ section.id }}__cards subscription-banner__cards">
+                {% for block in section.blocks %}
+                  {% if block.type == 'card' %}
+                    {% assign target_id = block.settings.target_section_id | strip | remove_first: '#' %}
+                    <a
+                      href="#{{ target_id | escape }}"
+                      class="subscription-banner-{{ section.id }}__card subscription-banner__card"
+                      data-scroll-to="{{ target_id | escape }}"
+                      {{ block.shopify_attributes }}>
+                      <div class="subscription-banner-{{ section.id }}__card-content" style="margin-top: {{ block.settings.content_position_y }}%; transform: translate({{ block.settings.content_transform_x }}px, {{ block.settings.content_transform_y }}px); text-align: {{ block.settings.text_align }};">
+                        {% if block.settings.card_icon != blank %}
+                          <div class="subscription-banner-{{ section.id }}__card-icon">
+                            <img
+                              src="{{ block.settings.card_icon | image_url: width: 100 }}"
+                              alt="{{ block.settings.card_text | escape }}"
+                              loading="lazy"
+                              width="100"
+                              height="{{ 100 | divided_by: block.settings.card_icon.aspect_ratio | ceil }}">
+                          </div>
+                        {% endif %}
+                        {% if block.settings.card_text != blank %}
+                          <{{ section.settings.card_text_tag }} class="subscription-banner-{{ section.id }}__card-text">
+                            {{ block.settings.card_text }}
+                            </{{ section.settings.card_text_tag }}>
+                          {% endif %}
+                        </div>
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+
+              </div>
+
+              {%- comment -%} RIGHT COLUMN {%- endcomment -%}
+              <div class="subscription-banner-{{ section.id }}__column subscription-banner-{{ section.id }}__column--right">
+                {% if section.settings.right_image != blank %}
+                  <div class="subscription-banner-{{ section.id }}__image-wrapper subscription-banner__image-wrapper">
+                    {%- liquid
+                      assign sb_image_class = 'subscription-banner-' | append: section.id | append: '__image'
+                      assign sb_loading = 'eager'
+                      assign sb_priority = 'auto'
+                      if section.index == 1
+                        assign sb_priority = 'high'
+                      elsif section.index > 3
+                        assign sb_loading = 'lazy'
+                      endif
+                    -%}
+                    {{
+                      section.settings.right_image
+                      | image_url: width: 1200
+                      | image_tag:
+                        class: sb_image_class,
+                        widths: '375, 550, 750, 900, 1200',
+                        sizes: '(min-width: 750px) 50vw, 100vw',
+                        loading: sb_loading,
+                        fetchpriority: sb_priority,
+                        alt: section.settings.right_image.alt
+                    }}
+                  </div>
+                {% else %}
+                  <div class="subscription-banner-{{ section.id }}__image-wrapper subscription-banner-{{ section.id }}__image-wrapper--placeholder subscription-banner__image-wrapper">
+                    {% assign placeholder_class = 'subscription-banner-' | append: section.id | append: '__image' %}
+                    {% if request.design_mode %}{{ 'image' | placeholder_svg_tag: placeholder_class }}{% endif %}
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+
+            {%- comment -%} PROMO CARDS - Rendered below the main grid {%- endcomment -%}
+            {% for block in section.blocks %}
+              {% if block.type == 'promo_card' %}
+                {% assign block_id = block.id | replace: '_', '' | downcase %}
+                <div class="promo-card-wrapper-{{ block_id }} promo-card-wrapper" style="--pc-bg: {{ block.settings.bg_color }}; --pc-radius: {{ block.settings.border_radius }}px; --pc-margin-bottom: {{ block.settings.margin_bottom }}px; --pc-width: {{ block.settings.card_width }}%; --pc-grid-template-columns: {% if block.settings.show_divider %}{{ block.settings.left_column_width }}% minmax(20px, 60px) 1fr{% else %}{{ block.settings.left_column_width }}% 1fr{% endif %}; --pc-gap: {{ block.settings.gap }}px; --pc-divider-justify: {{ block.settings.divider_align }}; --pc-left-align: {{ block.settings.left_text_align }}; --pc-left-image-max-width: {{ block.settings.left_image_width }}%; --pc-left-image-radius: {{ block.settings.left_image_radius }}px; --pc-left-image-margin-bottom: {{ block.settings.left_image_spacing }}px; --pc-left-image-margin-left: {% if block.settings.left_text_align == 'center' or block.settings.left_text_align == 'right' %}auto{% else %}0px{% endif %}; --pc-left-image-margin-right: {% if block.settings.left_text_align == 'center' %}auto{% else %}0px{% endif %}; --pc-heading-weight: {{ block.settings.left_heading_weight }}; --pc-heading-color: {{ block.settings.left_heading_color }}; --pc-heading-margin: 0{{ block.settings.left_heading_margin }}px; --pc-heading-highlight-color: {{ block.settings.heading_highlight_color }}; --pc-text-weight: {{ block.settings.left_text_weight }}; --pc-text-color: {{ block.settings.left_text_color }}; --pc-text-highlight-color: {{ block.settings.text_highlight_color }}; --pc-divider-width: {{ block.settings.divider_width }}px; --pc-divider-color: {{ block.settings.divider_color }}; --pc-right-justify: {{ block.settings.right_image_align }}; --pc-right-image-max-width: {{ block.settings.right_image_width }}%; --pc-right-image-radius: {{ block.settings.right_image_radius }}px; --pc-width-mobile: {{ block.settings.card_width_mobile }}%; --pc-gap-mobile: {{ block.settings.gap_mobile }}px; --pc-radius-mobile: {{ block.settings.border_radius_mobile }}px;">
+                  <div class="promo-card-2col-{{ block_id }} promo-card-2col" {{ block.shopify_attributes }}>
+
+                    <!-- LEFT SIDE: Image + Text -->
+                    <div class="promo-2col-left-{{ block_id }} promo-2col-left">
+                      {% if block.settings.left_image != blank %}
+                        <div class="promo-2col-left-image-{{ block_id }} promo-2col-left-image">
+                          <img
+                            src="{{ block.settings.left_image | image_url: width: 600 }}"
+                            alt="{{ block.settings.left_heading | escape }}"
+                            loading="lazy"
+                            width="600"
+                            height="{{ 600 | divided_by: block.settings.left_image.aspect_ratio | ceil }}">
+                        </div>
+                      {% endif %}
+
+                      {% if block.settings.left_heading != blank %}
+                        {% assign heading_text = block.settings.left_heading %}
+                        {% if block.settings.heading_highlight_text != blank %}
+                          {% assign highlight = block.settings.heading_highlight_text %}
+                          {% assign replacement = '<span class="highlight-text">' | append: highlight | append: '</span>' %}
+                          {% assign heading_text = heading_text | replace_first: highlight, replacement %}
+                        {% endif %}
+                        <{{ block.settings.left_heading_tag }} class="promo-2col-left-heading-{{ block_id }} promo-2col-left-heading">
+                          {{ heading_text }}
+                          </{{ block.settings.left_heading_tag }}>
+                        {% endif %}
+
+                        {% if block.settings.left_text != blank %}
+                          {% assign text_content = block.settings.left_text %}
+                          {% if block.settings.text_highlight_text != blank %}
+                            {% assign text_highlight = block.settings.text_highlight_text %}
+                            {% assign replacement = '<span class="highlight-text">' | append: text_highlight | append: '</span>' %}
+                            {% assign text_content = text_content | replace_first: text_highlight, replacement %}
+                          {% endif %}
+                          <{{ block.settings.left_text_tag }} class="promo-2col-left-text-{{ block_id }} promo-2col-left-text">
+                            {{ text_content | newline_to_br }}
+                            </{{ block.settings.left_text_tag }}>
+                          {% endif %}
+                        </div>
+
+                        <!-- DIVIDER -->
+                        {% if block.settings.show_divider %}
+                          <div class="promo-2col-divider-container-{{ block_id }} promo-2col-divider-container">
+                            <div class="promo-2col-divider-{{ block_id }} promo-2col-divider"></div>
+                          </div>
+                        {% endif %}
+
+                        <!-- RIGHT SIDE: Image Only -->
+                        <div class="promo-2col-right-{{ block_id }} promo-2col-right">
+                          {% if block.settings.right_image != blank %}
+                            <div class="promo-2col-right-image-{{ block_id }} promo-2col-right-image">
+                              <img
+                                src="{{ block.settings.right_image | image_url: width: 1000 }}"
+                                alt=""
+                                loading="lazy"
+                                width="1000"
+                                height="{{ 1000 | divided_by: block.settings.right_image.aspect_ratio | ceil }}">
+                            </div>
+                          {% else %}
+                            {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
+                          {% endif %}
+                        </div>
+
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+
+              </div>
+            </div>
+          </div>
+
+          <script src="{{ 'subscription-banner.js' | asset_url }}" defer="defer"></script>
+
+          {%- comment -%}
+            Static CSS moved out of the inline <style> block.
+            Only rules that actually applied are kept:
+            - the original stylesheet wrote many selectors across a line break
+              (`.subscription-banner-<id>` + newline + `__part` = descendant
+              combinator); no element ever had those bare `__part` class tokens,
+              so those rules matched nothing and are not reproduced.
+            - declarations whose glued values were invalid CSS
+              (`padding: XpxYpx`, `border: N<newline>px solid...`,
+              `box-shadow: XpxYpxZpxrgba(...)`) were dropped by the browser and
+              are not reproduced either.
+            Setting-driven values come from --sb-* custom properties emitted by
+            the {% style %} block above; --pc-* block values are set inline on
+            each .promo-card-wrapper root.
+          {%- endcomment -%}
+          {% stylesheet %}
+            .subscription-banner {
+              position: relative;
+              overflow: hidden;
+            }
+
+            /* Modifier rendered only when "Use global spacing" is off; with global
+               spacing on the original emitted an invalid `padding: XpxYpx` which
+               was dropped, so no padding declaration applies. */
+            .subscription-banner--custom-spacing {
+              padding-top: var(--sb-padding-top);
+              padding-right: var(--sb-padding-right);
+              padding-bottom: var(--sb-padding-bottom);
+              padding-left: var(--sb-padding-left);
+            }
+
+            .subscription-banner--bg-color {
+              background-color: var(--sb-bg-color);
+            }
+
+            .subscription-banner::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              height: 100%;
+              width: var(--sb-bg-width);
+              background-image: var(--sb-bg-image);
+              background-size: var(--sb-bg-size);
+              background-position: var(--sb-bg-position);
+              background-repeat: no-repeat;
+              z-index: 0;
+              left: var(--sb-bg-left, auto);
+              right: var(--sb-bg-right, auto);
+              transform: var(--sb-bg-transform, none);
+            }
+
+            /* h2 elements inside the section (descendant rule, as before) */
+            .subscription-banner h2 {
+              padding-left: 12px;
+              padding-right: 12px;
+            }
+
+            .subscription-banner__icon-wrapper {
+              display: flex;
+              align-items: center;
+              gap: var(--sb-icon-gap);
+              margin-bottom: var(--sb-icon-margin-bottom);
+              transform: var(--sb-icon-transform);
+            }
+
+            .subscription-banner__cards {
+              display: flex;
+              flex-wrap: nowrap;
+              gap: var(--sb-cards-gap);
+              overflow: visible;
+              position: relative;
+              transform: var(--sb-cards-transform);
+            }
+
+            /* The card base rule was a broken selector (never applied); only
+               :hover was live, and its glued box-shadow value was invalid. */
+            .subscription-banner__card:hover {
+              transform: translateY(-4px);
+            }
+
+            .subscription-banner__image-wrapper {
+              width: 100%;
+              overflow: hidden;
+              border-radius: var(--sb-image-radius);
+            }
+
+            @media (max-width: 768px) {
+              .subscription-banner--custom-spacing {
+                padding-top: var(--sb-padding-top-mobile);
+                padding-right: var(--sb-padding-right-mobile);
+                padding-bottom: var(--sb-padding-bottom-mobile);
+                padding-left: var(--sb-padding-left-mobile);
+              }
+            }
+
+            /* Promo Card 2-Column blocks: --pc-* values are set inline on each
+               .promo-card-wrapper root and inherit to these descendants. */
+            .promo-card-2col {
+              background-color: var(--pc-bg);
+              border-radius: var(--pc-radius);
+              margin-bottom: var(--pc-margin-bottom);
+              width: var(--pc-width);
+              margin-left: auto;
+              margin-right: auto;
+              display: grid;
+              grid-template-columns: var(--pc-grid-template-columns);
+              gap: var(--pc-gap);
+              align-items: center;
+            }
+
+            .promo-2col-divider-container {
+              display: flex;
+              align-items: center;
+              justify-content: var(--pc-divider-justify);
+              height: 100%;
+            }
+
+            .promo-2col-left {
+              text-align: var(--pc-left-align);
+            }
+
+            .promo-2col-left-image {
+              max-width: var(--pc-left-image-max-width);
+              border-radius: var(--pc-left-image-radius);
+              margin-bottom: var(--pc-left-image-margin-bottom);
+              margin-left: var(--pc-left-image-margin-left);
+              margin-right: var(--pc-left-image-margin-right);
+            }
+
+            .promo-2col-left-image img {
+              width: 100%;
+              height: auto;
+              display: block;
+              border-radius: var(--pc-left-image-radius);
+            }
+
+            .promo-2col-left-heading {
+              font-weight: var(--pc-heading-weight);
+              color: var(--pc-heading-color);
+              /* Original value was the glued `margin: 0 0<N>px`, which parses as
+                 `margin: 0 <N>px` (left/right N px); --pc-heading-margin holds the
+                 glued `0<N>px` token to reproduce that exact parse. */
+              margin: 0 var(--pc-heading-margin);
+              line-height: 1.2;
+            }
+
+            .promo-2col-left-heading .highlight-text {
+              color: var(--pc-heading-highlight-color);
+            }
+
+            .promo-2col-left-text {
+              font-weight: var(--pc-text-weight);
+              color: var(--pc-text-color);
+              margin: 0;
+              line-height: 1.5;
+            }
+
+            .promo-2col-left-text .highlight-text {
+              color: var(--pc-text-highlight-color);
+            }
+
+            /* `display: block !important` intentionally kept: the mobile override
+               below (`display: none`) loses to it, exactly as before. */
+            .promo-2col-divider {
+              display: block !important;
+              width: var(--pc-divider-width);
+              min-width: var(--pc-divider-width);
+              height: 100%;
+              background-color: var(--pc-divider-color);
+            }
+
+            .promo-2col-right {
+              display: flex;
+              align-items: center;
+              justify-content: var(--pc-right-justify);
+            }
+
+            .promo-2col-right-image {
+              max-width: var(--pc-right-image-max-width);
+              width: 100%;
+            }
+
+            .promo-2col-right-image img {
+              width: 100%;
+              height: auto;
+              display: block;
+              border-radius: var(--pc-right-image-radius);
+            }
+
+            @media screen and (max-width: 749px) {
+              .promo-card-2col {
+                width: var(--pc-width-mobile);
+                grid-template-columns: 1fr;
+                gap: var(--pc-gap-mobile);
+                border-radius: var(--pc-radius-mobile);
+              }
+
+              .promo-2col-left {
+                text-align: center;
+              }
+
+              .promo-2col-left-image {
+                margin-left: auto;
+                margin-right: auto;
+              }
+
+              .promo-2col-divider {
+                display: none;
+              }
+
+              .promo-2col-right {
+                justify-content: center;
+              }
+            }
+          {% endstylesheet %}
+
+
+          {% schema %}
+{
+  "name": "Subscription banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_type",
+      "label": "Background type",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "color",
+          "label": "Color"
+        },
+        {
+          "value": "image",
+          "label": "Image"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "image_picker",
+      "id": "section_bg_image",
+      "label": "Background image"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_size",
+      "label": "Background image size",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover (Fill & Crop)"
+        },
+        {
+          "value": "contain",
+          "label": "Contain (Fit & Keep Ratio)"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "range",
+      "id": "section_bg_width",
+      "label": "Background image width",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100,
+      "info": "Controls the horizontal width of the background image container"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_position",
+      "label": "Background position",
+      "options": [
+        {
+          "value": "center center",
+          "label": "Center Center"
+        },
+        {
+          "value": "top center",
+          "label": "Top Center"
+        },
+        {
+          "value": "bottom center",
+          "label": "Bottom Center"
+        },
+        {
+          "value": "center left",
+          "label": "Center Left"
+        },
+        {
+          "value": "center right",
+          "label": "Center Right"
+        },
+        {
+          "value": "top left",
+          "label": "Top Left"
+        },
+        {
+          "value": "top right",
+          "label": "Top Right"
+        },
+        {
+          "value": "bottom left",
+          "label": "Bottom Left"
+        },
+        {
+          "value": "bottom right",
+          "label": "Bottom Right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "select",
+      "id": "section_bg_align",
+      "label": "Background alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Column layout"
+    },
+    {
+      "type": "range",
+      "id": "left_column_width",
+      "min": 30,
+      "max": 70,
+      "step": 5,
+      "default": 50,
+      "unit": "%",
+      "label": "Left column width"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Column gap (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "column_gap_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Column gap (mobile)"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Vertical alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "mobile_column_order",
+      "label": "Mobile column order",
+      "options": [
+        {
+          "value": "default",
+          "label": "Default (Left, Right)"
+        },
+        {
+          "value": "reverse",
+          "label": "Reverse (Right, Left)"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "Icon and text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon_text",
+      "label": "Show icon & text",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "icon_transform_x",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Icon & text position X",
+      "info": "Horizontal position adjustment"
+    },
+    {
+      "type": "range",
+      "id": "icon_transform_y",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Icon & text position Y",
+      "info": "Vertical position adjustment"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon",
+      "label": "Icon image"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Icon size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "icon_size_mobile",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Icon size (mobile)"
+    },
+    {
+      "type": "text",
+      "id": "icon_text",
+      "label": "Icon text",
+      "default": "Text"
+    },
+    {
+      "type": "select",
+      "id": "icon_text_tag",
+      "label": "Icon text HTML tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "p",
+          "label": "Paragraph"
+        }
+      ],
+      "default": "p"
+    },
+    {
+      "type": "font_picker",
+      "id": "icon_text_font",
+      "label": "Icon text font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "select",
+      "id": "icon_text_weight",
+      "label": "Icon text weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "icon_text_color",
+      "label": "Icon text color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "icon_text_gap",
+      "min": 5,
+      "max": 40,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Icon-text gap (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "icon_text_gap_mobile",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "default": 10,
+      "unit": "px",
+      "label": "Icon-text gap (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "icon_bottom_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Icon bottom spacing (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "icon_bottom_spacing_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Icon bottom spacing (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "title_transform_x",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Title position X",
+      "info": "Horizontal position adjustment"
+    },
+    {
+      "type": "range",
+      "id": "title_transform_y",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Title position Y",
+      "info": "Vertical position adjustment"
+    },
+    {
+      "type": "select",
+      "id": "title_tag",
+      "label": "Title HTML tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "font_picker",
+      "id": "title_font",
+      "label": "Title font",
+      "default": "assistant_n7"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "title_bottom_spacing",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 30,
+      "unit": "px",
+      "label": "Title bottom spacing (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "title_bottom_spacing_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Title bottom spacing (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Cards"
+    },
+    {
+      "type": "range",
+      "id": "cards_transform_x",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Cards container position X",
+      "info": "Horizontal position adjustment"
+    },
+    {
+      "type": "range",
+      "id": "cards_transform_y",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Cards container position Y",
+      "info": "Vertical position adjustment"
+    },
+    {
+      "type": "range",
+      "id": "card_width_percentage",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%",
+      "label": "Card width (desktop)",
+      "info": "Percentage of left column width"
+    },
+    {
+      "type": "range",
+      "id": "card_min_width",
+      "min": 150,
+      "max": 400,
+      "step": 10,
+      "default": 200,
+      "unit": "px",
+      "label": "Card minimum width"
+    },
+    {
+      "type": "range",
+      "id": "card_max_width",
+      "min": 250,
+      "max": 600,
+      "step": 10,
+      "default": 400,
+      "unit": "px",
+      "label": "Card maximum width"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Card gap (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "card_gap_mobile",
+      "min": 12,
+      "max": 30,
+      "step": 1,
+      "default": 12,
+      "unit": "px",
+      "label": "Card gap (mobile)"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "default": 1,
+      "unit": "px",
+      "label": "Card border width"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "default": 12,
+      "unit": "px",
+      "label": "Card border radius"
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px",
+      "label": "Card padding (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "card_content_padding",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Card content padding (desktop)",
+      "info": "Additional padding around card content (icon + text)"
+    },
+    {
+      "type": "range",
+      "id": "card_padding_mobile",
+      "min": 10,
+      "max": 30,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Card padding (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "card_content_padding_mobile",
+      "min": 0,
+      "max": 30,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Card content padding (mobile)",
+      "info": "Additional padding around card content (icon + text)"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_x",
+      "min": -10,
+      "max": 10,
+      "step": 1,
+      "default": 0,
+      "unit": "px",
+      "label": "Card shadow X"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_y",
+      "min": -10,
+      "max": 10,
+      "step": 1,
+      "default": 2,
+      "unit": "px",
+      "label": "Card shadow Y"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_blur",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "default": 8,
+      "unit": "px",
+      "label": "Card shadow blur"
+    },
+    {
+      "type": "color",
+      "id": "card_shadow_color",
+      "label": "Card shadow color",
+      "default": "rgba(0,0,0,0.1)"
+    },
+    {
+      "type": "range",
+      "id": "card_icon_size",
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "default": 50,
+      "unit": "px",
+      "label": "Card icon size (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "card_icon_size_mobile",
+      "min": 30,
+      "max": 60,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Card icon size (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "card_icon_spacing",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "default": 15,
+      "unit": "px",
+      "label": "Card icon bottom spacing (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "card_icon_spacing_mobile",
+      "min": 5,
+      "max": 20,
+      "step": 5,
+      "default": 10,
+      "unit": "px",
+      "label": "Card icon bottom spacing (mobile)"
+    },
+    {
+      "type": "select",
+      "id": "card_text_tag",
+      "label": "Card text HTML tag",
+      "options": [
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "p",
+          "label": "Paragraph"
+        }
+      ],
+      "default": "p"
+    },
+    {
+      "type": "font_picker",
+      "id": "card_text_font",
+      "label": "Card text font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "select",
+      "id": "card_text_weight",
+      "label": "Card text weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "card_text_color",
+      "label": "Card text color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "scroll_offset",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Scroll offset",
+      "info": "Offset from top when scrolling to section"
+    },
+    {
+      "type": "header",
+      "content": "Right column image"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Right column image"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Image border radius"
+    },
+    {
+      "type": "range",
+      "id": "image_margin_top_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Image margin (top & bottom)"
+    },
+    {
+      "type": "range",
+      "id": "image_margin_left_right",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 0,
+      "unit": "px",
+      "label": "Image margin (right & left)"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full Width"
+        },
+        {
+          "value": "page",
+          "label": "Page Width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_global_spacing",
+      "default": false,
+      "label": "Use global spacing"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Padding top (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Padding bottom (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Padding left (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "default": 80,
+      "unit": "px",
+      "label": "Padding right (desktop)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding top (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding bottom (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_left_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding left (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "padding_right_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 40,
+      "unit": "px",
+      "label": "Padding right (mobile)"
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Subscription card",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "card_icon",
+          "label": "Card icon"
+        },
+        {
+          "type": "text",
+          "id": "card_text",
+          "label": "Card text",
+          "default": "Text"
+        },
+        {
+          "type": "text",
+          "id": "target_section_id",
+          "label": "Target section ID",
+          "info": "Enter the ID of the section to scroll to (e.g., 'product-info')"
+        },
+        {
+          "type": "header",
+          "content": "Card content positioning"
+        },
+        {
+          "type": "range",
+          "id": "content_transform_x",
+          "min": -100,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "px",
+          "label": "Content position X",
+          "info": "Horizontal position adjustment"
+        },
+        {
+          "type": "range",
+          "id": "content_transform_y",
+          "min": -100,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "px",
+          "label": "Content position Y",
+          "info": "Vertical position adjustment"
+        },
+        {
+          "type": "range",
+          "id": "content_position_y",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "default": 0,
+          "unit": "%",
+          "label": "Content vertical alignment",
+          "info": "0 = top, 50 = middle, 100 = bottom"
+        },
+        {
+          "type": "select",
+          "id": "text_align",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        }
+      ]
+    },
+    {
+      "type": "promo_card",
+      "name": "Promo card 2-column",
+      "settings": [
+        {
+          "type": "header",
+          "content": "CARD SIZE and STYLE"
+        },
+        {
+          "type": "range",
+          "id": "card_width",
+          "min": 50,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "label": "Width",
+          "default": 100
+        },
+        {
+          "type": "range",
+          "id": "card_width_mobile",
+          "min": 80,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "label": "Width (mobile)",
+          "default": 100
+        },
+        {
+          "type": "color",
+          "id": "bg_color",
+          "label": "Background color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "range",
+          "id": "border_radius",
+          "min": 0,
+          "max": 50,
+          "step": 2,
+          "unit": "px",
+          "label": "Corner radius",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "border_radius_mobile",
+          "min": 0,
+          "max": 50,
+          "step": 2,
+          "unit": "px",
+          "label": "Corner radius (mobile)",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "LEFT SIDE image"
+        },
+        {
+          "type": "image_picker",
+          "id": "left_image",
+          "label": "Left image"
+        },
+        {
+          "type": "range",
+          "id": "left_image_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "label": "Image max width",
+          "default": 80
+        },
+        {
+          "type": "range",
+          "id": "left_image_radius",
+          "min": 0,
+          "max": 50,
+          "step": 2,
+          "unit": "px",
+          "label": "Image border radius",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "left_image_spacing",
+          "min": 0,
+          "max": 50,
+          "step": 5,
+          "unit": "px",
+          "label": "Space below image",
+          "default": 20
+        },
+        {
+          "type": "header",
+          "content": "LEFT SIDE text"
+        },
+        {
+          "type": "text",
+          "id": "left_heading",
+          "label": "Heading",
+          "default": "Heading"
+        },
+        {
+          "type": "select",
+          "id": "left_heading_tag",
+          "label": "Heading HTML tag",
+          "options": [
+            {
+              "value": "h1",
+              "label": "H1"
+            },
+            {
+              "value": "h2",
+              "label": "H2"
+            },
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "h3",
+          "info": "Uses theme typography settings"
+        },
+        {
+          "type": "select",
+          "id": "left_heading_weight",
+          "label": "Heading weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "700"
+        },
+        {
+          "type": "color",
+          "id": "left_heading_color",
+          "label": "Heading color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "text",
+          "id": "heading_highlight_text",
+          "label": "Highlight text (from beginning)",
+          "info": "Enter the exact text from the beginning of heading to highlight with different color"
+        },
+        {
+          "type": "color",
+          "id": "heading_highlight_color",
+          "label": "Highlight text color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "range",
+          "id": "left_heading_margin",
+          "min": 0,
+          "max": 50,
+          "step": 2,
+          "unit": "px",
+          "label": "Space below heading",
+          "default": 10
+        },
+        {
+          "type": "textarea",
+          "id": "left_text",
+          "label": "Body text"
+        },
+        {
+          "type": "select",
+          "id": "left_text_tag",
+          "label": "Body text HTML tag",
+          "options": [
+            {
+              "value": "p",
+              "label": "Paragraph"
+            },
+            {
+              "value": "div",
+              "label": "Div"
+            },
+            {
+              "value": "span",
+              "label": "Span"
+            }
+          ],
+          "default": "p",
+          "info": "Uses theme typography settings"
+        },
+        {
+          "type": "select",
+          "id": "left_text_weight",
+          "label": "Body text weight",
+          "options": [
+            {
+              "value": "400",
+              "label": "Normal"
+            },
+            {
+              "value": "500",
+              "label": "Medium"
+            },
+            {
+              "value": "600",
+              "label": "Semi Bold"
+            },
+            {
+              "value": "700",
+              "label": "Bold"
+            }
+          ],
+          "default": "400"
+        },
+        {
+          "type": "color",
+          "id": "left_text_color",
+          "label": "Body text color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "text",
+          "id": "text_highlight_text",
+          "label": "Highlight text (from beginning)",
+          "info": "Enter the exact text from the beginning to highlight with different color"
+        },
+        {
+          "type": "color",
+          "id": "text_highlight_color",
+          "label": "Highlight text color",
+          "default": "#F5F5F5"
+        },
+        {
+          "type": "select",
+          "id": "left_text_align",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "left_column_width",
+          "min": 30,
+          "max": 70,
+          "step": 5,
+          "unit": "%",
+          "label": "Left column width",
+          "default": 50
+        },
+        {
+          "type": "header",
+          "content": "DIVIDER"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_divider",
+          "label": "Show divider",
+          "default": true
+        },
+        {
+          "type": "color",
+          "id": "divider_color",
+          "label": "Divider color",
+          "default": "#E5E5E5"
+        },
+        {
+          "type": "range",
+          "id": "divider_width",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "unit": "px",
+          "label": "Divider thickness",
+          "default": 2
+        },
+        {
+          "type": "select",
+          "id": "divider_align",
+          "label": "Divider alignment",
+          "options": [
+            {
+              "value": "start",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "end",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "header",
+          "content": "RIGHT SIDE image"
+        },
+        {
+          "type": "image_picker",
+          "id": "right_image",
+          "label": "Right image"
+        },
+        {
+          "type": "range",
+          "id": "right_image_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "label": "Image max width",
+          "default": 90
+        },
+        {
+          "type": "range",
+          "id": "right_image_radius",
+          "min": 0,
+          "max": 50,
+          "step": 2,
+          "unit": "px",
+          "label": "Image border radius",
+          "default": 0
+        },
+        {
+          "type": "select",
+          "id": "right_image_align",
+          "label": "Image alignment",
+          "options": [
+            {
+              "value": "flex-start",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "flex-end",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "header",
+          "content": "Padding"
+        },
+        {
+          "type": "range",
+          "id": "padding_x",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "label": "Left-right padding",
+          "default": 40
+        },
+        {
+          "type": "range",
+          "id": "padding_y",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "label": "Top-bottom padding",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "padding_x_mobile",
+          "min": 0,
+          "max": 60,
+          "step": 5,
+          "unit": "px",
+          "label": "Left-right padding (mobile)",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "padding_y_mobile",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "px",
+          "label": "Top-bottom padding (mobile)",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "margin_bottom",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "px",
+          "label": "Space below card",
+          "default": 30
+        },
+        {
+          "type": "header",
+          "content": "WRAPPER PADDING"
+        },
+        {
+          "type": "range",
+          "id": "wrapper_padding_x",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "label": "Wrapper left-right padding",
+          "default": 0,
+          "info": "Outer padding around the entire card"
+        },
+        {
+          "type": "range",
+          "id": "wrapper_padding_y",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "label": "Wrapper top-bottom padding",
+          "default": 0,
+          "info": "Outer padding around the entire card"
+        },
+        {
+          "type": "range",
+          "id": "wrapper_padding_x_mobile",
+          "min": 0,
+          "max": 60,
+          "step": 5,
+          "unit": "px",
+          "label": "Wrapper left-right padding (mobile)",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "wrapper_padding_y_mobile",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "px",
+          "label": "Wrapper top-bottom padding (mobile)",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "gap",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "label": "Gap between columns",
+          "default": 40
+        },
+        {
+          "type": "range",
+          "id": "gap_mobile",
+          "min": 10,
+          "max": 60,
+          "step": 5,
+          "unit": "px",
+          "label": "Gap (mobile)",
+          "default": 25
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Subscription banner",
+      "blocks": [
+        {
+          "type": "card",
+          "settings": {
+            "card_text": "Text",
+            "target_section_id": "subscription-section-1"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "card_text": "Text",
+            "target_section_id": "subscription-section-2"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "card_text": "Text",
+            "target_section_id": "subscription-section-3"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "card_text": "Text",
+            "target_section_id": "subscription-section-4"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,256 @@
+{%- style -%}
+  .why-group-{{ block.id }} {
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.gap }}px;
+    align-items: {{ block.settings.align_items }};
+    text-align: {{ block.settings.text_align }};
+    background-color: {{ block.settings.bg_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    {% if block.settings.border_width > 0 %}
+      border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    {% endif %}
+    padding: {{ block.settings.padding_y }}px {{ block.settings.padding_x }}px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  @media screen and (max-width: 749px) {
+    .why-group-{{ block.id }} {
+      {% if block.settings.full_width_mobile %}
+        flex: 0 0 100%;
+        min-width: 0;
+      {% endif %}
+      gap: {{ block.settings.gap_mobile }}px;
+      padding: {{ block.settings.padding_y_mobile }}px {{ block.settings.padding_x_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="why-choose__group why-group-{{ block.id }}" {{ block.shopify_attributes }}>
+  {% content_for "blocks" %}
+</div>
+
+{% schema %}
+{
+  "name": "Why group",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between blocks",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between blocks (mobile)",
+      "default": 10
+    },
+    {
+      "type": "select",
+      "id": "align_items",
+      "label": "Horizontal alignment of blocks",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Start"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "End"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Width"
+    },
+    {
+      "type": "select",
+      "id": "width_mode",
+      "label": "Width",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto (share row equally)"
+        },
+        {
+          "value": "custom",
+          "label": "Custom width"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Custom width",
+      "default": 25
+    },
+    {
+      "type": "range",
+      "id": "min_width",
+      "min": 120,
+      "max": 320,
+      "step": 10,
+      "unit": "px",
+      "label": "Min width",
+      "info": "Columns wrap to the next row below this width",
+      "default": 160
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width_mobile",
+      "label": "Full width on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Background and padding"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "transparent"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#E5E5E5"
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_y",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Top-bottom padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Side padding (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Top-bottom padding (mobile)",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why group",
+      "blocks": [
+        {
+          "type": "why-icon"
+        },
+        {
+          "type": "why-title"
+        },
+        {
+          "type": "why-text"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

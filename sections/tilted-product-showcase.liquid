@@ -1,0 +1,612 @@
+{% render 'section-corners', section: section %}
+{{ 'section-tilted-product-showcase.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign default_card_bg = section.settings.card_background
+  if default_card_bg == blank or default_card_bg == 'rgba(0,0,0,0)'
+    assign default_card_bg = '#F5F5F5'
+  endif
+
+  assign left_bg = section.settings.left_card_background
+  if left_bg == blank or left_bg == 'rgba(0,0,0,0)'
+    assign left_bg = default_card_bg
+  endif
+
+  assign right_bg = section.settings.right_card_background
+  if right_bg == blank or right_bg == 'rgba(0,0,0,0)'
+    assign right_bg = default_card_bg
+  endif
+
+  assign center_bg = section.settings.center_card_background
+  if center_bg == blank or center_bg == 'rgba(0,0,0,0)'
+    assign center_bg = default_card_bg
+  endif
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }},
+  #TiltedShowcase-{{ section.id }} {
+    --tps-card-bg: {{ default_card_bg }};
+    --tps-left-card-bg: {{ left_bg }};
+    --tps-right-card-bg: {{ right_bg }};
+    --tps-center-card-bg: {{ center_bg }};
+    --tps-card-border: {{ section.settings.card_border }};
+    --tps-card-radius: {{ section.settings.card_radius }}px;
+    --tps-gap: {{ section.settings.gap }}px;
+
+    --tps-left-rotation: {{ section.settings.left_rotation }}deg;
+    --tps-left-scale: {{ section.settings.left_scale | divided_by: 100.0 }};
+    --tps-left-offset-x: {{ section.settings.left_offset_x }}px;
+    --tps-left-offset-y: {{ section.settings.left_offset_y }}px;
+
+    --tps-right-rotation: {{ section.settings.right_rotation }}deg;
+    --tps-right-scale: {{ section.settings.right_scale | divided_by: 100.0 }};
+    --tps-right-offset-x: {{ section.settings.right_offset_x }}px;
+    --tps-right-offset-y: {{ section.settings.right_offset_y }}px;
+
+    --tps-product-glow-color: {{ section.settings.product_glow_color }};
+
+    --tps-heading-size: {{ section.settings.heading_size }}px;
+    --tps-heading-size-mobile: {{ section.settings.heading_size_mobile }}px;
+    --tps-heading-color: {{ section.settings.heading_color }};
+    --tps-text-color: {{ section.settings.text_color }};
+    --tps-text-size: {{ section.settings.text_size }}px;
+  }
+
+  .tilted-showcase-{{ section.id }} {
+    background-color: {{ section.settings.background_color }};
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    padding-left: {{ section.settings.padding_x }}px;
+    padding-right: {{ section.settings.padding_x }}px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .tilted-showcase-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+      padding-left: {{ section.settings.padding_x_mobile }}px;
+      padding-right: {{ section.settings.padding_x_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="tilted-showcase tilted-showcase-{{ section.id }}" id="TiltedShowcase-{{ section.id }}">
+  <div class="tilted-showcase__container" style="max-width: {{ section.settings.container_width }}px;">
+    <div class="tilted-showcase__grid tilted-showcase__grid--{{ section.settings.mobile_layout }}">
+
+      <!-- ================= LEFT PRODUCT CARD ================= -->
+      {%- capture left_card_content -%}
+        <div class="tilted-showcase__image-container">
+          {%- if section.settings.enable_product_glow -%}
+            <div class="tilted-showcase__product-glow"></div>
+          {%- endif -%}
+          {%- if section.settings.left_image != blank -%}
+            {{ section.settings.left_image | image_url: width: 800 | image_tag: class: 'tilted-showcase__product-img', alt: section.settings.left_image_alt | default: section.settings.left_image.alt, loading: 'lazy' }}
+          {%- endif -%}
+        </div>
+      {%- endcapture -%}
+
+      {%- if section.settings.left_link != blank -%}
+        <a href="{{ section.settings.left_link }}" class="tilted-showcase__card--product tilted-showcase__card--left" style="background-color: {{ left_bg }};" aria-label="{{ section.settings.left_image_alt | default: 'Left product' }}">
+          {{ left_card_content }}
+        </a>
+      {%- else -%}
+        <div class="tilted-showcase__card--product tilted-showcase__card--left" style="background-color: {{ left_bg }};">
+          {{ left_card_content }}
+        </div>
+      {%- endif -%}
+
+      <!-- ================= CENTER CONTENT CARD ================= -->
+      <div class="tilted-showcase__card--content" style="background-color: {{ center_bg }}; text-align: {{ section.settings.text_alignment }};">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="tilted-showcase__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="tilted-showcase__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.text != blank -%}
+          <div class="rte tilted-showcase__description">
+            {{ section.settings.text }}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.button_label != blank -%}
+          <div class="tilted-showcase__action">
+            <a href="{{ section.settings.button_link | default: '#' }}" class="tilted-showcase__btn tilted-showcase__btn--{{ section.settings.button_style }}">
+              {{ section.settings.button_label | escape }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <!-- ================= RIGHT PRODUCT CARD ================= -->
+      {%- capture right_card_content -%}
+        <div class="tilted-showcase__image-container">
+          {%- if section.settings.enable_product_glow -%}
+            <div class="tilted-showcase__product-glow"></div>
+          {%- endif -%}
+          {%- if section.settings.right_image != blank -%}
+            {{ section.settings.right_image | image_url: width: 800 | image_tag: class: 'tilted-showcase__product-img', alt: section.settings.right_image_alt | default: section.settings.right_image.alt, loading: 'lazy' }}
+          {%- endif -%}
+        </div>
+      {%- endcapture -%}
+
+      {%- if section.settings.right_link != blank -%}
+        <a href="{{ section.settings.right_link }}" class="tilted-showcase__card--product tilted-showcase__card--right" style="background-color: {{ right_bg }};" aria-label="{{ section.settings.right_image_alt | default: 'Right product' }}">
+          {{ right_card_content }}
+        </a>
+      {%- else -%}
+        <div class="tilted-showcase__card--product tilted-showcase__card--right" style="background-color: {{ right_bg }};">
+          {{ right_card_content }}
+        </div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Tilted product showcase",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Cards default background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "card_border",
+      "label": "Cards border",
+      "default": "transparent"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Card corner radius",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "label": "Container max width",
+      "min": 800,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1240
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between cards",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_product_glow",
+      "label": "Label",
+      "default": false,
+      "info": "Text"
+    },
+    {
+      "type": "color",
+      "id": "product_glow_color",
+      "label": "Label",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "header",
+      "content": "Left product"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image",
+      "label": "Custom product image",
+      "info": "Upload a transparent PNG image. Replaces the default preset image below."
+    },
+    {
+      "type": "text",
+      "id": "left_image_alt",
+      "label": "Alternative text",
+      "default": "Image"
+    },
+    {
+      "type": "color",
+      "id": "left_card_background",
+      "label": "Background color",
+      "default": "#FFFFFF",
+      "info": "Background color for the left product card."
+    },
+    {
+      "type": "range",
+      "id": "left_rotation",
+      "label": "Left product rotation",
+      "min": -45,
+      "max": 45,
+      "step": 1,
+      "unit": "deg",
+      "default": -14,
+      "info": "Adjust the tilt angle of the left product in degrees."
+    },
+    {
+      "type": "range",
+      "id": "left_scale",
+      "label": "Left product scale",
+      "min": 70,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "default": 110
+    },
+    {
+      "type": "range",
+      "id": "left_offset_x",
+      "label": "Horizontal offset",
+      "min": -80,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "left_offset_y",
+      "label": "Vertical offset",
+      "min": -80,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "url",
+      "id": "left_link",
+      "label": "Product link (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Center content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (optional)"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 20,
+      "max": 64,
+      "step": 2,
+      "unit": "px",
+      "default": 38
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "label": "Mobile heading size",
+      "min": 18,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#111111"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Text</p>"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text font size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "color",
+      "id": "center_card_background",
+      "label": "Background color",
+      "default": "#FFFFFF",
+      "info": "Background color for the center content card."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label (optional)"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "link",
+          "label": "Text link"
+        },
+        {
+          "value": "solid",
+          "label": "Solid button"
+        }
+      ],
+      "default": "link"
+    },
+    {
+      "type": "header",
+      "content": "Right product"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image",
+      "label": "Custom product image",
+      "info": "Upload a transparent PNG image. Replaces the default preset image below."
+    },
+    {
+      "type": "text",
+      "id": "right_image_alt",
+      "label": "Alternative text",
+      "default": "Image"
+    },
+    {
+      "type": "color",
+      "id": "right_card_background",
+      "label": "Background color",
+      "default": "#FFFFFF",
+      "info": "Background color for the right product card."
+    },
+    {
+      "type": "range",
+      "id": "right_rotation",
+      "label": "Right product rotation",
+      "min": -45,
+      "max": 45,
+      "step": 1,
+      "unit": "deg",
+      "default": -8,
+      "info": "Adjust the tilt angle of the right product in degrees."
+    },
+    {
+      "type": "range",
+      "id": "right_scale",
+      "label": "Right product scale",
+      "min": 70,
+      "max": 150,
+      "step": 5,
+      "unit": "%",
+      "default": 110
+    },
+    {
+      "type": "range",
+      "id": "right_offset_x",
+      "label": "Horizontal offset",
+      "min": -80,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "right_offset_y",
+      "label": "Vertical offset",
+      "min": -80,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "url",
+      "id": "right_link",
+      "label": "Product link (optional)"
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "Mobile layout style",
+      "options": [
+        {
+          "value": "content-first",
+          "label": "Content first (Center - Left - Right)"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked (Left - Center - Right)"
+        },
+        {
+          "value": "products-row",
+          "label": "Content on top, products side by side"
+        }
+      ],
+      "default": "content-first"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top spacing (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom spacing (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_x",
+      "label": "Horizontal spacing (desktop)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Top spacing (mobile)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Bottom spacing (mobile)",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_x_mobile",
+      "label": "Horizontal spacing (mobile)",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge content. Leave off for overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Tilted product showcase",
+      "settings": {
+        "heading": "Heading",
+        "text": "<p>Text</p>",
+        "card_background": "#FFFFFF",
+        "left_card_background": "#FFFFFF",
+        "center_card_background": "#FFFFFF",
+        "right_card_background": "#FFFFFF",
+        "left_rotation": -14,
+        "right_rotation": -8
+      }
+    }
+  ]
+}
+{% endschema %}

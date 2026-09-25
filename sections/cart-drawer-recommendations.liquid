@@ -1,0 +1,78 @@
+{% render 'section-corners', section: section %}
+{% comment %}
+  Section: cart-drawer-recommendations
+  This section is fetched via AJAX for Search & Discovery recommendations
+{% endcomment %}
+
+<div class="product-recommendations">
+  {%- if recommendations.performed and recommendations.products_count > 0 -%}
+    {%- for product in recommendations.products -%}
+      <div class="product-card-custom" data-product-id="{{ product.id }}">
+        <a class="product-rec" href="{{ product.url }}">
+          <img 
+            src="{{ product.featured_image | image_url: width: 200 }}" 
+            alt="{{ product.featured_image.alt | escape }}" 
+            class="product-image-custom"
+            loading="lazy"
+            width="200"
+            height="{{ 200 | divided_by: product.featured_image.aspect_ratio | ceil }}"
+          >
+        </a>
+        <a class="product-rec" href="{{ product.url }}">
+          <div class="product-info-custom">
+            <div class="product-name-custom">{{ product.title }}</div>
+            <div class="product-price-custom">{{ product.price | money }}</div>
+          </div>
+        </a>
+        <button 
+          class="btn-add-custom" 
+          data-variant-id="{{ product.first_available_variant.id }}"
+          {% unless product.available %}disabled{% endunless %}
+        >
+          {% if product.available %}
+            Add to cart
+          {% else %}
+            Sold out
+          {% endif %}
+        </button>
+      </div>
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart recommendations",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section corners"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_section_corners",
+      "label": "Customize section corners",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "section_corner_radius",
+      "label": "Section corner radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ section.settings.custom_section_corners }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "clip_section_corners",
+      "label": "Clip content to corners",
+      "default": false,
+      "info": "Enable for edge-to-edge images. Leave off for menus, popups, sticky content, or overlapping elements.",
+      "visible_if": "{{ section.settings.custom_section_corners and section.settings.section_corner_radius > 0 }}"
+    }
+  ]
+}
+{% endschema %}

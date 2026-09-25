@@ -1,0 +1,79 @@
+{% comment %}
+  Renders a single video card slide for the Testimonial Slider section.
+
+  Accepts:
+  - block: {Object} Section block containing video_card settings
+  - section_id: {String} Scoped section id used in class names
+  - img_class: {String} Class applied to the thumbnail image
+  - card_index: {Number} Zero-based card index (forloop.index0 from the parent loop)
+
+  Usage:
+  {% render 'testimonial-slider-block-video-card', block: block, section_id: section_id, img_class: img_class, card_index: forloop.index0 %}
+{% endcomment %}
+
+{% liquid
+  assign video_source_url = block.settings.video_url
+  assign thumbnail_image = block.settings.thumbnail_image
+
+  if block.settings.video != blank
+    assign video_source = block.settings.video.sources | where: 'format', 'mp4' | last
+    if video_source == blank
+      assign video_source = block.settings.video.sources | first
+    endif
+    if video_source != blank
+      assign video_source_url = video_source.url
+    endif
+    if thumbnail_image == blank
+      assign thumbnail_image = block.settings.video.preview_image
+    endif
+  endif
+%}
+
+<div class="ts-slide-{{ section_id }} nvgd-ts-slide" {{ block.shopify_attributes }}>
+  {% if video_source_url != blank %}
+    <button
+      type="button"
+      class="ts-video-box-{{ section_id }} nvgd-ts-video-box"
+      data-card-index="{{ card_index }}"
+      data-video-url="{{ video_source_url | escape }}"
+      data-video-title="{{ block.settings.title | default: 'Video' | escape }}"
+      data-video-description="{{ block.settings.overlay_text | escape }}"
+      aria-label="Play {{ block.settings.title | default: 'testimonial video' | escape }}"
+    >
+  {% else %}
+    <div class="ts-video-box-{{ section_id }} nvgd-ts-video-box" data-card-index="{{ card_index }}">
+  {% endif %}
+    {% if thumbnail_image != blank %}
+      {%- assign ts_img_alt = block.settings.title -%}
+      {{ thumbnail_image
+        | image_url: width: 600
+        | image_tag:
+          class: img_class,
+          widths: '240, 360, 480, 600, 720',
+          sizes: '(min-width: 990px) 480px, (min-width: 750px) 40vw, 90vw',
+          loading: 'lazy',
+          alt: ts_img_alt
+      }}
+    {% else %}
+      <span class="ts-placeholder-{{ section_id }} nvgd-ts-placeholder"></span>
+    {% endif %}
+
+    {% if video_source_url != blank %}
+      <span class="ts-play-btn-{{ section_id }} nvgd-ts-play-btn" aria-hidden="true">
+        <svg class="ts-play-icon-{{ section_id }} nvgd-ts-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </span>
+    {% endif %}
+
+    {% if block.settings.overlay_text != blank %}
+      <span class="ts-overlay-text-{{ section_id }} nvgd-ts-overlay-text">{{ block.settings.overlay_text }}</span>
+    {% endif %}
+  {% if video_source_url != blank %}
+    </button>
+  {% else %}
+    </div>
+  {% endif %}
+
+  {% if block.settings.title != blank %}
+    <div class="ts-slide-title-{{ section_id }} nvgd-ts-slide-title">{{ block.settings.title }}</div>
+  {% endif %}
+</div>

@@ -1,0 +1,209 @@
+{%- assign current_product = closest.product | default: product -%}
+{%- assign current_variant = current_product.selected_or_first_available_variant -%}
+
+{%- style -%}
+  .card-buy-button-{{ block.id }} {
+    width: {% if block.settings.full_width %}100%{% else %}auto{% endif %};
+    padding: {% if block.settings.button_size == 'small' %}8px 16px{% elsif block.settings.button_size == 'large' %}14px 28px{% else %}10px 20px{% endif %};
+    border-radius: {{ block.settings.border_radius }}px;
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_weight }};
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    text-align: center;
+    border: 1px solid {{ block.settings.button_bg }};
+  }
+
+  {%- if block.settings.button_style == 'solid' -%}
+    .card-buy-button-{{ block.id }} {
+      background-color: {{ block.settings.button_bg }};
+      color: {{ block.settings.button_text_color }};
+    }
+    .card-buy-button-{{ block.id }}:hover {
+      opacity: 0.88;
+    }
+  {%- else -%}
+    .card-buy-button-{{ block.id }} {
+      background-color: transparent;
+      color: {{ block.settings.button_bg }};
+    }
+    .card-buy-button-{{ block.id }}:hover {
+      background-color: {{ block.settings.button_bg }};
+      color: {{ block.settings.button_text_color }};
+    }
+  {%- endif -%}
+
+  .card-buy-buttons-wrapper-{{ block.id }} {
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+  }
+{%- endstyle -%}
+
+<div class="card-buy-buttons-wrapper card-buy-buttons-wrapper-{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- if current_product != blank and current_variant != blank -%}
+    <product-form class="product-form">
+      {%- form 'product', current_product, id: current_product.id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+        <input type="hidden" name="id" value="{{ current_variant.id }}">
+        <button
+          type="submit"
+          name="add"
+          class="card-buy-button-{{ block.id }} button"
+          {% if current_variant.available == false %}disabled{% endif %}
+        >
+          <span>
+            {%- if current_variant.available -%}
+              {{ block.settings.button_text }}
+            {%- else -%}
+              Sold out
+            {%- endif -%}
+          </span>
+        </button>
+      {%- endform -%}
+    </product-form>
+  {%- else -%}
+    <button type="button" class="card-buy-button-{{ block.id }} button">
+      <span>{{ block.settings.button_text }}</span>
+    </button>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Buy buttons",
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Button"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Solid button"
+        },
+        {
+          "value": "outline",
+          "label": "Outline button"
+        }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "Button size",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button background / border",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width button",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Buy buttons",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

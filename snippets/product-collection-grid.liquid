@@ -1,0 +1,64 @@
+{% comment %}
+  Renders the custom product grid used by collection-list sections.
+
+  Accepts:
+  - products: Collection products to render
+  - product_limit: Maximum products to render
+{% endcomment %}
+
+<ul class="product-grid" id="productGrid-{{ section.id }}">
+  {% for product in products limit: product_limit %}
+    <li
+      class="product-grid-item"
+      data-product-id="{{ product.id }}"
+      data-title="{{ product.title | escape }}"
+      data-price="{{ product.price }}"
+      data-vendor="{{ product.vendor | handleize }}"
+      data-type="{{ product.type | handleize }}"
+      data-tags="{% for tag in product.tags %}{{ tag | handleize }}{% unless forloop.last %},{% endunless %}{% endfor %}"
+      data-available="{{ product.available }}"
+    >
+      <a href="{{ product.url }}" class="product-item-link">
+        {% if section.settings.show_image_flag and product.compare_at_price > product.price %}
+          {% assign diff = product.compare_at_price | minus: product.price %}
+          {% assign percent = diff | times: 100 | divided_by: product.compare_at_price | round %}
+          <span class="product-item-flag">- {{ percent }} %</span>
+        {% endif %}
+
+        <span class="product-image-container">
+          <span class="product-image-wrapper">
+            {% if product.featured_image %}
+              <img
+                class="product-image-photo"
+                src="{{ product.featured_image | image_url: width: 750 }}"
+                loading="lazy"
+                alt="{{ product.title | escape }}"
+                width="750"
+                height="{{ 750 | divided_by: product.featured_image.aspect_ratio | ceil }}"
+              >
+            {% else %}
+              {% if request.design_mode %}{{ 'product-1' | placeholder_svg_tag: 'product-image-photo' }}{% endif %}
+            {% endif %}
+          </span>
+        </span>
+
+        <div class="product-info">
+          <span class="product-title">{{ product.title | escape }}</span>
+          {% render 'product-block-rating', product: product, show_rating: section.settings.show_rating, fallback_rating: section.settings.fallback_rating %}
+          <div class="product-price-container">
+            <span class="product-price">{{ product.price | money }}</span>
+            {% if product.compare_at_price > product.price %}
+              {% assign diff = product.compare_at_price | minus: product.price %}
+              {% assign percent = diff | times: 100 | divided_by: product.compare_at_price | round %}
+              <span class="product-compare-price">{{ product.compare_at_price | money }}</span>
+              {% if section.settings.show_discount_badge != false %}
+                <span class="product-discount-pill">-{{ percent }}%</span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+
+      </a>
+    </li>
+  {% endfor %}
+</ul>

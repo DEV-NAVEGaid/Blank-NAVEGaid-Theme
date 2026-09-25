@@ -1,0 +1,74 @@
+{% comment %}
+  Renders a single card for the Featured Cards section.
+
+  Accepts:
+  - block: {Object} Section block containing card settings
+  - section: {Object} Section object (for section.settings)
+  - overlay_mode: {Boolean} Whether content overlays the media
+
+  Usage:
+  {% render 'featured-cards-block-card', block: block, section: section, overlay_mode: overlay_mode %}
+{% endcomment %}
+
+<div class="feature-cards__card" {{ block.shopify_attributes }}>
+
+  <div class="feature-cards__media">
+    {% if block.settings.media_type == 'video' %}
+      {% if block.settings.video != blank %}
+        {%- if block.settings.video_autoplay -%}
+          {{ block.settings.video | video_tag: loop: block.settings.video_loop, muted: block.settings.video_muted, controls: false, playsinline: true, preload: 'none', loading: 'lazy', data-video-lazy-autoplay: 'true' }}
+        {%- else -%}
+          {{ block.settings.video | video_tag: autoplay: false, loop: block.settings.video_loop, muted: block.settings.video_muted, controls: false, playsinline: true, loading: 'lazy' }}
+        {%- endif -%}
+      {% elsif block.settings.video_url != blank %}
+        <iframe src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?autoplay=1&mute=1&loop=1&playlist={{ block.settings.video_url.id }}&controls=0&playsinline=1" title="{{ block.settings.heading | default: 'Video' | escape }}" loading="lazy" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      {% else %}
+        <div class="feature-cards__placeholder">{% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}</div>
+      {% endif %}
+    {% else %}
+      {% if block.settings.image != blank %}
+        {%- liquid
+          assign fc_alt = block.settings.image.alt | default: block.settings.heading
+          assign fc_vw = 100 | divided_by: section.settings.columns
+          assign fc_vw_tablet = 100 | divided_by: section.settings.columns_tablet
+          assign fc_vw_mobile = 100 | divided_by: section.settings.columns_mobile
+          capture fc_sizes
+            echo '(min-width: 990px) ' | append: fc_vw | append: 'vw, (min-width: 750px) ' | append: fc_vw_tablet | append: 'vw, ' | append: fc_vw_mobile | append: 'vw'
+          endcapture
+        -%}
+        {{
+          block.settings.image
+          | image_url: width: 800
+          | image_tag: widths: '360, 540, 720, 800', sizes: fc_sizes, loading: 'lazy', alt: fc_alt
+        }}
+      {% else %}
+        <div class="feature-cards__placeholder">{% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}</div>
+      {% endif %}
+    {% endif %}
+
+    {% comment %} Render Content Inside Media Wrapper if Overlay is ON {% endcomment %}
+    {% if overlay_mode %}
+      <div class="feature-cards__content">
+        {% if block.settings.heading != blank %}
+          <h3 class="feature-cards__heading {{ section.settings.type_preset }}">{{ block.settings.heading }}</h3>
+        {% endif %}
+        {% if block.settings.text != blank %}
+          <p class="feature-cards__text {{ section.settings.text_type_preset }}">{{ block.settings.text }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% comment %} Render Content Below Media if Overlay is OFF {% endcomment %}
+  {% unless overlay_mode %}
+    <div class="feature-cards__content">
+      {% if block.settings.heading != blank %}
+        <h3 class="feature-cards__heading {{ section.settings.type_preset }}">{{ block.settings.heading }}</h3>
+      {% endif %}
+      {% if block.settings.text != blank %}
+        <p class="feature-cards__text {{ section.settings.text_type_preset }}">{{ block.settings.text }}</p>
+      {% endif %}
+    </div>
+  {% endunless %}
+
+</div>

@@ -1,0 +1,315 @@
+{%- style -%}
+  {{ block.settings.font | font_face: font_display: 'swap' }}
+  .hero-overlay__block-{{ block.id }} {
+    margin: 0 !important;
+    color: {{ block.settings.heading_color }};
+    font-family: {{ block.settings.font.family }}, {{ block.settings.font.fallback_families }};
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.heading_weight }};
+    line-height: {{ block.settings.line_height }};
+    letter-spacing: {{ block.settings.letter_spacing }};
+    text-align: {{ block.settings.heading_align }};
+    text-transform: {{ block.settings.case }};
+    text-wrap: {{ block.settings.wrap }};
+    
+    {% if block.settings.heading_bg_opacity > 0 %}
+      background-color: {{ block.settings.heading_bg_color | color_modify: 'alpha', block.settings.heading_bg_opacity | divided_by: 100.0 }};
+      border-radius: {{ block.settings.heading_border_radius }}px;
+    {% endif %}
+    
+    padding-top: {{ block.settings.heading_padding_top }}px;
+    padding-bottom: {{ block.settings.heading_padding_bottom }}px;
+  }
+  
+  @media screen and (max-width: 749px) {
+    .hero-overlay__block-{{ block.id }} {
+      font-size: {{ block.settings.heading_size_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign rendered_heading = block.settings.heading | escape | newline_to_br
+  if block.settings.heading_italic_text != blank
+    assign escaped_italic_text = block.settings.heading_italic_text | escape
+    capture italic_markup
+      echo '<em>'
+      echo escaped_italic_text
+      echo '</em>'
+    endcapture
+    assign rendered_heading = rendered_heading | replace: escaped_italic_text, italic_markup
+  endif
+-%}
+
+<div class="hero-overlay__heading-wrapper-{{ section.id }}" {{ block.shopify_attributes }}>
+  <h1 class="hero-overlay__heading-{{ section.id }} hero-overlay__block-{{ block.id }}">
+    {{ rendered_heading }}
+  </h1>
+</div>
+
+{% schema %}
+{
+  "name": "Heading",
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading_italic_text",
+      "label": "Italic text",
+      "info": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "Preset",
+      "options": [
+        {
+          "value": "rte",
+          "label": "Default"
+        },
+        {
+          "value": "paragraph",
+          "label": "Paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        },
+        {
+          "value": "custom",
+          "label": "Custom"
+        }
+      ],
+      "default": "rte"
+    },
+    {
+      "type": "font_picker",
+      "id": "font",
+      "label": "Font family",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 10,
+      "max": 110,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 64
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "Line height",
+      "options": [
+        {
+          "value": "1.05",
+          "label": "Tight"
+        },
+        {
+          "value": "1.2",
+          "label": "Normal"
+        },
+        {
+          "value": "1.4",
+          "label": "Loose"
+        }
+      ],
+      "default": "1.2"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "options": [
+        {
+          "value": "-0.02em",
+          "label": "Tight"
+        },
+        {
+          "value": "0em",
+          "label": "Normal"
+        },
+        {
+          "value": "0.04em",
+          "label": "Loose"
+        }
+      ],
+      "default": "0em"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "Case",
+      "options": [
+        {
+          "value": "none",
+          "label": "Default"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "wrap",
+      "label": "Wrap",
+      "options": [
+        {
+          "value": "pretty",
+          "label": "Pretty"
+        },
+        {
+          "value": "balance",
+          "label": "Balance"
+        },
+        {
+          "value": "nowrap",
+          "label": "None"
+        }
+      ],
+      "default": "pretty"
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "heading_bg_color",
+      "label": "Background color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "heading_bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Background opacity",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "heading_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Background corner radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "heading_padding_top",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "heading_padding_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size (mobile)",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Heading"
+    }
+  ]
+}
+{% endschema %}
