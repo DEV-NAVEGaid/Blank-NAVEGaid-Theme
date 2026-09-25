@@ -37,10 +37,27 @@ for (const [name, settings] of Object.entries({ current: data.current, ...data.p
 }
 
 const index = await json('templates/index.json');
-assert.equal(index.order.length, 1);
-assert.equal(index.sections[index.order[0]].type, 'custom-liquid');
-assert.equal(index.sections[index.order[0]].disabled, true);
-assert.deepEqual(index.sections[index.order[0]].settings, {});
+assert.deepEqual(index.order.map(id => index.sections[id].type), [
+  'hero-with-overlay',
+  'promo-cards-overlap',
+  'featured-cards',
+  'why-choose',
+  'essential-collection-grid',
+  'testimonial-slider',
+  'product-discovery-hotspot',
+  'insights-gallery',
+  'before-after-results',
+  'faq-section',
+  'simple-cta-banner',
+]);
+assert(index.order.every(id => !index.sections[id].disabled));
+const collection = await json('templates/collection.json');
+assert(collection.order.some(id => collection.sections[id].type === 'main-collection-product-grid'));
+const product = await json('templates/product.json');
+assert(product.order.some(id => product.sections[id].type === 'main-product'));
+const sampleReviews = Object.values(product.sections).find(section => section.type === 'review-section-custom');
+assert.equal(sampleReviews.disabled, true);
+assert.deepEqual(sampleReviews.blocks, {});
 for (const [file, expected] of [
   ['sections/header-group.json', 'header'],
   ['sections/footer-group.json', 'footer'],
@@ -51,6 +68,9 @@ for (const [file, expected] of [
   assert.deepEqual(group.sections[group.order[0]].blocks, {});
 }
 const footer = await json('sections/footer-group.json');
+const header = await json('sections/header-group.json');
+assert.equal(header.sections.header.settings.menu, '');
+assert.equal(header.sections.header.settings.search_type, 'icon');
 assert.equal(footer.sections.footer.settings.newsletter_enable, false);
 assert.equal(footer.sections.footer.settings.show_social, false);
 
@@ -58,7 +78,7 @@ for (const directory of ['templates', 'templates/customers', 'sections']) {
   for (const file of await readdir(path.join(root, directory))) {
     if (!file.endsWith('.json')) continue;
     const source = await read(`${directory}/${file}`);
-    assert.doesNotMatch(source, /shopify:\/\/|skincare|serum|litter[ -]?robot|nave\.co/i, `${directory}/${file}: demo content`);
+    assert.doesNotMatch(source, /shopify:\/\/|skincare|serum|litter[ -]?robot|nave\.co|\bNAVE Team\b|\bWhisker Team\b/i, `${directory}/${file}: demo content`);
     checkColors(source, `${directory}/${file}`);
   }
 }

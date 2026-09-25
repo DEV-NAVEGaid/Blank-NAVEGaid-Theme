@@ -14,6 +14,9 @@ for (const dir of ['sections', 'blocks']) {
   }
 }
 const issues = [];
+const globalSchema = JSON.parse(await readFile(path.join(root, 'config/settings_schema.json'), 'utf8'));
+const globalSettings = globalSchema.flatMap(group => group.settings ?? []);
+const globalData = JSON.parse(await readFile(path.join(root, 'config/settings_data.json'), 'utf8'));
 const check = (settings, values, where) => {
   for (const [id, value] of Object.entries(values ?? {})) {
     const setting = settings?.find(item => item.id === id);
@@ -24,8 +27,24 @@ const check = (settings, values, where) => {
     if (['select', 'radio'].includes(setting.type) && !setting.options?.some(option => option.value === value)) issues.push(`${where}.${id}: ${JSON.stringify(value)} not in options`);
     if (setting.type === 'range' && (typeof value !== 'number' || value < setting.min || value > setting.max)) issues.push(`${where}.${id}: ${JSON.stringify(value)} out of range`);
     if (setting.type === 'checkbox' && typeof value !== 'boolean') issues.push(`${where}.${id}: ${JSON.stringify(value)} not boolean`);
+    if (setting.type === 'color_scheme' && value && !Object.hasOwn(globalData.current?.color_schemes ?? {}, value)) issues.push(`${where}.${id}: unknown color scheme ${value}`);
   }
 };
+const group = globalSettings.find(setting => setting.type === 'color_scheme_group' && setting.id === 'color_schemes');
+if (!group) issues.push('config/settings_schema.json: missing color_schemes group');
+for (const [name, values] of Object.entries({ current: globalData.current, ...globalData.presets })) {
+  const { sections, content_for_index, color_schemes, ...settings } = values;
+  check(globalSettings, settings, `config/settings_data.json.${name}`);
+  if (!color_schemes || Object.keys(color_schemes).length === 0) {
+    issues.push(`config/settings_data.json.${name}: no color schemes`);
+    continue;
+  }
+  for (const [id, scheme] of Object.entries(color_schemes)) {
+    for (const definition of group?.definition ?? []) {
+      if (!(definition.id in (scheme.settings ?? {}))) issues.push(`config/settings_data.json.${name}.color_schemes.${id}: missing ${definition.id}`);
+    }
+  }
+}
 for (const [key, schema] of schemas) {
   if (!schema) continue;
   for (const setting of [...schema.settings ?? [], ...schema.blocks?.flatMap(block => block.settings ?? []) ?? []]) {

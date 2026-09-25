@@ -1115,6 +1115,31 @@
     ]
   },
   {
+    "name": "Font scale",
+    "settings": [
+      {
+        "type": "range",
+        "id": "body_scale",
+        "min": 80,
+        "max": 130,
+        "step": 5,
+        "default": 100,
+        "unit": "%",
+        "label": "Body text scale"
+      },
+      {
+        "type": "range",
+        "id": "heading_scale",
+        "min": 80,
+        "max": 130,
+        "step": 5,
+        "default": 100,
+        "unit": "%",
+        "label": "Heading scale"
+      }
+    ]
+  },
+  {
     "name": "Header",
     "settings": [
       {
@@ -1295,6 +1320,10 @@
         "id": "animations_hover_elements",
         "options": [
           {
+            "value": "none",
+            "label": "None"
+          },
+          {
             "value": "default",
             "label": "t:settings_schema.animations.settings.animations_hover_elements.options__1.label"
           },
@@ -1307,7 +1336,7 @@
             "label": "t:settings_schema.animations.settings.animations_hover_elements.options__3.label"
           }
         ],
-        "default": "default",
+        "default": "none",
         "label": "t:settings_schema.animations.settings.animations_hover_elements.label",
         "info": "t:settings_schema.animations.settings.animations_hover_elements.info"
       }
