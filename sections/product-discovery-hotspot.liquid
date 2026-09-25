@@ -168,8 +168,6 @@
             {%- if section.settings.lifestyle_image != blank -%}
               {%- assign lifestyle_alt = section.settings.lifestyle_image.alt | default: section.settings.heading | default: 'Product Discovery Hotspot' -%}
               {{ section.settings.lifestyle_image | image_url: width: 1600 | image_tag: loading: 'lazy', alt: lifestyle_alt }}
-            {%- else -%}
-              {% if request.design_mode %}{{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
             {%- endif -%}
           </div>
 
@@ -457,9 +455,6 @@
                 {%- elsif current_prod.featured_image != blank -%}
                   {%- assign thumb_alt = current_prod.title | default: 'Product thumbnail' -%}
                   {{ current_prod.featured_image | image_url: width: 240 | image_tag: loading: 'lazy', alt: thumb_alt }}
-                {%- else -%}
-                  {%- assign placeholder_idx = i | plus: 1 -%}
-                  {% if request.design_mode %}{{ 'product-' | append: placeholder_idx | placeholder_svg_tag: 'placeholder-svg' }}{% endif %}
                 {%- endif -%}
               </button>
             {%- endfor -%}

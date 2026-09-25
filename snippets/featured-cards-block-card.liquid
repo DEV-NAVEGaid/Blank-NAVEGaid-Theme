@@ -23,7 +23,7 @@
       {% elsif block.settings.video_url != blank %}
         <iframe src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?autoplay=1&mute=1&loop=1&playlist={{ block.settings.video_url.id }}&controls=0&playsinline=1" title="{{ block.settings.heading | default: 'Video' | escape }}" loading="lazy" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       {% else %}
-        <div class="feature-cards__placeholder">{% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}</div>
+        <div class="feature-cards__placeholder"></div>
       {% endif %}
     {% else %}
       {% if block.settings.image != blank %}
@@ -42,7 +42,7 @@
           | image_tag: widths: '360, 540, 720, 800', sizes: fc_sizes, loading: 'lazy', alt: fc_alt
         }}
       {% else %}
-        <div class="feature-cards__placeholder">{% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}</div>
+        <div class="feature-cards__placeholder"></div>
       {% endif %}
     {% endif %}
 

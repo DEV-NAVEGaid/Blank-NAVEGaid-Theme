@@ -67,7 +67,6 @@
                 | image_url: width: 1500
                 | image_tag: sizes: sizes, widths: widths, fetchpriority: fetch_priority, loading: image_loading
               }}
-            {%- elsif request.design_mode -%}{{ 'detailed-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
             {%- endif -%}
             {%- if section.settings.secondary_image != blank -%}
               {{ section.settings.secondary_image | image_url: width: 1000 | image_tag: class: 'nvgd-image-story__secondary', loading: 'lazy', widths: '240, 480, 720, 1000', sizes: '(min-width: 750px) 25vw, 50vw' }}

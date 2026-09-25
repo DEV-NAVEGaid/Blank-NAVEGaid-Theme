@@ -507,8 +507,6 @@
                             loading: 'lazy',
                             alt: promo_img_alt
                         }}
-                      {% else %}
-                        {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
                       {% endif %}
 
                       {% if media_link_val != blank %}</a>{% endif %}
@@ -614,8 +612,6 @@
                         loading: 'lazy',
                         alt: promo_img_alt
                     }}
-                  {% else %}
-                    {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
                   {% endif %}
 
                   {% if media_link_val != blank %}</a>{% endif %}

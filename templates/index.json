@@ -1896,7 +1896,7 @@
         "row_description_font_size_mobile": 14,
         "row_description_font_weight": "400",
         "container_width": 1000,
-        "show_image": true,
+        "show_image": false,
         "layout_reverse": false,
         "faq_width": 1.3,
         "image_width": 1,

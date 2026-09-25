@@ -59,12 +59,6 @@
     justify-content: center;
   }
 
-  .feature-cards__placeholder-{{ section_id }} svg {
-    width: 60%;
-    height: 60%;
-    opacity: 0.5;
-  }
-
   .feature-cards__content-{{ section_id }} {
     padding: {{ section.settings.content_padding_top }}px {{ section.settings.content_padding_x }}px {{ section.settings.content_padding_bottom }}px;
     {% if section.settings.show_divider %}
@@ -150,7 +144,6 @@
             >
           {% else %}
             <div class="feature-cards__placeholder-{{ section_id }}">
-              {% if request.design_mode %}{{ 'image' | placeholder_svg_tag }}{% endif %}
             </div>
           {% endif %}
         </div>

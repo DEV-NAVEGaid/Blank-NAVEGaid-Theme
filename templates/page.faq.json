@@ -51,7 +51,7 @@
       "settings": {
         "enable_global_spacing": true,
         "container_width": 1240,
-        "show_image": true,
+        "show_image": false,
         "layout_reverse": false,
         "faq_width": 1.5,
         "image_width": 1,
