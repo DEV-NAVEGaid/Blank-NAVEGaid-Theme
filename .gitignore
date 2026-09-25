@@ -1,4 +1,8 @@
 .DS_Store
 Thumbs.db
 
+# Keep local development notes out of the repository.
+*.md
+!/README.md
+
 *.zip

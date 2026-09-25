@@ -4,10 +4,7 @@ Blank NAVEGaid Theme is a Shopify Online Store 2.0 starting point with merchant-
 
 This repository starts from the theme files in `NAVEGaid-Shopify-Theme-main.zip` supplied on 2026-09-25. The archive came from [DEV-NAVEGaid/NAVEGaid-Shopify-Theme](https://github.com/DEV-NAVEGaid/NAVEGaid-Shopify-Theme). Its SHA-256 is `189723B817E0D0461DC12AEBECCF9591F508E8B0146A6FF5BF9B780D95F5B71C`. This repository has an independent local Git history. The ZIP is retained locally and excluded from Git and Shopify uploads.
 
-## Start here
-
-1. Read [PRODUCT.md](PRODUCT.md) for product goals and boundaries.
-2. Read [DEVELOPMENT.md](DEVELOPMENT.md) for the local workflow and checks.
+## Local checks
 
 Run the local check with Node.js:
 
@@ -30,4 +27,4 @@ For a store preview, install and authenticate the [Shopify CLI](https://shopify.
 | `config/` | Global setting definitions and saved settings |
 | `locales/` | Storefront and editor translations |
 
-The Markdown files, `scripts/`, and `package.json` are repository tooling. `.shopifyignore` excludes them from theme uploads.
+Local development notes are ignored by Git. `.shopifyignore` excludes Markdown, `scripts/`, `package.json`, and ZIP archives from Shopify CLI uploads. Shopify's GitHub theme integration syncs the standard theme folders listed above.
